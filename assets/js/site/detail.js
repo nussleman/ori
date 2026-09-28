@@ -55,11 +55,11 @@ function dvShowCard(s,sub){  // 포스터 카드 (관련 공연 등)
     +'<div class="dv-card-title">'+escHtml(fld(s,'공연명')||'')+'</div>'
     +(sub?'<div class="dv-card-sub">'+sub+'</div>':'')+'</div>';
 }
-function dvShowFilm(s,extra){  // 공연 한 줄 (작은 포스터 + 제목 + 장소 + 기간 + 역할)
+function dvShowFilm(s,extra,omit){  // 공연 한 줄 (작은 포스터 + 제목 + 장소 + 기간 + 역할). omit:'venue'|'troupe'는 그 페이지 자신이라 뺀다
   var p=POSTER[s.id]||'';
   var d=fld(s,'공연 날짜')||'',e=fld(s,'종료일')||'';
   var dates=d?(d.replace(/-/g,'.')+(e&&e!==d?' ~ '+e.replace(/-/g,'.'):'')):'';
-  var place=[ids(fld(s,'극장'))[0],ids(fld(s,'극단'))[0]].map(function(x){return x&&nm(x);}).filter(Boolean).map(escHtml).join(' · ');
+  var place=[omit==='venue'?'':ids(fld(s,'극장'))[0],omit==='troupe'?'':ids(fld(s,'극단'))[0]].map(function(x){return x&&nm(x);}).filter(Boolean).map(escHtml).join(' · ');
   return '<div class="dv-film" data-action="show" data-id="'+s.id+'">'
     +(p?'<img class="dv-film-img" src="'+p+'" alt="">':'<div class="dv-film-img dv-card-ph">🎭</div>')
     +'<div class="dv-film-main"><div class="dv-film-title">'+escHtml(fld(s,'공연명')||'')+'</div>'
@@ -132,10 +132,12 @@ function dvRender(m,keepScroll){
   if(tab!=='home'&&tabs.indexOf(tab)===-1)tab='home';
 
   var th=m.thumb||{};
-  var thumbH=th.url
+  // 오른쪽 패널: 대표 사진을 맨 위에 가장 크게, 글자는 그 아래 작게
+  var peekMedia=peek&&th.url;
+  var thumbH=peekMedia?'':th.url
     ?'<img class="dv-thumb dv-thumb-'+(th.shape||'square')+'" src="'+th.url+'" alt="">'
     :'<div class="dv-thumb dv-thumb-'+(th.shape||'square')+' dv-card-ph">'+(th.ph||'')+'</div>';
-  var headH='<header class="dv-head">'+thumbH+'<div class="dv-head-main">'
+  var headH='<header class="dv-head'+(peekMedia?' dv-head-nothumb':'')+'">'+thumbH+'<div class="dv-head-main">'
     +(m.kicker?'<div class="dv-kicker">'+m.kicker+'</div>':'')
     +'<div class="dv-title-row"><h1 class="dv-title">'+escHtml(m.title||'')+'</h1>'+(m.favs||[]).join('')+'</div>'
     +(m.sub?'<div class="dv-sub">'+m.sub+'</div>':'')
@@ -145,6 +147,7 @@ function dvRender(m,keepScroll){
     +'</div></header>';
 
   var h='<div class="dv-page'+(peek?' dv-peek':'')+'">';
+  if(peekMedia)h+='<div class="dv-peek-media dv-peek-media-'+(th.shape||'square')+'" style="--hero-img:url(\''+th.url+'\')"><img class="dv-thumb" src="'+th.url+'" alt=""></div>';
   if(!peek&&m.hero){
     h+='<div class="dv-hero"'+(th.url?' style="--hero-img:url(\''+th.url+'\')"':'')+'><div class="dv-hero-in">'
       +(m.back?'<button type="button" class="dv-back" onclick="'+m.back.go+'">← '+m.back.label+'</button>':'')+headH+'</div></div>';
@@ -223,5 +226,5 @@ function dvYearShowsRender(bar){
     onChange:function(k,v){st.year=v;dvYearShowsRender(bar);},
     onReset:function(){st.year='';dvYearShowsRender(bar);}
   }):'';
-  el.innerHTML=tools+'<div class="dv-list dv-list-film">'+list.map(function(s){return dvShowFilm(s);}).join('')+'</div>';
+  el.innerHTML=tools+'<div class="dv-list dv-list-film">'+list.map(function(s){return dvShowFilm(s,'',bar.indexOf('troupe')===0?'troupe':(bar.indexOf('venue')===0?'venue':''));}).join('')+'</div>';
 }

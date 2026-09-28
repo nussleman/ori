@@ -168,7 +168,7 @@ function showPerson(pid,push){
   var photoBody=buildPhotoGalleryHtml(photos,fld(person,'이름'));
   var isMe=CURRENT_USER&&CURRENT_USER.personId===pid;
   dvRender({
-    type:'person',id:pid,back:{label:'사람 목록',go:'goPeople()'},
+    type:'person',id:pid,back:{label:'사람 목록',go:'goPeople()'},hero:true,
     thumb:{url:photos.length?photos[0].url:'',shape:'round',ph:'👤'},
     kicker:'사람',
     title:fld(person,'이름'),

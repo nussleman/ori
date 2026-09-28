@@ -1112,3 +1112,53 @@ body.mode-make .pj-header{background:linear-gradient(180deg,var(--velvet2) 0%,#1
   .pj-header .mypage-tabs::-webkit-scrollbar{display:none}
   .pj-header .mypage-tab-btn{flex-shrink:0;padding:0.6rem 0.8rem}
 }
+
+/* ══ 오른쪽 패널: 사진이 주인공, 글자는 작게 ══ */
+.dv-peek-media{position:relative;margin:-1.4rem -1.4rem 1.1rem;padding:1.4rem 1.4rem 1.2rem;display:flex;justify-content:center;overflow:hidden;isolation:isolate;background:var(--bg3)}
+.dv-peek-media::before{content:'';position:absolute;inset:-30px;z-index:-1;background:var(--hero-img) center/cover no-repeat;filter:blur(30px) saturate(1.1);opacity:0.45;transform:scale(1.1)}
+.dv-peek-media::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(23,23,26,0.1),rgba(23,23,26,0.55) 80%,var(--bg2))}
+.dv-peek-media .dv-thumb{display:block;border:none;box-shadow:0 10px 30px rgba(0,0,0,0.5);cursor:zoom-in}
+.dv-peek-media-poster .dv-thumb{height:min(400px,52vh);width:auto;max-width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:6px}
+.dv-peek-media-round .dv-thumb{width:200px;height:200px;border-radius:50%;object-fit:cover}
+.dv-peek-media-square{padding:0}
+.dv-peek-media-square::after{display:none}
+.dv-peek-media-square .dv-thumb{width:100%;max-height:300px;aspect-ratio:4/3;object-fit:cover;border-radius:0;box-shadow:none}
+.dv-peek .dv-head-nothumb{display:block}
+.dv-peek .dv-kicker{font-size:0.72rem;margin-bottom:0.2rem}
+.dv-peek .dv-title{font-size:1.15rem;line-height:1.3}
+.dv-peek .dv-title-row{gap:0.25rem}
+.dv-peek .dv-icon{width:28px;height:28px}
+.dv-peek .dv-icon svg{width:15px;height:15px}
+.dv-peek .dv-sub{font-size:0.78rem;margin-top:0.25rem}
+.dv-peek .dv-tags,.dv-peek .dv-chips{margin-top:0.45rem}
+.dv-peek .dv-tag,.dv-peek .dv-extlink{font-size:0.7rem}
+.dv-peek .dv-head-acts{margin-top:0.8rem}
+.dv-peek .dv-act-primary{height:34px;font-size:0.78rem;padding:0 0.9rem}
+.dv-peek .dv-sec-info{margin-top:1.1rem}
+.dv-peek .dv-info-row{grid-template-columns:64px 1fr;padding:0.22rem 0;gap:0.7rem}
+.dv-peek .dv-info dt{font-size:0.76rem}
+.dv-peek .dv-info dd{font-size:0.8rem}
+.dv-peek .dv-h-row{margin-bottom:0.6rem}
+.dv-peek .dv-h-row .dv-h{font-size:0.88rem}
+.dv-peek .dv-n{font-size:0.74rem}
+.dv-peek .dv-sec{margin-top:1.4rem}
+.dv-peek .dv-film{padding:0.5rem 0;gap:0.7rem}
+.dv-peek .dv-film-img{width:42px}
+.dv-peek .dv-film-title{font-size:0.82rem}
+.dv-peek .dv-film-sub{font-size:0.72rem;margin-top:0.1rem}
+.dv-peek .dv-list-roles{gap:0.6rem}
+.dv-peek .dv-role{gap:0.65rem}
+.dv-peek .dv-role-img{width:38px;height:38px}
+.dv-peek .dv-role-name{font-size:0.72rem}
+.dv-peek .dv-role-cast,.dv-peek .dv-credit-v{font-size:0.82rem}
+.dv-peek .dv-credit{padding:0.3rem 0}
+.dv-peek .dv-credit-l{font-size:0.76rem;width:64px}
+.dv-peek .dv-row-img{width:34px;height:34px}
+.dv-peek .dv-row-title{font-size:0.82rem}
+.dv-peek .dv-row-sub{font-size:0.72rem}
+.dv-peek .dv-chip{font-size:0.76rem;padding:0.28rem 0.65rem}
+.dv-peek .dv-card-title{font-size:0.78rem}
+.dv-peek .dv-card-sub{font-size:0.7rem}
+.dv-peek .dv-more{font-size:0.76rem;padding:0.5rem}
+.dv-peek .dv-open-page{font-size:0.8rem;margin-top:1.6rem}
+.dv-peek .person-intro-text{font-size:0.8rem}

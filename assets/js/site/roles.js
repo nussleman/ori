@@ -104,7 +104,7 @@ function showRole(rid,push){
   var siblings=wid?DB.roles.filter(function(r){return r.id!==rid&&ids(fld(r,'작품')).indexOf(wid)>-1&&fld(r,'배역명');}):[];
   var photos=fld(role,'사진')||[];
   dvRender({
-    type:'role',id:rid,back:{label:'배역 목록',go:'goRoles()'},
+    type:'role',id:rid,back:{label:'배역 목록',go:'goRoles()'},hero:true,
     thumb:{url:iurl(photos),shape:'square',ph:'🎬'},
     kicker:'배역'+(wid?' · '+dvLink('work',wid,nm(wid)):''),
     title:fld(role,'배역명'),
@@ -116,7 +116,7 @@ function showRole(rid,push){
       {title:'맡은 사람',items:actorItems,layout:'people',peek:true,peekMax:8},
       {title:'같은 작품의 다른 배역',items:siblings.map(function(r){return dvChip('role',r.id,fld(r,'배역명'));}),layout:'chips',peek:true,peekMax:12},
       {title:'해보고 싶어하는 사람들',body:'<div id="wish-interest-role"></div>'},
-      {title:'사진',body:buildPhotoGalleryHtml(photos,fld(role,'배역명'))}
+      {title:'사진',tab:'사진',body:buildPhotoGalleryHtml(photos,fld(role,'배역명'))}
     ],
     empty:'아직 이 배역을 맡은 사람이 등록되지 않았어요.',
     after:function(){renderWishlistInterest('role',rid,'wish-interest-role');}
