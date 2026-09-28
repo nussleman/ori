@@ -13,7 +13,7 @@
 <meta name="twitter:description" content="프로와 아마추어를 가리지 않는 연극·뮤지컬 공연 기록. 사람·극장·작품으로 이어지는 이력을 찾아보고, 내 공연의 기획부터 라이선스·제작·운영까지 한 곳에서.">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=Noto+Sans+KR:wght@300;400;500&display=swap">
-<link rel="stylesheet" href="assets/css/site.css?v=20260928c">
+<link rel="stylesheet" href="assets/css/site.css?v=20260928d">
 </head>
 <body>
 
@@ -48,41 +48,36 @@
 </svg>
 
 <div class="page-wrap">
+  <!-- 좌측 메뉴: 모드(둘러보기 / 내 공연)에 따라 둘 중 하나만 보인다 (body.mode-my) -->
   <nav class="left-nav">
-    <nav id="main-nav">
+    <nav id="main-nav" class="nav-browse" aria-label="둘러보기">
+      <button id="nav-home" onclick="goHome()">홈</button>
       <button id="nav-shows" onclick="goShows()">공연</button>
-      <button id="nav-people" onclick="goPeople()">사람</button>
       <button id="nav-works" onclick="goWorks()">작품</button>
-      <button id="nav-roles" onclick="goRoles()">배역</button>
-      <button id="nav-venues" onclick="goVenues()">극장</button>
+      <button id="nav-people" onclick="goPeople()">사람</button>
       <button id="nav-troupes" onclick="goTroupes()">단체</button>
-      <button id="nav-content" onclick="goContent()">콘텐츠 <span class="wip-badge">준비중</span></button>
+      <button id="nav-venues" onclick="goVenues()">극장</button>
+      <button id="nav-roles" onclick="goRoles()">배역</button>
       <div class="nav-divider"></div>
-      <button id="nav-projects" onclick="goProjectBrowse()">프로젝트 <span class="wip-badge">준비중</span></button>
-      <button id="nav-dashboard" onclick="goDashboard()">대시보드 <span class="wip-badge">준비중</span></button>
+      <button id="nav-projects" onclick="goProjectBrowse()">모집 중인 자리</button>
+      <button id="nav-dashboard" onclick="goDashboard()">통계</button>
+    </nav>
+    <nav id="my-nav" class="nav-my" aria-label="내 공연">
+      <button id="nav-my" onclick="goMyShows()">내 공연 전체</button>
+      <div class="nav-section-label">진행 중</div>
+      <div id="my-nav-projects"></div>
+      <button class="nav-new" onclick="startNewProject()">+ 새 공연 시작</button>
     </nav>
     <div class="sidebar-credit">오리는 team 오리가 만들고 있어요<br><a href="#terms" onclick="goTerms();return false;">이용약관</a> · <a href="#privacy" onclick="goPrivacy();return false;">개인정보처리방침</a></div>
   </nav>
 
-  <!-- 홈 화면 전용: 좌측 세로 가운데에 떠있는 메뉴 컨트롤러 (제목이 곧 홈 버튼이라 '홈' 항목은 없음) -->
-  <div class="home-nav-dock" id="home-nav-dock">
-    <nav id="home-dock-nav">
-      <button id="hdock-shows" onclick="goShows()">공연</button>
-      <button id="hdock-people" onclick="goPeople()">사람</button>
-      <button id="hdock-works" onclick="goWorks()">작품</button>
-      <button id="hdock-roles" onclick="goRoles()">배역</button>
-      <button id="hdock-venues" onclick="goVenues()">극장</button>
-      <button id="hdock-troupes" onclick="goTroupes()">단체</button>
-      <button id="hdock-content" onclick="goContent()">콘텐츠 <span class="wip-badge">준비중</span></button>
-      <div class="nav-divider"></div>
-      <button id="hdock-projects" onclick="goProjectBrowse()">프로젝트 <span class="wip-badge">준비중</span></button>
-      <button id="hdock-dashboard" onclick="goDashboard()">대시보드 <span class="wip-badge">준비중</span></button>
-    </nav>
-  </div>
-
   <div class="content-area">
     <div class="top-bar" id="top-bar">
       <div class="top-bar-title" onclick="goHome()"><svg class="logo-mark"><use href="#duck-logo"></use></svg>오리</div>
+      <div class="mode-switch" role="tablist" aria-label="모드">
+        <button id="mode-browse" role="tab" onclick="goHome()">둘러보기</button>
+        <button id="mode-my" role="tab" onclick="goMyShows()">내 공연</button>
+      </div>
       <div class="global-search" id="gs-wrap">
         <span class="gs-icon">🔍</span>
         <input id="gs-input" type="text" placeholder="검색…" autocomplete="off"
@@ -112,7 +107,7 @@
 <div class="profile-dropdown" id="profile-dropdown">
   <button class="profile-dropdown-item" onclick="closeProfileDropdown();goMyPageTab('info')">👤 내 정보</button>
   <button class="profile-dropdown-item" onclick="closeProfileDropdown();goMyPageTab('troupes')">🏢 내 단체</button>
-  <button class="profile-dropdown-item" onclick="closeProfileDropdown();goMyPageTab('projects')">🎭 내 프로젝트</button>
+  <button class="profile-dropdown-item" onclick="closeProfileDropdown();goMyShows()">🎪 내 공연</button>
   <div class="profile-dropdown-divider"></div>
   <button class="profile-dropdown-item" onclick="closeProfileDropdown();goMyPageTab('dashboard')">📊 마이페이지 전체 보기</button>
   <div class="profile-dropdown-divider"></div>
@@ -227,38 +222,36 @@
 </div>
 
 <nav class="mobile-tab-bar" id="mob-nav">
+  <button class="mob-tab" id="mobt-home" onclick="goHome()"><span class="mob-icon">🦆</span>홈</button>
   <button class="mob-tab" id="mobt-shows" onclick="goShows()"><span class="mob-icon">🎭</span>공연</button>
-  <button class="mob-tab" id="mobt-people" onclick="goPeople()"><span class="mob-icon">👤</span>사람</button>
   <button class="mob-tab" id="mobt-works" onclick="goWorks()"><span class="mob-icon">📖</span>작품</button>
-  <button class="mob-tab" id="mobt-roles" onclick="goRoles()"><span class="mob-icon">🎬</span>배역</button>
-  <button class="mob-tab" id="mobt-venues" onclick="goVenues()"><span class="mob-icon">📍</span>극장</button>
-  <button class="mob-tab" id="mobt-troupes" onclick="goTroupes()"><span class="mob-icon">🏢</span>단체</button>
-  <button class="mob-tab" id="mobt-content" onclick="goContent()"><span class="mob-icon">📰</span>콘텐츠</button>
-  <button class="mob-tab" id="mobt-projects" onclick="goProjectBrowse()"><span class="mob-icon">🎪</span>프로젝트</button>
-  <button class="mob-tab" id="mobt-dashboard" onclick="goDashboard()"><span class="mob-icon">📊</span>대시보드</button>
+  <button class="mob-tab" id="mobt-people" onclick="goPeople()"><span class="mob-icon">👤</span>사람</button>
+  <button class="mob-tab" id="mobt-projects" onclick="goProjectBrowse()"><span class="mob-icon">📣</span>모집</button>
+  <button class="mob-tab" id="mobt-my" onclick="goMyShows()"><span class="mob-icon">🎪</span>내 공연</button>
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/config.js?v=20260928c"></script>
-<script src="assets/js/site/core.js?v=20260928c"></script>
-<script src="assets/js/site/filters.js?v=20260928c"></script>
-<script src="assets/js/site/detail.js?v=20260928c"></script>
-<script src="assets/js/site/account.js?v=20260928c"></script>
-<script src="assets/js/site/edit-request.js?v=20260928c"></script>
-<script src="assets/js/site/mypage.js?v=20260928c"></script>
-<script src="assets/js/site/project.js?v=20260928c"></script>
-<script src="assets/js/site/project-wizard.js?v=20260928c"></script>
-<script src="assets/js/site/project-browse.js?v=20260928c"></script>
-<script src="assets/js/site/pages.js?v=20260928c"></script>
-<script src="assets/js/site/dashboard.js?v=20260928c"></script>
-<script src="assets/js/site/home.js?v=20260928c"></script>
-<script src="assets/js/site/shows.js?v=20260928c"></script>
-<script src="assets/js/site/works.js?v=20260928c"></script>
-<script src="assets/js/site/roles.js?v=20260928c"></script>
-<script src="assets/js/site/people.js?v=20260928c"></script>
-<script src="assets/js/site/troupes.js?v=20260928c"></script>
-<script src="assets/js/site/venues.js?v=20260928c"></script>
-<script src="assets/js/site/peek.js?v=20260928c"></script>
-<script src="assets/js/site/router.js?v=20260928c"></script>
+<script src="assets/js/config.js?v=20260928d"></script>
+<script src="assets/js/site/core.js?v=20260928d"></script>
+<script src="assets/js/site/filters.js?v=20260928d"></script>
+<script src="assets/js/site/detail.js?v=20260928d"></script>
+<script src="assets/js/site/account.js?v=20260928d"></script>
+<script src="assets/js/site/edit-request.js?v=20260928d"></script>
+<script src="assets/js/site/mypage.js?v=20260928d"></script>
+<script src="assets/js/site/project.js?v=20260928d"></script>
+<script src="assets/js/site/project-wizard.js?v=20260928d"></script>
+<script src="assets/js/site/project-browse.js?v=20260928d"></script>
+<script src="assets/js/site/pages.js?v=20260928d"></script>
+<script src="assets/js/site/dashboard.js?v=20260928d"></script>
+<script src="assets/js/site/home.js?v=20260928d"></script>
+<script src="assets/js/site/shows.js?v=20260928d"></script>
+<script src="assets/js/site/works.js?v=20260928d"></script>
+<script src="assets/js/site/roles.js?v=20260928d"></script>
+<script src="assets/js/site/people.js?v=20260928d"></script>
+<script src="assets/js/site/troupes.js?v=20260928d"></script>
+<script src="assets/js/site/venues.js?v=20260928d"></script>
+<script src="assets/js/site/peek.js?v=20260928d"></script>
+<script src="assets/js/site/myshows.js?v=20260928d"></script>
+<script src="assets/js/site/router.js?v=20260928d"></script>
 </body>
 </html>

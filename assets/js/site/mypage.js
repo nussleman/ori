@@ -7,7 +7,7 @@ function myCardHtml(type,id,listType){
   var imgH=imgUrl?'<img class="cast-img" src="'+imgUrl+'">':'<div class="cast-img-ph">&nbsp;</div>';
   return '<div class="cast-card" data-action="'+type+'" data-id="'+id+'" style="position:relative">'+favBtnHtml(type,id,listType)+imgH+'<div class="cast-name">'+name+'</div></div>';
 }
-var MYPAGE_TABS=[['info','내 정보'],['dashboard','대시보드'],['favorites','즐겨찾기'],['wishlist','해보고 싶은'],['projects','프로젝트'],['troupes','내 단체']];
+var MYPAGE_TABS=[['info','내 정보'],['dashboard','대시보드'],['favorites','즐겨찾기'],['wishlist','해보고 싶은'],['troupes','내 단체']];
 window._myPageTab='info';
 async function renderMyPage(){
   await loadFavorites();
@@ -38,7 +38,7 @@ function renderMyPageTabContent(){
   else if(tab==='dashboard')renderMyPageDashboard(el);
   else if(tab==='favorites')renderMyPageFavorites(el);
   else if(tab==='wishlist')renderMyPageWishlist(el);
-  else if(tab==='projects')renderMyPageProjects(el);
+  else if(tab==='projects'){goMyShows();return;}
   else if(tab==='troupes')renderMyPageTroupes(el);
 }
 function renderMyPageTroupes(el){
@@ -399,11 +399,6 @@ function renderMyPageWishlist(el){
   });
   if(!any)h='<div class="result-empty"><div class="result-empty-icon">💗</div><div style="font-size:0.95rem;margin-bottom:0.4rem">아직 담아둔 게 없어요</div><div style="font-size:0.8rem;color:var(--muted)">작품·배역 페이지에서 하트 아이콘을 눌러보세요.</div></div>';
   el.innerHTML=h;
-}
-function renderMyPageProjects(el){
-  el.innerHTML='<button class="pf-btn pf-active" style="margin-bottom:1rem" onclick="startNewProject()">+ 새 프로젝트 시작하기</button>'
-    +'<div id="my-projects-list">불러오는 중…</div>';
-  loadMyProjects();
 }
 function goMyPage(push,keepTab){
   if(push!==false)history.pushState({view:'mypage'},'','#mypage');

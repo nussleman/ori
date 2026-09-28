@@ -5,7 +5,7 @@ var PROJECT_STATUS_COLOR={planning:'',upcoming:'var(--accent)',running:'#6eb5c8'
 async function loadMyProjects(elId){
   var el=$(elId||'my-projects-list');if(!el)return;
   try{
-    var r=await sbClient.from('projects').select('id,title,status,created_at').order('created_at',{ascending:false});
+    var r=await sbClient.rpc('list_my_projects_detail');
     var rows=r.data||[];
     if(!rows.length){el.innerHTML='<div style="font-size:0.82rem;color:var(--muted)">아직 시작한 프로젝트가 없어요.</div>';return;}
     el.innerHTML='<div class="item-grid">'+rows.map(function(p){
@@ -49,7 +49,7 @@ async function startNewProject(){
 }
 async function goProject(pid,push){
   if(push!==false)history.pushState({view:'project',id:pid},'','#project-'+pid);
-  setNav('mypage');sb('');_sbContext='';mobShowDetail();
+  setNav('project',pid);sb('');_sbContext='';mobShowDetail();
   mn('<div class="tab-index"><div class="result-empty">불러오는 중…</div></div>');
   try{
     var pr=await sbClient.from('projects').select('*').eq('id',pid).single();
@@ -65,13 +65,14 @@ async function goProject(pid,push){
 
     window._projectCtx={pid:pid,pr:pr.data,members:members,positions:positions,myMember:myMember,myPosition:myPosition,isOwner:isOwner,isAdmin:isAdmin};
     if(!myMember){
+      setNav('projects');
       renderPublicProjectView(pr.data);
       injectBackBtn('← 프로젝트 목록',function(){goProjectBrowse();});
       return;
     }
     if(!myPosition){
       mn('<div class="tab-index"><div style="font-size:0.85rem;color:var(--muted);padding:2rem">첫 질문에 답하는 중이에요…</div></div>');
-      injectBackBtn('← 마이페이지',function(){goMyPage();});
+      injectBackBtn('← 내 공연',function(){goMyShows();});
       openProjectWizard(pid,['name','visibility','role','members','venue','troupe','work','date','license'],myMember.id);
       return;
     }
@@ -88,7 +89,7 @@ async function goProject(pid,push){
     h+='<div class="mypage-sticky-spacer"></div>';
     h+='<div id="project-tab-content"></div>';
     mn(h);
-    injectBackBtn('← 마이페이지',function(){goMyPage();});
+    injectBackBtn('← 내 공연',function(){goMyShows();});
     renderProjectTabContent();
     requestAnimationFrame(function(){
       var hdr=document.querySelector('.mypage-sticky-header');

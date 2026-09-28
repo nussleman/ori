@@ -258,23 +258,26 @@ function injectBackBtn(label,fn){
   var btn=document.createElement('button');btn.className='mob-back-btn';btn.innerHTML='← '+label;btn.onclick=fn;
   m.insertBefore(btn,m.firstChild);
 }
-function setNav(v){
+/* 현재 화면을 메뉴에 표시한다.
+   v: home·shows·works·people·troupes·venues·roles·projects·dashboard (둘러보기)
+      my·project (내 공연) / 그 밖(mypage 등)은 둘러보기 모드로 두되 메뉴 선택 없음
+   projectId: 내 공연 모드에서 좌측 목록 중 열린 프로젝트 */
+var MY_MODE_VIEWS=['my','project'];
+function setNav(v,projectId){
   if(PEEK.rendering)return; // 패널 미리보기는 현재 메뉴 상태를 바꾸지 않는다
   closePeek();
-  ['shows','people','works','roles','venues','troupes','content','dashboard','projects'].forEach(function(n){
+  var my=MY_MODE_VIEWS.indexOf(v)>-1;
+  document.body.classList.toggle('mode-my',my);
+  var mb=$('mode-browse'),mm=$('mode-my');
+  if(mb){mb.classList.toggle('active',!my);mb.setAttribute('aria-selected',String(!my));}
+  if(mm){mm.classList.toggle('active',my);mm.setAttribute('aria-selected',String(my));}
+  ['home','shows','people','works','roles','venues','troupes','dashboard','projects','my'].forEach(function(n){
     var el=$('nav-'+n);if(el)el.classList.toggle('active',n===v);
-    var mel=$('mobt-'+n);if(mel)mel.classList.toggle('active',n===v);
-    var hel=$('hdock-'+n);if(hel)hel.classList.toggle('active',n===v);
+    var mel=$('mobt-'+n);if(mel)mel.classList.toggle('active',n===v||(n==='my'&&my));
   });
-  document.body.classList.toggle('is-home', v==='home');
-  // 홈이 아닌 화면에서는 검색창이 상단바(top-bar)에 머문다.
-  // 홈 화면일 때는 renderHome()이 렌더링 직후 홈 히어로 쪽으로 옮긴다.
-  if(v!=='home'){
-    var wrap=$('gs-wrap'),bar=$('top-bar');
-    if(wrap&&bar&&wrap.parentNode!==bar)bar.appendChild(wrap);
-  }
+  window._currentProjectNav=v==='project'?projectId:null;
+  document.querySelectorAll('#my-nav-projects button').forEach(function(b){b.classList.toggle('active',b.dataset.pid===window._currentProjectNav);});
 }
-
 /* ── 오리 스타일 모달 (네이티브 alert/confirm/prompt 대체) ── */
 var _oriModalResolve=null;
 function _oriModalClose(result){

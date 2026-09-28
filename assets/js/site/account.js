@@ -11,9 +11,11 @@ var FAVORITES_SET=new Set(); // "type:id" 빠른 조회용
 var MY_PROJECTS_CACHE=[]; // [{id,title}] - 전역검색에서 내 프로젝트도 찾을 수 있게 가볍게 캐싱
 async function loadMyProjectsCache(){
   try{
-    var r=await sbClient.from('projects').select('id,title').order('created_at',{ascending:false});
+    // 내가 참여 중인 공연만 (projects 테이블을 바로 읽으면 남의 공개 프로젝트까지 섞인다)
+    var r=await sbClient.rpc('list_my_projects_detail');
     MY_PROJECTS_CACHE=r.data||[];
   }catch(e){MY_PROJECTS_CACHE=[];}
+  if(typeof renderMyNav==='function')renderMyNav();
 }
 var OATH_PHRASE='나는 천하의 멍텅구리지만 우리들의 정직하고 행복한 공연 생활에 진심으로 임할 것을 엄숙히 선언합니다.';
 
