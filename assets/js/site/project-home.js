@@ -47,7 +47,8 @@ function renderProjectHome(el){
   var h='<div class="ph-top">'
     +(!isAdmin?'<div class="ph-me">이 프로젝트에서 내 역할 <b>'+(myRole?escHtml(myRole):'아직 정해지지 않았어요')+'</b></div>':'')+'</div>';
   h+=stageH;
-  if(isAdmin)h+='<section class="dv-sec ph-todo-sec">'+dvSection('지금 할 일')+'<div id="ph-todo" class="ph-todo"><div class="hf-loading">확인하는 중…</div></div></section>';
+  if(isAdmin)h+='<section class="dv-sec ph-todo-sec" id="ph-todo-sec" hidden>'+dvSection('지금 할 일')+'<div id="ph-todo" class="ph-todo"><div class="hf-loading">확인하는 중…</div></div></section>';
+  h+=dashboardSectionHtml();
   h+='<div class="ph-2col">'+homeNoticesHtml()+homeUpcomingHtml()+'</div>';
   h+='<section class="dv-sec">'+dvSection('공연 정보')+factsH+'</section>';
   h+='<section class="dv-sec">'+dvSection('팀')+'<div id="ph-team" class="ph-team"><div class="hf-loading">불러오는 중…</div></div></section>';
@@ -62,6 +63,7 @@ function renderProjectHome(el){
   el.innerHTML=h;
   loadProjectHomeData();
   loadHomeScheduleBits();
+  renderProdDash();
 }
 
 async function loadProjectHomeData(){
@@ -109,20 +111,11 @@ async function loadProjectHomeData(){
   var pidQ='\''+pid+'\'';
   var todos=[];
   if(reqs.length)todos.push({t:'참여 요청 '+reqs.length+'건이 기다리고 있어요',s:'승인하면 바로 팀에 들어와요',btn:'확인하기',go:'openPeopleSub(\'requests\')',hot:true});
-  if(!pr.work_id)todos.push({t:'무엇을 올릴지 정해요',s:'작품을 고르면 배역 자리가 자동으로 만들어져요',btn:'작품 정하기',go:'openProjectWizard('+pidQ+',[\'work\'])'});
-  if(!pr.target_start_date)todos.push({t:'공연 날짜를 정해요',s:'대략이라도 정해두면 일정을 짜기 쉬워요',btn:'날짜 정하기',go:'openProjectWizard('+pidQ+',[\'date\'])'});
-  if(!pr.venue_id)todos.push({t:'극장을 찾아요',s:'좌석 수·대관료로 찾아 후보를 담아두고 비교해요',btn:'극장 찾기',go:'openPrepSub(\'venue\')'});
-  if(open.length){
-    todos.push(pr.is_recruiting
-      ?{t:'빈 자리 '+open.length+'개를 채워요',s:'모집 목록에 공개 중이에요. 직접 초대할 수도 있어요',btn:'자리 보기',go:'openPeopleSub(\'actor\')'}
-      :{t:'빈 자리 '+open.length+'개를 채워요',s:'모집을 공개하면 둘러보기에서 지원을 받을 수 있어요',btn:'모집 공개하기',go:'toggleRecruiting('+pidQ+',true)'});
-  }
-  if(pr.work_id&&!pr.is_licensed)todos.push({t:'라이선스 상태를 정해요',s:'창작인지, 확보했는지, 아직인지',btn:'정하기',go:'openProjectWizard('+pidQ+',[\'license\'])'});
-  if(pr.is_licensed==='미확보')todos.push({t:'라이선스를 확보해요',s:'오리에 문의하면 확보 방법을 안내해드려요',btn:'라이선스 문의',go:'openLicenseInquiry(\'\',\''+(pr.work_id||'')+'\')'});
-  if(!eventCnt)todos.push({t:'연습 일정을 잡아요',s:'매주 반복 일정은 한 번에 여러 주를 넣을 수 있어요',btn:'일정 추가',go:'window._evFormOpen=true;switchProjectTab(\'schedule\')'});
-  if(!budgetCnt)todos.push({t:'예산을 잡아요',s:'표준 항목으로 한 번에 채울 수 있어요',btn:'예산 시작',go:'switchProjectTab(\'budget\')'});
+  // 작품·극장·자리·라이선스·연습·예산은 제작 계기판(project-dashboard.js)이 챙긴다. 여기는 계기판에 없는 것만.
+  if(!pr.target_start_date)todos.push({t:'첫 공연 날짜를 정해요',s:'날짜가 있어야 계기판이 영역마다 마감을 계산해요',btn:'날짜 정하기',go:'openProjectWizard('+pidQ+',[\'date\'])'});
   if(pr.status==='planning'&&pr.work_id&&pr.target_start_date&&pr.venue_id&&!open.length)
     todos.push({t:'준비가 거의 끝났어요',s:'상태를 "공연 예정"으로 바꾸면 공연 페이지가 만들어져요',btn:'공연 예정으로',go:'updateProjectStatus('+pidQ+',\'upcoming\')'});
+  var todoSec=$('ph-todo-sec');if(todoSec)todoSec.hidden=!todos.length;
   todoEl.innerHTML=todos.length?todos.slice(0,5).map(function(t){
     return '<div class="ph-todo-item'+(t.hot?' hot':'')+'"><div class="ph-todo-text"><div class="ph-todo-t">'+t.t+'</div><div class="ph-todo-s">'+t.s+'</div></div>'
       +'<button type="button" class="ph-todo-btn" onclick="'+t.go+'">'+t.btn+'</button></div>';

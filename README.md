@@ -33,6 +33,7 @@ assets/
     mypage.js              마이페이지
     project.js             프로젝트 공간 뼈대(불러오기·탭) + 배역·제작진·팀·극장·홍보·예산 화면
     project-home.js        프로젝트 탭 구성: 홈(지금 할 일)·사람·준비
+    project-dashboard.js   제작 계기판: 영역별 초록·노랑·빨강 불(자동 판정 + 마감 계산)과 데이터 기반 추천(스태프·캐스팅·극장·작품·비용)
     project-schedule.js    프로젝트 일정·공지
     bridges.js             둘러보기↔만들기 연결 버튼, 공통 선택 창 pickOne()
     project-wizard.js      프로젝트 위저드
