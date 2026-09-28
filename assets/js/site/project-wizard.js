@@ -16,13 +16,13 @@ async function closeWizard(){
     $('wizard-overlay').classList.remove('open');
     try{await sbClient.from('projects').delete().eq('id',_wizardPid);}catch(e){}
     loadMyProjectsCache();
-    goProjectBrowse();
+    goMyShows();
     return;
   }
   $('wizard-overlay').classList.remove('open');
   var roleIdx=_wizardSteps.indexOf('role');
   var roleNotAnsweredYet=(roleIdx>-1&&_wizardStepIdx<=roleIdx);
-  if(roleNotAnsweredYet){goMyPage();}
+  if(roleNotAnsweredYet){goMyShows();}
   else if(_wizardPid){goProject(_wizardPid);}
 }
 function wizardFinish(){
@@ -271,7 +271,10 @@ async function editProjectTitle(pid){
   }catch(e){oriAlert('수정 실패: '+e.message);}
 }
 async function toggleRecruiting(pid,on){
-  try{await sbClient.from('projects').update({is_recruiting:on}).eq('id',pid);}
+  try{
+    await sbClient.from('projects').update({is_recruiting:on}).eq('id',pid);
+    if(window._projectCtx&&window._projectCtx.pid===pid){window._projectCtx.pr.is_recruiting=on;if(window._projectTab==='home')renderProjectTabContent();}
+  }
   catch(e){oriAlert('변경 중 문제가 생겼어요: '+e.message);}
 }
 async function loadJoinRequests(pid){
@@ -279,7 +282,7 @@ async function loadJoinRequests(pid){
   try{
     var r=await sbClient.rpc('list_project_join_requests',{p_project_id:pid});
     var rows=r.data||[];
-    var badge=$('requests-tab-badge');if(badge)badge.classList.toggle('on',rows.length>0);
+    if(window._projectCtx){window._projectCtx.pendingRequests=rows.length;updatePeopleTabBadge();}
     if(!rows.length){el.innerHTML='<div style="font-size:0.8rem;color:var(--muted)">대기 중인 요청이 없어요.</div>';return;}
     el.innerHTML=rows.map(function(req){
       return '<div class="proj-request-row">'
