@@ -1731,19 +1731,49 @@ wireSingleCombo('creation-work');
 wireSingleCombo('creation-type');
 wireSingleCombo('workcreator-person');
 wireSingleCombo('workcreator-type');
-// ---------- 설정: 라이선스 미확보 공연 노출 토글 ----------
+// ---------- 설정: 공개 기준(라이선스 분류) ----------
+// 사이트는 창작·완료 공연만 보여준다. 미상 공연을 하나씩 빠르게 분류하는 대기열.
+let _licQueue = [], _licIdx = 0;
+const LIC_OPTIONS = [['창작', '창작 (자체 창작)'], ['완료', '완료 (라이선스 확보)'], ['미확보', '미확보 (숨김)']];
 async function loadSettings() {
-  const { data } = await supabase.from('app_settings').select('value').eq('key', 'show_unlicensed_content').maybeSingle();
-  const on = data ? data.value === 'true' : true;
-  const cb = document.getElementById('setting-show-unlicensed');
-  cb.checked = on;
-  document.getElementById('setting-show-unlicensed-label').textContent = on ? '켜짐 — 라이선스 미확보 공연도 노출됨' : '꺼짐 — 라이선스 미확보 공연은 숨김';
+  const { data } = await supabase.from('shows').select('id,title,show_date,is_licensed,work_id,troupe_id,venue_id,poster_urls').order('show_date', { ascending: false });
+  const rows = data || [];
+  const cnt = { '창작': 0, '완료': 0, '미확보': 0, '미상': 0 };
+  rows.forEach(r => { cnt[r.is_licensed || '미상'] = (cnt[r.is_licensed || '미상'] || 0) + 1; });
+  document.getElementById('lic-stats').innerHTML =
+    `<span class="lic-chip ok">공개 ${cnt['창작'] + cnt['완료']}편 <small>(창작 ${cnt['창작']} · 완료 ${cnt['완료']})</small></span>`
+    + `<span class="lic-chip">숨김 ${cnt['미확보'] + cnt['미상']}편 <small>(미확보 ${cnt['미확보']} · 미상 ${cnt['미상']})</small></span>`;
+  _licQueue = rows.filter(r => !r.is_licensed);
+  _licIdx = 0;
+  renderLicQueue();
 }
-document.getElementById('setting-show-unlicensed').addEventListener('change', async (e) => {
-  const on = e.target.checked;
-  document.getElementById('setting-show-unlicensed-label').textContent = on ? '켜짐 — 라이선스 미확보 공연도 노출됨' : '꺼짐 — 라이선스 미확보 공연은 숨김';
-  const { error } = await supabase.from('app_settings').upsert({ key: 'show_unlicensed_content', value: String(on) });
-  showMsg('msg-settings', !error, error ? '저장 실패: ' + error.message : '저장됐어요.');
+function renderLicQueue() {
+  const el = document.getElementById('lic-queue');
+  if (_licIdx >= _licQueue.length) { el.innerHTML = '<div class="lic-done">분류할 공연이 없어요. 👏</div>'; return; }
+  const r = _licQueue[_licIdx];
+  const nameOf = (list, id) => (list || []).find(x => x.id === id)?.name || (list || []).find(x => x.id === id)?.title || '';
+  const meta = [nameOf(cache.works, r.work_id), nameOf(cache.troupes, r.troupe_id), nameOf(cache.venues, r.venue_id), r.show_date || ''].filter(Boolean).join(' · ');
+  el.innerHTML = `<div class="lic-item">
+      ${r.poster_urls && r.poster_urls[0] ? `<img src="${r.poster_urls[0]}" alt="">` : '<div class="lic-ph">🎭</div>'}
+      <div class="lic-body"><div class="lic-count">미상 ${_licIdx + 1} / ${_licQueue.length}</div>
+        <div class="lic-title">${escHtmlAdmin(r.title || '')}</div><div class="lic-meta">${escHtmlAdmin(meta)}</div>
+        <div class="lic-btns">${LIC_OPTIONS.map((o, i) => `<button type="button" class="btn${i === 2 ? ' secondary' : ''}" onclick="setShowLicense('${r.id}','${o[0]}')">${i + 1}. ${o[1]}</button>`).join('')}
+        <button type="button" class="btn secondary" onclick="skipLicense()">건너뛰기 →</button></div></div></div>`;
+}
+async function setShowLicense(id, val) {
+  const { error } = await supabase.from('shows').update({ is_licensed: val }).eq('id', id);
+  if (error) { showMsg('msg-settings', false, '저장 실패: ' + error.message); return; }
+  _licIdx++; renderLicQueue();
+  showMsg('msg-settings', true, '저장했어요. 목록 숫자는 새로고침하면 갱신돼요.');
+}
+function skipLicense() { _licIdx++; renderLicQueue(); }
+window.setShowLicense = setShowLicense; window.skipLicense = skipLicense;
+document.addEventListener('keydown', (e) => {
+  if (!document.getElementById('tab-settings')?.classList.contains('active')) return;
+  if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
+  const r = _licQueue[_licIdx]; if (!r) return;
+  if (e.key === '1' || e.key === '2' || e.key === '3') { e.preventDefault(); setShowLicense(r.id, LIC_OPTIONS[+e.key - 1][0]); }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); skipLicense(); }
 });
 
 // ---------- 클레임 승인 ----------

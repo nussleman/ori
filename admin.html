@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>오리 Admin</title>
 <link rel="icon" href="assets/favicon-admin.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/css/admin.css?v=20260928b">
+<link rel="stylesheet" href="assets/css/admin.css?v=20260928c">
 </head>
 <body>
 
@@ -676,12 +676,11 @@
       <h2>설정</h2>
       <p class="sub">사이트 전체에 적용되는 설정이에요.</p>
       <div class="card">
-        <h3>라이선스 미확보 공연 노출</h3>
-        <p class="sub">꺼두면 라이선스가 <b>미확보(무단)</b>로 표시된 공연·참여이력이 메인사이트에서 전체 숨김 처리돼요. 라이선스 상태가 "창작"이거나 "완료"거나 아직 입력 안 된(미상) 공연은 이 설정과 무관하게 항상 보여요.</p>
-        <label style="display:flex; align-items:center; gap:10px; margin-top:12px; cursor:pointer;">
-          <input type="checkbox" id="setting-show-unlicensed" style="width:18px; height:18px;">
-          <span id="setting-show-unlicensed-label">불러오는 중...</span>
-        </label>
+        <h3>공개 기준 — 라이선스 분류</h3>
+        <p class="sub">사이트에는 라이선스가 해결된 공연(<b>창작</b> 또는 <b>완료</b>)만 나와요. <b>미확보</b>와 아직 분류하지 않은 <b>미상</b> 공연은 숨겨져요. 그 공연에만 나오는 사람도 함께 숨겨져요.</p>
+        <div id="lic-stats" class="lic-stats"></div>
+        <div id="lic-queue" class="lic-queue"></div>
+        <p class="sub" style="margin-top:10px">단축키: <b>1</b> 창작 · <b>2</b> 완료 · <b>3</b> 미확보 · <b>→</b> 건너뛰기</p>
         <div class="msg" id="msg-settings"></div>
       </div>
       <div class="card">
@@ -694,7 +693,7 @@
   </main>
 </div>
 
-<script src="assets/js/config.js?v=20260928b"></script>
-<script type="module" src="assets/js/admin/admin.js?v=20260928b"></script>
+<script src="assets/js/config.js?v=20260928c"></script>
+<script type="module" src="assets/js/admin/admin.js?v=20260928c"></script>
 </body>
 </html>

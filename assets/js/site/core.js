@@ -78,7 +78,6 @@ async function load(){
 
   var settingsMap={};
   (appSettings||[]).forEach(function(s){settingsMap[s.key]=s.value;});
-  var showUnlicensed=settingsMap.show_unlicensed_content!=='false'; // 기본값: 켜짐(표시)
 
   var roleIdsByPart=groupBy(partRoles,'participation_id');
   var staffIdsByPart=groupBy(partStaff,'participation_id');
@@ -106,11 +105,9 @@ async function load(){
     '관객수':s.audience_count,'매진여부':s.is_sold_out,'재공연여부':s.has_rerun,
     '라이선스상태':s.is_licensed
   }};});
-  // 라이선스 미확보로 표시된 공연은, 설정이 꺼져 있으면 사이트 전체에서 숨김
-  // (창작/완료/미상은 설정과 무관하게 항상 노출)
-  if(!showUnlicensed){
-    DB.shows=DB.shows.filter(function(s){return fld(s,'라이선스상태')!=='미확보';});
-  }
+  // 공개 기준: 라이선스가 해결된 공연만 다룬다 — 창작(자체 창작) 또는 완료(라이선스 확보).
+  // 미확보·미상(아직 분류 안 됨)은 사이트 어디에도 나오지 않는다. 분류는 어드민 > 계정·설정 > 설정.
+  DB.shows=DB.shows.filter(function(s){var l=fld(s,'라이선스상태');return l==='창작'||l==='완료';});
   var visibleShowIds={};
   DB.shows.forEach(function(s){visibleShowIds[s.id]=true;});
   partHist=partHist.filter(function(ph){return visibleShowIds[ph.show_id];});
@@ -132,6 +129,12 @@ async function load(){
       DB.history.push({id:ph.id,fields:{'참여자':[ph.person_id],'공연':[ph.show_id],'사진':photoFields}});
     }
   });
+
+  var visiblePeople={};
+  DB.history.forEach(function(h){ids(fld(h,'참여자')).forEach(function(p){visiblePeople[p]=true;});});
+  DB.creationHistory.forEach(function(c){ids(fld(c,'창작자')).forEach(function(p){visiblePeople[p]=true;});});
+  if(CURRENT_USER&&CURRENT_USER.personId)visiblePeople[CURRENT_USER.personId]=true;
+  DB.people=DB.people.filter(function(p){return visiblePeople[p.id];});
 
   MAP={};
   DB.shows.forEach(function(r){MAP[r.id]=fld(r,'공연명')||'';});
