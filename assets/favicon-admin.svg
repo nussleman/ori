@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 100">
+  <!-- 오리 Admin 파비콘 (사이트와 탭 구분용 색). 바꾸려면 이 파일을 다른 SVG로 덮어쓰면 된다 (PNG를 쓰려면 HTML의 <link rel="icon"> 한 줄만 수정) -->
+  <ellipse cx="52" cy="68" rx="38" ry="25" fill="#8a5a3d"/>
+  <circle cx="78" cy="40" r="20" fill="#8a5a3d"/>
+  <path d="M94,34 Q118,28 119,38 Q118,48 94,44 Z" fill="#8a5a3d"/>
+  <circle cx="84" cy="34" r="3.2" fill="#f7f6f3"/>
+</svg>

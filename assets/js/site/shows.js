@@ -1,0 +1,239 @@
+/* 오리 사이트 — 공연 목록·상세 */
+/* ══════════════════════════════════════
+   공연 인덱스 (필터 + 그리드 첫 화면)
+   ══════════════════════════════════════ */
+var _showFilter={troupes:[],years:[],venues:[]};
+var _showIndexView='grid'; // 'grid' | 'list'
+
+function goShows(push){
+  if(push!==false)history.pushState({view:'shows'},'','#shows');
+  setNav('shows');_sbContext='shows';
+  // 사이드바 숨기고 메인 전체 사용
+  sb('');
+  _showFilter={troupes:[],years:[],venues:[]};
+  renderShowIndex();
+}
+
+function toggleShowFilter(key,val){
+  var arr=_showFilter[key];
+  var idx=arr.indexOf(val);
+  if(idx>-1)arr.splice(idx,1);else arr.push(val);
+  renderShowIndex();
+}
+function clearShowFilter(){
+  _showFilter={troupes:[],years:[],venues:[]};
+  renderShowIndex();
+}
+
+function renderShowIndex(){
+  var allShows=sortShows(DB.shows.filter(function(s){return fld(s,'공연명');}));
+
+  // 필터 옵션 수집
+  var troupeSet={},yearSet={},venueSet={};
+  allShows.forEach(function(s){
+    var tid=ids(fld(s,'극단'))[0]||'';if(tid&&nm(tid))troupeSet[tid]=nm(tid);
+    var y=yearOf(fld(s,'공연 날짜')||'');if(y)yearSet[y]=y;
+    var vid=ids(fld(s,'극장'))[0]||'';if(vid&&nm(vid))venueSet[vid]=nm(vid);
+  });
+  var troupeIds=Object.keys(troupeSet).sort(function(a,b){return troupeSet[a].localeCompare(troupeSet[b]);});
+  var years=Object.keys(yearSet).sort().reverse();
+  var venueIds=Object.keys(venueSet).sort(function(a,b){return venueSet[a].localeCompare(venueSet[b]);});
+
+  // 필터 적용
+  var filtered=allShows.filter(function(s){
+    if(_showFilter.troupes.length>0){var tid=ids(fld(s,'극단'))[0]||'';if(_showFilter.troupes.indexOf(tid)===-1)return false;}
+    if(_showFilter.years.length>0){var y=yearOf(fld(s,'공연 날짜')||'')||'연도미상';if(_showFilter.years.indexOf(y)===-1)return false;}
+    if(_showFilter.venues.length>0){var vid=ids(fld(s,'극장'))[0]||'';if(_showFilter.venues.indexOf(vid)===-1)return false;}
+    return true;
+  });
+
+  var hasFilter=_showFilter.troupes.length>0||_showFilter.years.length>0||_showFilter.venues.length>0;
+
+  // 필터 패널 HTML
+  var filterH='<div class="filter-panel">'
+    +'<div class="filter-panel-top"><span class="filter-panel-title">필터</span>'
+    +(hasFilter?'<button class="filter-clear-btn" onclick="clearShowFilter()">전체 초기화</button>':'')
+    +'</div>'
+    +'<div class="filter-rows">';
+
+  // 극단 필터
+  if(troupeIds.length>0){
+    filterH+='<div class="filter-row"><span class="filter-row-label">단체</span><div class="filter-chips">';
+    troupeIds.forEach(function(tid){
+      var on=_showFilter.troupes.indexOf(tid)>-1;
+      filterH+='<button class="fchip'+(on?' on':'')+'" onclick="toggleShowFilter(\'troupes\',\''+tid+'\')">'+nm(tid)+'</button>';
+    });
+    filterH+='</div></div>';
+  }
+  // 연도 필터
+  if(years.length>0){
+    filterH+='<div class="filter-row"><span class="filter-row-label">연도</span><div class="filter-chips">';
+    filterH+='<button class="fchip'+(_showFilter.years.indexOf('연도미상')>-1?' on':'')+'" onclick="toggleShowFilter(\'years\',\'연도미상\')">연도 미상</button>';
+    years.forEach(function(y){
+      var on=_showFilter.years.indexOf(y)>-1;
+      filterH+='<button class="fchip'+(on?' on':'')+'" onclick="toggleShowFilter(\'years\',\''+y+'\')">'+y+'</button>';
+    });
+    filterH+='</div></div>';
+  }
+  // 극장 필터
+  if(venueIds.length>0){
+    filterH+='<div class="filter-row"><span class="filter-row-label">극장</span><div class="filter-chips">';
+    venueIds.forEach(function(vid){
+      var on=_showFilter.venues.indexOf(vid)>-1;
+      filterH+='<button class="fchip'+(on?' on':'')+'" onclick="toggleShowFilter(\'venues\',\''+vid+'\')">'+nm(vid)+'</button>';
+    });
+    filterH+='</div></div>';
+  }
+  filterH+='</div></div>';
+
+  // 결과 헤더
+  var resultH='<div class="result-header">'
+    +'<span class="result-count"><em>'+filtered.length+'</em>개 공연</span>'
+    +'<div class="result-view-btns">'
+    +'<button class="rvb'+(_showIndexView==='grid'?' on':'')+'" onclick="_showIndexView=&apos;grid&apos;;renderShowIndex()">▦</button>'
+    +'<button class="rvb'+(_showIndexView==='list'?' on':'')+'" onclick="_showIndexView=&apos;list&apos;;renderShowIndex()">≡</button>'
+    +'</div></div>';
+
+  // 결과 목록
+  var listH='';
+  if(!filtered.length){
+    listH='<div class="result-empty"><div class="result-empty-icon">🎭</div>조건에 맞는 공연이 없어요.<br><span style="font-size:0.75rem;opacity:0.6">필터를 조정해보세요</span></div>';
+  } else if(_showIndexView==='grid'){
+    listH='<div class="result-grid">';
+    filtered.forEach(function(s){
+      var wid=ids(fld(s,'작품'))[0]||'';
+      var trid=ids(fld(s,'극단'))[0]||'';
+      var date=ym(fld(s,'공연 날짜')||'');
+      var p=POSTER[s.id]||'';
+      listH+='<div class="result-card" data-action="show" data-id="'+s.id+'">'+favBtnHtml('show',s.id)
+        +(p?'<img src="'+p+'" alt="'+fld(s,'공연명')+'">':'<div class="result-card-ph">🎭</div>')
+        +'<div class="result-card-body">'
+        +'<div class="result-card-title">'+fld(s,'공연명')+'</div>'
+        +'<div class="result-card-sub">'+(nm(trid)||nm(wid)||'')+'</div>'
+        +(date?'<div class="result-card-sub">'+date+'</div>':'')
+        +'</div></div>';
+    });
+    listH+='</div>';
+  } else {
+    listH='<div class="result-list">';
+    filtered.forEach(function(s){
+      var wid=ids(fld(s,'작품'))[0]||'';
+      var trid=ids(fld(s,'극단'))[0]||'';
+      var vid=ids(fld(s,'극장'))[0]||'';
+      var date=fld(s,'공연 날짜')||'';
+      var p=POSTER[s.id]||'';
+      listH+='<div class="result-row" data-action="show" data-id="'+s.id+'">'
+        +'<div class="rr-poster">'+(p?'<img src="'+p+'">':'🎭')+'</div>'
+        +'<div class="rr-main">'
+        +'<div class="rr-title">'+fld(s,'공연명')+'</div>'
+        +'<div class="rr-meta">'
+        +(nm(wid)?'<span class="rr-tag">'+nm(wid)+'</span>':'')
+        +(nm(trid)?'<span class="rr-tag">'+nm(trid)+'</span>':'')
+        +(nm(vid)?'<span class="rr-tag">'+nm(vid)+'</span>':'')
+        +'</div></div>'
+        +(date?'<span class="rr-date">'+ym(date)+'</span>':'')
+        +'</div>';
+    });
+    listH+='</div>';
+  }
+
+  mn('<div class="tab-index">'+filterH+resultH+listH+'</div>');
+}
+
+/* ══ 공연 사이드바 (내부용) ══ */
+
+function showShow(sid,push){
+  if(push!==false)history.pushState({view:'show',id:sid},'','#show-'+sid);
+  setNav('shows');mobShowDetail();
+  var show=DB.shows.find(function(s){return s.id===sid;});if(!show)return;
+  var hist=histByShow(sid);
+  var actors=hist.filter(function(h){return tname(h)==='배우';});
+  var staff=hist.filter(function(h){return tname(h)==='스텝';});
+  var wid=ids(fld(show,'작품'))[0]||'';
+  var trid=ids(fld(show,'극단'))[0]||'';
+  var vid=ids(fld(show,'극장'))[0]||'';
+  var date=fld(show,'공연 날짜')||'';
+  var endDate=fld(show,'종료일')||'';
+  var dateLabel=date?(endDate&&endDate!==date?date+' ~ '+endDate:date):'';
+  var poster=POSTER[sid]||'';
+  var pH=poster?'<img class="poster-img" src="'+poster+'" alt="'+fld(show,'공연명')+'">':'<div class="poster-placeholder">🎭</div>';
+  var audience=fld(show,'관객수');
+  var soldOut=fld(show,'매진여부');
+  var rerun=fld(show,'재공연여부');
+  var licenseStatus=fld(show,'라이선스상태');
+  var licenseLabel=licenseStatus==='창작'?'✍️ 창작':(licenseStatus==='완료'?'✅ 라이선스 완료':(licenseStatus==='미확보'?'⚠️ 라이선스 미확보':''));
+  var outcomeH='';
+  if(audience!=null||soldOut||rerun){
+    outcomeH='<div class="detail-meta">'
+      +(audience!=null?'<span>👥 관객 '+audience+'명</span>':'')
+      +(soldOut?'<span>🎟 매진</span>':'')
+      +(rerun?'<span>🔁 재공연</span>':'')
+      +'</div>';
+  }
+  var h='<div class="detail-header"><div class="poster-wrap">'+pH
+    +'<div class="poster-info">'
+    +'<div class="eyebrow">'+(wid?'<span class="link" data-action="work" data-id="'+wid+'">'+nm(wid)+'</span>':'공연')+'</div>'
+    +'<div class="detail-title">'+fld(show,'공연명')+favBtnHtml('show',sid)+'</div>'
+    +'<div class="detail-meta">'
+    +(trid?'<span>🏢 <span class="link" data-action="troupe" data-id="'+trid+'">'+nm(trid)+'</span></span>':'')
+    +(vid?'<span>📍 <span class="link" data-action="venue" data-id="'+vid+'">'+nm(vid)+'</span></span>':'')
+    +(dateLabel?'<span>📅 '+dateLabel+'</span>':'')
+    +(licenseLabel?'<span>'+licenseLabel+'</span>':'')
+    +'<span class="link" style="font-size:0.78rem" onclick="openLicenseInquiry(\''+sid+'\',\''+(wid||'')+'\')">💬 라이선스 문의하기</span>'
+    +'</div>'+outcomeH+'</div></div></div>';
+  h+=buildPhotoGalleryHtml(fld(show,'포스터'),fld(show,'공연명'));
+  if(actors.length){
+    var sortedActors=actors.slice().sort(function(a,b){var ra=ids(fld(a,'배역'))[0]||'',rb=ids(fld(b,'배역'))[0]||'';var oa=ROLE_ORDER[ra],ob=ROLE_ORDER[rb];if(oa==null&&ob==null)return 0;if(oa==null)return 1;if(ob==null)return -1;return oa-ob;});
+    h+='<div class="sec"><div class="sec-label">출연진</div><div class="cast-grid">';
+    sortedActors.forEach(function(rec){h+=actorCard(rec);});
+    h+='</div></div>';
+  }
+  if(staff.length){
+    var sortedStaff=staff.slice().sort(function(a,b){var ra=ids(fld(a,'스텝'))[0]||'',rb=ids(fld(b,'스텝'))[0]||'';return(STAFF_ORDER[ra]||999)-(STAFF_ORDER[rb]||999);});
+    h+='<div class="sec"><div class="sec-label">스텝</div><div class="cast-grid">'+sortedStaff.map(function(rec){var pid=ids(fld(rec,'참여자'))[0]||'';var rid=ids(fld(rec,'스텝'))[0]||'';return '<div class="cast-card" data-action="person" data-id="'+pid+'"><div class="cast-name">'+nm(pid)+'</div><div class="cast-role" style="color:var(--staff)">'+nm(rid)+'</div></div>';}).join('')+'</div></div>';
+  }
+  if(!actors.length&&!staff.length)h+='<div class="empty">참여 이력이 없습니다.</div>';
+
+  // 관련 공연 추천: 같은 작품(재공연) > 같은 단체 > 출연진 겹침 > 같은 극장 순으로 가중치 부여
+  var currentPeople={};actors.forEach(function(h){var pid=ids(fld(h,'참여자'))[0]||'';if(pid)currentPeople[pid]=true;});
+  var scored=[];
+  DB.shows.forEach(function(other){
+    if(other.id===sid)return;
+    var owid=ids(fld(other,'작품'))[0]||'',otrid=ids(fld(other,'극단'))[0]||'',ovid=ids(fld(other,'극장'))[0]||'';
+    var score=0;
+    if(wid&&owid===wid)score+=10;
+    if(trid&&otrid===trid)score+=5;
+    if(vid&&ovid===vid)score+=1;
+    var overlap=0;
+    histByShow(other.id).filter(function(h){return tname(h)==='배우';}).forEach(function(h){var pid=ids(fld(h,'참여자'))[0]||'';if(pid&&currentPeople[pid])overlap++;});
+    score+=Math.min(overlap*2,10);
+    if(score>0)scored.push({show:other,score:score});
+  });
+  scored.sort(function(a,b){return b.score-a.score;});
+  var recommended=scored.slice(0,4);
+  if(recommended.length){
+    h+='<div class="sec"><div class="sec-label">관련 공연</div><div class="item-grid">';
+    recommended.forEach(function(rs){
+      var rshow=rs.show;var rwid=ids(fld(rshow,'작품'))[0]||'';var rtrid=ids(fld(rshow,'극단'))[0]||'';var rp=POSTER[rshow.id]||'';
+      var subParts=[];if(nm(rwid))subParts.push(nm(rwid));if(nm(rtrid))subParts.push(nm(rtrid));if(fld(rshow,'공연 날짜'))subParts.push(ym(fld(rshow,'공연 날짜')));
+      h+='<div class="item-card" data-action="show" data-id="'+rshow.id+'">'
+        +(rp?'<img src="'+rp+'" style="width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:4px;margin-bottom:0.6rem">':'')
+        +'<div class="item-card-title">'+fld(rshow,'공연명')+'</div>'
+        +'<div class="item-card-sub">'+subParts.join(' · ')+'</div></div>';
+    });
+    h+='</div></div>';
+  }
+
+  h+='<div style="text-align:center;margin-top:2rem"><span class="report-copyright-link" onclick="openCopyrightReport(\''+sid+'\')">이 공연에 저작권 문제가 있나요? 신고하기</span></div>';
+
+  mn(h);
+  injectBackBtn('← 공연',function(){goShows();});
+}
+
+function actorCard(rec){
+  var pid=ids(fld(rec,'참여자'))[0]||'';
+  var u=iurl(fld(rec,'사진'));
+  var imgH=u?'<img class="cast-img" src="'+u+'" alt="'+nm(pid)+'">':'<div class="cast-img-ph">🎭</div>';
+  var rid=ids(fld(rec,'배역'))[0]||'';
+  return '<div class="cast-card" data-action="person" data-id="' + pid + '">'+imgH+'<div class="cast-name">'+nm(pid)+'</div>'+(nm(rid)?'<div class="cast-role">'+nm(rid)+'</div>':'')+'</div>';
+}

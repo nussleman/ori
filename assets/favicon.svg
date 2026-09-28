@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 100">
+  <!-- 오리 파비콘. 바꾸려면 이 파일을 다른 SVG로 덮어쓰면 된다 (PNG를 쓰려면 HTML의 <link rel="icon"> 한 줄만 수정) -->
+  <ellipse cx="52" cy="68" rx="38" ry="25" fill="#c8a96e"/>
+  <circle cx="78" cy="40" r="20" fill="#c8a96e"/>
+  <path d="M94,34 Q118,28 119,38 Q118,48 94,44 Z" fill="#c8a96e"/>
+  <circle cx="84" cy="34" r="3.2" fill="#0e0e10"/>
+</svg>
