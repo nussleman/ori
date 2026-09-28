@@ -38,7 +38,7 @@ function renderMyPageTabContent(){
   else if(tab==='dashboard')renderMyPageDashboard(el);
   else if(tab==='favorites')renderMyPageFavorites(el);
   else if(tab==='wishlist')renderMyPageWishlist(el);
-  else if(tab==='projects'){goMyShows();return;}
+  else if(tab==='projects'){goMake();return;}
   else if(tab==='troupes')renderMyPageTroupes(el);
 }
 function renderMyPageTroupes(el){

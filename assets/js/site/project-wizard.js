@@ -16,13 +16,13 @@ async function closeWizard(){
     $('wizard-overlay').classList.remove('open');
     try{await sbClient.from('projects').delete().eq('id',_wizardPid);}catch(e){}
     loadMyProjectsCache();
-    goMyShows();
+    goMake();
     return;
   }
   $('wizard-overlay').classList.remove('open');
   var roleIdx=_wizardSteps.indexOf('role');
   var roleNotAnsweredYet=(roleIdx>-1&&_wizardStepIdx<=roleIdx);
-  if(roleNotAnsweredYet){goMyShows();}
+  if(roleNotAnsweredYet){goMake();}
   else if(_wizardPid){goProject(_wizardPid);}
 }
 function wizardFinish(){

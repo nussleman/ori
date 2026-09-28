@@ -172,7 +172,7 @@ function showPerson(pid,push){
     title:fld(person,'이름'),
     sub:escHtml(blurb),
     facts:[['공연',showIds.length?showIds.length+'편':''],['배우',actors.length?actors.length+'회':''],['스텝',staff.length?staff.length+'회':''],['창작',creationWorkIds.length?creationWorkIds.length+'작품':''],['단체',troupeRanked.length?troupeRanked.length+'곳':''],['활동',span]],
-    actions:[(CURRENT_USER&&CURRENT_USER.personId===pid)?'':dvActBtn('내 공연에 초대','invitePersonToMyProject(\''+pid+'\')','✉',true),dvFavBtn('person',pid),dvLinkChips(fld(person,'홍보링크')),dvEditBtn('person',pid)],
+    actions:[(CURRENT_USER&&CURRENT_USER.personId===pid)?'':dvActBtn('내 프로젝트에 초대','invitePersonToMyProject(\''+pid+'\')','✉',true),dvFavBtn('person',pid),dvLinkChips(fld(person,'홍보링크')),dvEditBtn('person',pid)],
     widget:'<span id="claim-widget"></span>',
     intro:'<div id="person-intro-line"></div>',
     sections:[

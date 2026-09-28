@@ -118,7 +118,7 @@ function showWork(wid,push){
     sub:fld(work,'작품명 (영문)')?escHtml(fld(work,'작품명 (영문)')):'',
     tags:fld(work,'태그')||[],
     facts:[['국가',escHtml(country)],['초연',fld(work,'초연 연도')?fld(work,'초연 연도')+'년':''],['등장인물',roles.length?roles.length+'명':''],['공연',shows.length?shows.length+'편':'']],
-    actions:[dvActBtn('이 작품으로 공연 만들기','startProjectFromWork(\''+wid+'\')','🎭',true),dvFavBtn('work',wid),dvFavBtn('work',wid,'wishlist'),dvActBtn('라이선스 문의','openLicenseInquiry(\'\',\''+wid+'\')','💬'),dvEditBtn('work',wid)],
+    actions:[dvActBtn('이 작품으로 프로젝트 시작','startProjectFromWork(\''+wid+'\')','🎭',true),dvFavBtn('work',wid),dvFavBtn('work',wid,'wishlist'),dvActBtn('라이선스 문의','openLicenseInquiry(\'\',\''+wid+'\')','💬'),dvEditBtn('work',wid)],
     sections:[
       {title:'공연 이력',items:shows.map(function(s){return dvShowCard(s,dvShowSub(s,['troupe','date']));}),layout:'cards',peek:true},
       {title:'창작진',items:creators.map(function(p){return dvPersonRow(p,'');}),layout:'rows',peek:true},

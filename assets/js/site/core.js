@@ -259,24 +259,28 @@ function injectBackBtn(label,fn){
   m.insertBefore(btn,m.firstChild);
 }
 /* 현재 화면을 메뉴에 표시한다.
-   v: home·shows·works·people·troupes·venues·roles·projects·dashboard (둘러보기)
-      my·project (내 공연) / 그 밖(mypage 등)은 둘러보기 모드로 두되 메뉴 선택 없음
-   projectId: 내 공연 모드에서 좌측 목록 중 열린 프로젝트 */
-var MY_MODE_VIEWS=['my','project'];
+   두 모드: 둘러보기(아카이브 탐색) / 만들기(내 프로젝트 운영). 모드마다 좌측 메뉴·상단 요소가 다르다.
+   v: home(첫 화면) · shows·works·people·troupes·venues·roles·projects·dashboard (둘러보기)
+      make·project (만들기) / 그 밖(mypage 등)은 둘러보기 모드, 메뉴 선택 없음
+   projectId: 만들기 모드에서 좌측 목록 중 열린 프로젝트 */
+var MAKE_MODE_VIEWS=['make','project'];
 function setNav(v,projectId){
   if(PEEK.rendering)return; // 패널 미리보기는 현재 메뉴 상태를 바꾸지 않는다
   closePeek();
-  var my=MY_MODE_VIEWS.indexOf(v)>-1;
-  document.body.classList.toggle('mode-my',my);
-  var mb=$('mode-browse'),mm=$('mode-my');
-  if(mb){mb.classList.toggle('active',!my);mb.setAttribute('aria-selected',String(!my));}
-  if(mm){mm.classList.toggle('active',my);mm.setAttribute('aria-selected',String(my));}
-  ['home','shows','people','works','roles','venues','troupes','dashboard','projects','my'].forEach(function(n){
+  var make=MAKE_MODE_VIEWS.indexOf(v)>-1;
+  document.body.classList.toggle('mode-make',make);
+  document.body.classList.toggle('is-home',v==='home');
+  var mb=$('mode-browse'),mm=$('mode-make');
+  if(mb){mb.classList.toggle('active',!make);mb.setAttribute('aria-selected',String(!make));}
+  if(mm){mm.classList.toggle('active',make);mm.setAttribute('aria-selected',String(make));}
+  ['home','shows','people','works','roles','venues','troupes','dashboard','projects','make'].forEach(function(n){
     var el=$('nav-'+n);if(el)el.classList.toggle('active',n===v);
-    var mel=$('mobt-'+n);if(mel)mel.classList.toggle('active',n===v||(n==='my'&&my));
+    var mel=$('mobt-'+n);if(mel)mel.classList.toggle('active',n===v||(n==='make'&&make));
   });
   window._currentProjectNav=v==='project'?projectId:null;
-  document.querySelectorAll('#my-nav-projects button').forEach(function(b){b.classList.toggle('active',b.dataset.pid===window._currentProjectNav);});
+  document.querySelectorAll('#make-nav-projects button').forEach(function(b){b.classList.toggle('active',b.dataset.pid===window._currentProjectNav);});
+  // 첫 화면에서는 검색창이 화면 가운데(home.js)로 옮겨가 있다 — 다른 화면에선 상단바로 되돌린다
+  if(v!=='home'){var wrap=$('gs-wrap'),bar=$('top-bar');if(wrap&&bar&&wrap.parentNode!==bar)bar.appendChild(wrap);}
 }
 /* ── 오리 스타일 모달 (네이티브 alert/confirm/prompt 대체) ── */
 var _oriModalResolve=null;

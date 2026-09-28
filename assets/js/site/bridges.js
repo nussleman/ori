@@ -1,6 +1,6 @@
-/* 오리 사이트 — 둘러보기 ↔ 내 공연을 잇는 버튼
-   작품 상세 "이 작품으로 공연 만들기", 극장 상세 "내 공연 후보에 담기", 사람 상세 "내 공연에 초대".
-   여러 공연 중 하나를 고를 때는 pickOne()으로 간단한 선택 창을 띄운다. */
+/* 오리 사이트 — 둘러보기 ↔ 만들기를 잇는 버튼
+   작품 상세 "이 작품으로 프로젝트 시작", 극장 상세 "내 프로젝트 후보에 담기", 사람 상세 "내 프로젝트에 초대".
+   여러 프로젝트 중 하나를 고를 때는 pickOne()으로 간단한 선택 창을 띄운다. */
 
 /* 선택 창: items=[{value,label,sub}] → 고른 value (취소하면 null) */
 function pickOne(title,items,emptyMsg){
@@ -27,17 +27,17 @@ async function pickMyProject(title){
   await loadMyProjectsCache();
   var list=myActiveProjects();
   if(!list.length){
-    if(await oriConfirm('진행 중인 공연이 없어요. 새 공연을 시작할까요?'))startNewProject();
+    if(await oriConfirm('진행 중인 프로젝트가 없어요. 새 프로젝트를 시작할까요?'))startNewProject();
     return null;
   }
   if(list.length===1)return list[0].id;
-  return pickOne(title,list.map(function(p){return{value:p.id,label:p.title||'새 공연',sub:[PROJECT_STATUS_LABEL[p.status],p.work_name].filter(Boolean).join(' · ')};}));
+  return pickOne(title,list.map(function(p){return{value:p.id,label:p.title||'새 프로젝트',sub:[PROJECT_STATUS_LABEL[p.status],p.work_name].filter(Boolean).join(' · ')};}));
 }
 
 /* 작품 → 이 작품으로 공연 만들기 */
 async function startProjectFromWork(wid){
   if(!CURRENT_USER){loginWithGoogle();return;}
-  if(!await oriConfirm('"'+nm(wid)+'"(으)로 새 공연을 시작할까요?\n작품의 배역이 자리로 자동으로 만들어져요.'))return;
+  if(!await oriConfirm('"'+nm(wid)+'"(으)로 새 프로젝트를 시작할까요?\n작품의 배역이 자리로 자동으로 만들어져요.'))return;
   try{
     var r=await sbClient.rpc('create_new_project');if(r.error)throw r.error;
     var pid=r.data;
@@ -45,26 +45,26 @@ async function startProjectFromWork(wid){
     await sbClient.rpc('populate_work_roles',{p_project_id:pid,p_work_id:wid});
     await loadMyProjectsCache();
     goProject(pid);
-  }catch(e){oriAlert('공연을 시작하지 못했어요: '+e.message);}
+  }catch(e){oriAlert('프로젝트를 시작하지 못했어요: '+e.message);}
 }
 
-/* 극장 → 내 공연 후보에 담기 */
+/* 극장 → 내 프로젝트 후보에 담기 */
 async function addVenueToMyProject(vid){
   if(!CURRENT_USER){loginWithGoogle();return;}
-  var pid=await pickMyProject('어느 공연의 극장 후보로 담을까요?');if(!pid)return;
+  var pid=await pickMyProject('어느 프로젝트의 극장 후보로 담을까요?');if(!pid)return;
   try{
     var ex=await sbClient.from('project_venue_candidates').select('id').eq('project_id',pid).eq('venue_id',vid);
     if(ex.data&&ex.data.length){oriAlert('이미 후보에 담겨 있어요.');return;}
     var r=await sbClient.from('project_venue_candidates').insert({project_id:pid,venue_id:vid,status:'considering'});if(r.error)throw r.error;
     var p=(MY_PROJECTS_CACHE||[]).find(function(x){return x.id===pid;});
-    if(await oriConfirm('"'+(p?p.title:'내 공연')+'"의 극장 후보에 담았어요.\n후보 목록을 볼까요?')){window._prepSub='venue';window._projectTabNext='prep';goProject(pid);}
+    if(await oriConfirm('"'+(p?p.title:'내 프로젝트')+'"의 극장 후보에 담았어요.\n후보 목록을 볼까요?')){window._prepSub='venue';window._projectTabNext='prep';goProject(pid);}
   }catch(e){oriAlert('담지 못했어요: '+e.message);}
 }
 
-/* 사람 → 내 공연에 초대 (빈 자리를 골라 참여 요청을 보낸다) */
+/* 사람 → 내 프로젝트에 초대 (빈 자리를 골라 참여 요청을 보낸다) */
 async function invitePersonToMyProject(personId){
   if(!CURRENT_USER){loginWithGoogle();return;}
-  var pid=await pickMyProject(nm(personId)+'님을 어느 공연에 초대할까요?');if(!pid)return;
+  var pid=await pickMyProject(nm(personId)+'님을 어느 프로젝트에 초대할까요?');if(!pid)return;
   try{
     var pr=await sbClient.from('project_positions').select('*').eq('project_id',pid);if(pr.error)throw pr.error;
     var open=(pr.data||[]).filter(function(p){return p.status==='open'&&!p.assigned_member_id;});

@@ -26,18 +26,25 @@ assets/
     account.js             구글 로그인, 선언 의식, 즐겨찾기, 사람/단체 클레임
     edit-request.js        정보 제보·수정요청 모달
     mypage.js              마이페이지
-    project.js             공연 프로젝트 운영 공간 (개요·배우·스텝·홍보·극장·팀·예산)
+    project.js             프로젝트 공간 뼈대(불러오기·탭) + 배역·제작진·팀·극장·홍보·예산 화면
+    project-home.js        프로젝트 탭 구성: 홈(지금 할 일)·사람·준비
+    project-schedule.js    프로젝트 일정·공지
+    bridges.js             둘러보기↔만들기 연결 버튼, 공통 선택 창 pickOne()
     project-wizard.js      프로젝트 위저드
     project-browse.js      프로젝트 둘러보기 / 모집 중인 자리
     pages.js               콘텐츠(준비중)·라이선스 문의·약관·개인정보처리방침
     dashboard.js           대시보드
-    home.js                홈
+    home.js                첫 화면 (가운데 검색창 + 프로젝트 만들기)
+    make.js                만들기 모드 첫 화면(내 프로젝트)과 좌측 프로젝트 목록
     shows.js works.js roles.js people.js troupes.js venues.js   목록·상세 화면
     peek.js                카드 클릭: 한 번 = 오른쪽 미리보기 패널, 두 번 = 전용 페이지
     router.js              해시 라우팅 + 앱 시작 (반드시 마지막)
 ```
 
 ## 규칙
+
+- 용어: **공연** = 아카이브에 기록된 실제 공연, **프로젝트** = 오리에서 준비·운영 중인 공연. 두 모드는 **둘러보기 / 만들기**.
+- 디자인: 명조체 쓰지 않는다. 카드에 왼쪽 색띠 넣지 않는다.
 
 - 사이트 JS는 전역 함수 방식(`onclick="goShows()"`)이라 파일을 나눠도 같은 전역 공간을 쓴다. 새 파일을 만들면 `gongyon-db.html` 하단 `<script>` 목록에 추가한다. `router.js`는 항상 마지막.
 - 상세 화면은 모델 객체(헤더·핵심 정보·액션·섹션)를 만들어 `dvRender()`에 넘긴다. 섹션에 `peek:true`를 주면 패널 요약판에도 나온다.

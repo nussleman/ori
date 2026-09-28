@@ -72,7 +72,7 @@ async function goProject(pid,push){
     }
     if(!myPosition){
       mn('<div class="tab-index"><div style="font-size:0.85rem;color:var(--muted);padding:2rem">첫 질문에 답하는 중이에요…</div></div>');
-      injectBackBtn('← 내 공연',function(){goMyShows();});
+      injectBackBtn('← 내 프로젝트',function(){goMake();});
       var steps=['name','visibility','role','members','venue','troupe','work','date','license'].filter(function(s){
         return !((s==='venue'&&pr.data.venue_id)||(s==='troupe'&&pr.data.troupe_id)||(s==='work'&&pr.data.work_id));  // 이미 정해진 건 묻지 않는다
       });
@@ -85,7 +85,7 @@ async function goProject(pid,push){
     if(window._projectTabNext){window._projectTab=window._projectTabNext;window._projectTabNext=null;}
     var tabs=currentProjectTabs();
     if(!tabs.some(function(t){return t[0]===window._projectTab;}))window._projectTab='home';
-    var h='<div class="mypage-sticky-header"><div class="dv-kicker">내 공연 · '+escHtml(PROJECT_STATUS_LABEL[pr.data.status]||'')+(!isAdmin?' · 팀원으로 보는 중':'')+'</div>'
+    var h='<div class="mypage-sticky-header"><div class="dv-kicker">프로젝트 · '+escHtml(PROJECT_STATUS_LABEL[pr.data.status]||'')+(!isAdmin?' · 팀원으로 보는 중':'')+'</div>'
       +'<div class="detail-title" id="project-title-display" style="margin-bottom:0.8rem;display:flex;align-items:center;gap:0.6rem"><span>'+escHtml(pr.data.title||'새 프로젝트')+'</span>'+(isAdmin?'<button class="myinfo-edit-toggle" style="flex-shrink:0" onclick="editProjectTitle(\''+pid+'\')" title="제목 수정">✎</button>':'')+'</div>'
       +'<div class="mypage-tabs">'+tabs.map(function(t){
         var badge=t[0]==='people'?'<span class="nav-badge-dot"></span>':'';
@@ -94,7 +94,7 @@ async function goProject(pid,push){
     h+='<div class="mypage-sticky-spacer"></div>';
     h+='<div id="project-tab-content"></div>';
     mn(h);
-    injectBackBtn('← 내 공연',function(){goMyShows();});
+    injectBackBtn('← 내 프로젝트',function(){goMake();});
     renderProjectTabContent();
     requestAnimationFrame(function(){
       var hdr=document.querySelector('.mypage-sticky-header');

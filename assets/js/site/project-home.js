@@ -54,7 +54,7 @@ function renderProjectHome(el){
   if(pr.published_show_id)h+='<section class="dv-sec"><div class="ph-published">이 공연은 아카이브에 올라가 있어요. <span class="link" data-action="show" data-id="'+pr.published_show_id+'">공연 페이지 보기 →</span></div></section>';
   if(isAdmin){
     h+='<section class="dv-sec">'+dvSection('공개 설정')+'<div class="ph-settings">'
-      +(ctx.isOwner?'<label class="ph-switch"><input type="checkbox" '+(pr.is_public?'checked':'')+' onchange="toggleProjectPublic(\''+pid+'\',this.checked)"><span><b>공연 공개</b><br>둘러보기의 "모집 중인 자리" 목록에 이 공연이 보여요</span></label>':'')
+      +(ctx.isOwner?'<label class="ph-switch"><input type="checkbox" '+(pr.is_public?'checked':'')+' onchange="toggleProjectPublic(\''+pid+'\',this.checked)"><span><b>프로젝트 공개</b><br>둘러보기의 "모집 중인 자리"에서 누구나 이 프로젝트를 볼 수 있어요</span></label>':'')
       +'<label class="ph-switch"><input type="checkbox" '+(pr.is_recruiting?'checked':'')+' onchange="toggleRecruiting(\''+pid+'\',this.checked)"><span><b>빈 자리 모집</b><br>비어 있는 배역·제작진 자리를 모집 목록에 올려요</span></label>'
       +(ctx.isOwner?'<label class="ph-switch"><input type="checkbox" '+(pr.budget_visible_to_members?'checked':'')+' onchange="toggleBudgetVisible(\''+pid+'\',this.checked)"><span><b>예산 함께 보기</b><br>관리자가 아닌 팀원도 예산 탭을 볼 수 있어요</span></label>':'')
       +'</div></section>';

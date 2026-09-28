@@ -15,7 +15,7 @@ async function loadMyProjectsCache(){
     var r=await sbClient.rpc('list_my_projects_detail');
     MY_PROJECTS_CACHE=r.data||[];
   }catch(e){MY_PROJECTS_CACHE=[];}
-  if(typeof renderMyNav==='function')renderMyNav();
+  if(typeof renderMakeNav==='function')renderMakeNav();
 }
 var OATH_PHRASE='나는 천하의 멍텅구리지만 우리들의 정직하고 행복한 공연 생활에 진심으로 임할 것을 엄숙히 선언합니다.';
 
