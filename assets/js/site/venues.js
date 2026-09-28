@@ -94,7 +94,7 @@ function showVenue(vid,push){
     kicker:'극장',
     title:fld(venue,'극장명'),
     facts:[['좌석',venueSeatsLabel(venue)],['대관',yn(fld(venue,'대관가능여부'))],['대관료',escHtml(fld(venue,'대관료')||'')],['주차',yn(fld(venue,'주차가능여부'))],['대중교통',escHtml(fld(venue,'대중교통정보')||'')],['연락처',escHtml(fld(venue,'연락처')||'')],['공연',shows.length?shows.length+'편':'']],
-    actions:[dvFavBtn('venue',vid),dvEditBtn('venue',vid)],
+    actions:[dvActBtn('내 공연 후보에 담기','addVenueToMyProject(\''+vid+'\')','＋',true),dvFavBtn('venue',vid),dvEditBtn('venue',vid)],
     sections:[
       {title:'공연 목록',n:shows.length,items:shows.map(function(s){return dvShowCard(s,dvShowSub(s,['troupe','date']));}),layout:'cards',peek:true,body:dvYearShows('venue-shows',shows,['troupe','date'])},
       {title:'사진',body:buildPhotoGalleryHtml(photos,fld(venue,'극장명'))}

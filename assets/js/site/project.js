@@ -73,12 +73,16 @@ async function goProject(pid,push){
     if(!myPosition){
       mn('<div class="tab-index"><div style="font-size:0.85rem;color:var(--muted);padding:2rem">첫 질문에 답하는 중이에요…</div></div>');
       injectBackBtn('← 내 공연',function(){goMyShows();});
-      openProjectWizard(pid,['name','visibility','role','members','venue','troupe','work','date','license'],myMember.id);
+      var steps=['name','visibility','role','members','venue','troupe','work','date','license'].filter(function(s){
+        return !((s==='venue'&&pr.data.venue_id)||(s==='troupe'&&pr.data.troupe_id)||(s==='work'&&pr.data.work_id));  // 이미 정해진 건 묻지 않는다
+      });
+      openProjectWizard(pid,steps,myMember.id);
       return;
     }
 
     if(!window._projectTab||window._projectCtxPid!==pid){window._projectTab='home';window._peopleSub=null;window._prepSub=null;}
     window._projectCtxPid=pid;
+    if(window._projectTabNext){window._projectTab=window._projectTabNext;window._projectTabNext=null;}
     var tabs=currentProjectTabs();
     if(!tabs.some(function(t){return t[0]===window._projectTab;}))window._projectTab='home';
     var h='<div class="mypage-sticky-header"><div class="dv-kicker">내 공연 · '+escHtml(PROJECT_STATUS_LABEL[pr.data.status]||'')+(!isAdmin?' · 팀원으로 보는 중':'')+'</div>'

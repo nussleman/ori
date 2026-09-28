@@ -25,8 +25,8 @@ function dvFavBtn(type,id,listType){
   return '<button type="button" class="dv-act fav-btn'+(wish?' wish-btn':'')+(on?' on':'')+'" data-fav-type="'+type+'" data-fav-id="'+id+'" data-list-type="'+listType+'" onclick="toggleFavorite(this)">'
     +(wish?WISH_ICON_SVG:FAV_ICON_SVG)+'<span>'+(wish?'해보고 싶어요':'즐겨찾기')+'</span></button>';
 }
-function dvActBtn(label,onclick,icon){
-  return '<button type="button" class="dv-act" onclick="'+onclick+'">'+(icon?'<span class="dv-act-ic" aria-hidden="true">'+icon+'</span>':'')+'<span>'+label+'</span></button>';
+function dvActBtn(label,onclick,icon,primary){
+  return '<button type="button" class="dv-act'+(primary?' dv-act-primary':'')+'" onclick="'+onclick+'">'+(icon?'<span class="dv-act-ic" aria-hidden="true">'+icon+'</span>':'')+'<span>'+label+'</span></button>';
 }
 function dvEditBtn(type,id){return dvActBtn('정보 수정 제보','openEditModal(\''+type+'\',\''+id+'\')','✎');}
 function dvLinkChips(links){
