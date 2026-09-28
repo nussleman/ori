@@ -1,9 +1,9 @@
 /* 오리 사이트 — 공연 프로젝트 공간의 탭 구성
-   탭: 홈(지금 할 일·공지·다가오는 일정) · 사람(배역·제작진·팀원·참여 요청) · 일정(project-schedule.js) · 준비(극장 후보·홍보) · 예산
+   탭: 홈(지금 할 일·공지·다가오는 일정) · 사람(배역·제작진·팀원·참여 요청) · 일정(project-schedule.js) · 준비(극장 후보·소품 큐시트·홍보) · 예산(project-budget.js)
    예전의 개요/배우/제작진/극장/팀/홍보/참여요청 8개 탭 렌더러는 project.js에 그대로 있고, 여기서 묶어서 쓴다. */
 var PROJECT_STAGES=['기획','팀 꾸리기','공연 준비','공연','마무리'];
 var PEOPLE_SUBTABS=[['actor','배역'],['crew','제작진'],['team','팀원'],['requests','참여 요청']];
-var PREP_SUBTABS=[['venue','극장 후보'],['promo','홍보']];
+var PREP_SUBTABS=[['venue','극장 후보'],['props','소품 큐시트'],['promo','홍보']];
 
 function projectStageIndex(pr){
   if(pr.status==='completed'||pr.status==='cancelled')return 4;
@@ -144,11 +144,11 @@ function renderProjectPeople(el){
   else if(sub==='requests'){body.innerHTML='<div id="join-requests-list">불러오는 중…</div>';loadJoinRequests(ctx.pid);}
 }
 
-/* ── 준비: 극장 후보 · 홍보 ── */
+/* ── 준비: 극장 후보 · 소품 큐시트(project-props.js) · 홍보 ── */
 function openPrepSub(sub){window._prepSub=sub;switchProjectTab('prep');}
 function renderProjectPrep(el){
   var sub=window._prepSub||'venue';window._prepSub=sub;
   el.innerHTML=subTabsHtml(PREP_SUBTABS,sub,'openPrepSub')+'<div id="prep-sub-body"></div>';
   var body=$('prep-sub-body');
-  if(sub==='venue')renderProjectVenueTab(body);else renderProjectPromoTab(body);
+  if(sub==='venue')renderProjectVenueTab(body);else if(sub==='props')renderProjectPropsTab(body);else renderProjectPromoTab(body);
 }

@@ -36,6 +36,8 @@ assets/
     project-home.js        프로젝트 탭 구성: 홈(지금 할 일)·사람·준비
     project-dashboard.js   제작 계기판: 영역별 초록·노랑·빨강 불(자동 판정 + 마감 계산)과 데이터 기반 추천(스태프·캐스팅·극장·작품·비용)
     project-schedule.js    프로젝트 일정·공지
+    project-budget.js      예산: 총 예산·분류별 추천 분배·예상/실제·사용 알림·부족금/잔금 제안·시트 링크·CSV·붙여넣기
+    project-props.js       소품 큐시트: 장면×소품 큐(들어옴·무대에서·나감), 장면 순/소품별/인물별 보기, 동선 점검, CSV·인쇄
     bridges.js             둘러보기↔만들기 연결 버튼, 공통 선택 창 pickOne()
     project-wizard.js      프로젝트 위저드
     project-browse.js      기회: 모집 중인 자리 목록·지원, 마이페이지 지원 현황

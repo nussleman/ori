@@ -74,8 +74,16 @@ function dashAuto(a,D){
     if(D.budget==null)return{s:'todo',t:'예산은 관리자만 봐요'};
     var exp=D.budget.filter(function(b){return b.item_type==='expense';});
     var planned=exp.reduce(function(s,b){return s+(Number(b.planned_amount)||0);},0);
+    var spent=exp.reduce(function(s,b){return s+(Number(b.actual_amount)||0);},0),cap=Number(pr.budget_total)||planned;
+    if(cap&&spent>cap)return{s:'doing',t:'예산 '+dashWon(spent-cap)+' 초과'};
+    if(spent)return{s:'done',t:dashWon(spent)+' / '+dashWon(cap)+' 사용'};
     if(planned>0)return{s:'done',t:'지출 계획 '+dashWon(planned)};
     return D.budget.length?{s:'doing',t:'항목만 있고 금액 없음'}:{s:'todo',t:'예산 없음'};
+  }
+  if(a[0]==='props'&&D.props&&D.props.length){
+    var rd=D.props.filter(function(p){return p.status==='ready';}).length;
+    if(rd===D.props.length)return{s:'done',t:'소품 '+rd+'개 모두 준비됨'};
+    return{s:'doing',t:'소품 '+D.props.length+'개 중 '+rd+'개 준비됨'};
   }
   if(kind==='staff'||kind==='promo'){
     var ps=dashPositionsFor(a,D.positions);
@@ -121,14 +129,15 @@ async function loadProdDashData(){
     q(sbClient.from('project_venue_candidates').select('venue_id,status').eq('project_id',pid)),
     q(sbClient.from('project_events').select('kind,starts_at').eq('project_id',pid)),
     q(sbClient.rpc('list_project_members_detail',{p_project_id:pid})),
-    ctx.isAdmin||ctx.pr.budget_visible_to_members?q(sbClient.from('project_budget_items').select('item_type,category,planned_amount,actual_amount').eq('project_id',pid)):Promise.resolve(null)
+    ctx.isAdmin||ctx.pr.budget_visible_to_members?q(sbClient.from('project_budget_items').select('item_type,category,planned_amount,actual_amount').eq('project_id',pid)):Promise.resolve(null),
+    q(sbClient.from('project_props').select('status').eq('project_id',pid))
   ]);
   var areas={};res[1].forEach(function(a){areas[a.area_key]=a;});
   // 첫 공연 날짜: 전광판(D-day)과 같은 기준 — 앞으로 있을 '공연' 일정이 있으면 그 날, 없으면 프로젝트 목표일
   var now=new Date(),perf=res[3].filter(function(e){return e.kind==='performance'&&e.starts_at&&new Date(e.starts_at)>=now;}).sort(function(a,b){return a.starts_at<b.starts_at?-1:1;})[0];
   var start=ctx.pr.target_start_date;
   if(perf){var d=new Date(perf.starts_at);start=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-  return{pr:ctx.pr,start:start,positions:res[0],areas:areas,venueCands:res[2],events:res[3],members:res[4],budget:res[5]};
+  return{pr:ctx.pr,start:start,positions:res[0],areas:areas,venueCands:res[2],events:res[3],members:res[4],budget:res[5],props:res[6]};
 }
 
 /* ── 그리기 ── */
@@ -195,6 +204,7 @@ function dashActionsHtml(a,D){
   if(k==='staff'||k==='promo')acts.push(b('제작진 자리 보기','openPeopleSub(\'crew\')'));
   if(k==='promo')acts.push(b('홍보 준비','openPrepSub(\'promo\')'));
   if(k==='rehearsal')acts.push(b('연습 일정 추가','window._evFormOpen=true;switchProjectTab(\'schedule\')'));
+  if(a[0]==='props')acts.push(b('소품 큐시트','openPrepSub(\'props\')'));
   if(k==='budget')acts.push(b('예산 열기','switchProjectTab(\'budget\')'));
   return acts.length?'<div class="dash-acts">'+acts.join('')+'</div>':'';
 }
