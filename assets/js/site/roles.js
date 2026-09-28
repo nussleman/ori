@@ -2,7 +2,6 @@
 /* ══ 배역 인덱스 ══ */
 var _roleFilter={work:'all',gender:'',minAct:0,tags:[]};
 var _roleIndexView='grid';
-var _roleWorkOptions=[];
 
 function goRoles(push){
   if(push!==false)history.pushState({view:'roles'},'','#roles');
@@ -14,42 +13,10 @@ function goRoles(push){
   _roleFilter={work:'all',gender:'',minAct:0,tags:[]};renderRoleIndex();
 }
 
-function roleWorkFilterInput(q){
-  var dd=document.getElementById('role-work-filter-dropdown');
-  if(!dd)return;
-  var query=(q||'').trim().toLowerCase();
-  var matches=_roleWorkOptions.filter(function(w){return !query||w.name.toLowerCase().includes(query);}).slice(0,50);
-  if(!matches.length){dd.innerHTML='<div class="gs-empty">검색 결과 없음</div>';}
-  else{
-    dd.innerHTML=matches.map(function(w){return '<div class="gs-item" onmousedown="selectRoleWorkFilter(\''+w.id+'\')"><div class="gs-item-main"><div class="gs-item-name">'+w.name+'</div></div></div>';}).join('');
-  }
-  dd.classList.add('open');
-}
-function roleWorkFilterFocus(){var inp=document.getElementById('role-work-filter-input');roleWorkFilterInput(inp?inp.value:'');}
-function selectRoleWorkFilter(wid){
-  _roleFilter.work=wid;
-  renderRoleIndex();
-}
-function clearRoleWorkFilter(){
-  _roleFilter.work='all';
-  renderRoleIndex();
-}
-document.addEventListener('click',function(e){
-  var wrap=document.getElementById('role-work-filter-wrap');
-  var dd=document.getElementById('role-work-filter-dropdown');
-  if(wrap&&dd&&!wrap.contains(e.target))dd.classList.remove('open');
-});
-function toggleRoleTagFilter(t){
-  var arr=_roleFilter.tags;var idx=arr.indexOf(t);
-  if(idx>-1)arr.splice(idx,1);else arr.push(t);
-  renderRoleIndex();
-}
-
 function renderRoleIndex(){
   var workSet={};
   _allRoles.forEach(function(r){var wid=ids(fld(r,'작품'))[0]||'';if(wid&&nm(wid))workSet[wid]=nm(wid);});
   var workIds=Object.keys(workSet).sort(function(a,b){return workSet[a].localeCompare(workSet[b]);});
-  _roleWorkOptions=workIds.map(function(wid){return{id:wid,name:workSet[wid]};});
 
   // 성별 옵션 수집
   var genderSet={};
@@ -76,48 +43,24 @@ function renderRoleIndex(){
     return true;
   });
 
-  var hasFilter=_roleFilter.work!=='all'||!!_roleFilter.gender||_roleFilter.minAct>0||_roleFilter.tags.length>0;
-  var filterH='<div class="filter-panel"><div class="filter-panel-top"><span class="filter-panel-title">필터</span>'+(hasFilter?'<button class="filter-clear-btn" onclick="_roleFilter={work:\'all\',gender:\'\',minAct:0,tags:[]};renderRoleIndex()">전체 초기화</button>':''  )+'</div><div class="filter-rows">';
-
-  // 작품 필터 (검색형 드롭다운 - 작품 수가 많아 칩 나열 대신 검색으로 고른다)
-  if(workIds.length){
-    var selectedWorkName=_roleFilter.work!=='all'?nm(_roleFilter.work):'';
-    filterH+='<div class="filter-row"><span class="filter-row-label">작품</span><div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">'
-      +'<div class="global-search" id="role-work-filter-wrap" style="max-width:260px;margin:0">'
-      +'<span class="gs-icon">🔍</span>'
-      +'<input type="text" id="role-work-filter-input" placeholder="작품 검색..." autocomplete="off" oninput="roleWorkFilterInput(this.value)" onfocus="roleWorkFilterFocus()">'
-      +'<div class="gs-dropdown" id="role-work-filter-dropdown"></div>'
-      +'</div>'
-      +(selectedWorkName?'<button class="fchip on" onclick="clearRoleWorkFilter()">'+selectedWorkName+' ✕</button>':'')
-      +'</div></div>';
-  }
-
-  // 성별 필터
-  if(genders.length){
-    filterH+='<div class="filter-row"><span class="filter-row-label">성별</span><div class="filter-chips">';
-    filterH+='<button class="fchip'+(!_roleFilter.gender?' on':'')+'" onclick="_roleFilter.gender=\'\';renderRoleIndex()">전체</button>';
-    genders.forEach(function(g){var on=_roleFilter.gender===g;filterH+='<button class="fchip'+(on?' on':'')+'" onclick="_roleFilter.gender=\''+g+'\';renderRoleIndex()">'+g+'</button>';});
-    filterH+='</div></div>';
-  }
-
-  // 태그 필터 (다중 선택)
-  if(tagList.length){
-    filterH+='<div class="filter-row"><span class="filter-row-label">태그</span><div class="filter-chips">';
-    tagList.forEach(function(t){var on=_roleFilter.tags.indexOf(t)>-1;filterH+='<button class="fchip'+(on?' on':'')+'" onclick="toggleRoleTagFilter(\''+t+'\')">'+t+'</button>';});
-    filterH+='</div></div>';
-  }
-
-  // 출연 이력 횟수 필터
-  var ma=_roleFilter.minAct;
-  filterH+='<div class="filter-row"><span class="filter-row-label">출연 횟수</span><div class="filter-chips">'
-    +'<button class="fchip'+(ma===0?' on':'')+'" onclick="_roleFilter.minAct=0;renderRoleIndex()">전체</button>'
-    +'<button class="fchip'+(ma===2?' on':'')+'" onclick="_roleFilter.minAct=2;renderRoleIndex()">2회 이상</button>'
-    +'<button class="fchip'+(ma===3?' on':'')+'" onclick="_roleFilter.minAct=3;renderRoleIndex()">3회 이상</button>'
-    +'<button class="fchip'+(ma===5?' on':'')+'" onclick="_roleFilter.minAct=5;renderRoleIndex()">5회 이상</button>'
-    +'</div></div>';
-
-  filterH+='</div></div>';
-  var resultH='<div class="result-header"><span class="result-count"><em>'+filtered.length+'</em>개 배역</span><div class="result-view-btns"><button class="rvb'+(_roleIndexView==='grid'?' on':'')+'" onclick="_roleIndexView=\'grid\';renderRoleIndex()">▦</button><button class="rvb'+(_roleIndexView==='list'?' on':'')+'" onclick="_roleIndexView=\'list\';renderRoleIndex()">≡</button></div></div>';
+  var roleCntByWork={};_allRoles.forEach(function(r){var w=ids(fld(r,'작품'))[0]||'';if(w)roleCntByWork[w]=(roleCntByWork[w]||0)+1;});
+  var filterH=filterBar('roles',[
+    {key:'work',label:'작품',type:'single',value:_roleFilter.work==='all'?'':_roleFilter.work,options:workIds.map(function(w){return{v:w,l:workSet[w],n:roleCntByWork[w]};})},
+    {key:'gender',label:'성별',type:'single',value:_roleFilter.gender,options:genders.map(function(g){return{v:g,l:g};})},
+    {key:'tags',label:'태그',type:'multi',value:_roleFilter.tags,options:tagList.map(function(t){return{v:t,l:t};})},
+    {key:'minAct',label:'출연 횟수',type:'single',value:_roleFilter.minAct||'',options:[{v:2,l:'2회 이상'},{v:3,l:'3회 이상'},{v:5,l:'5회 이상'}]}
+  ],{
+    count:'<em>'+filtered.length+'</em>개 배역',
+    view:{value:_roleIndexView,onChange:function(v){_roleIndexView=v;renderRoleIndex();}},
+    onChange:function(k,v){
+      if(k==='work')_roleFilter.work=v||'all';
+      else if(k==='minAct')_roleFilter.minAct=v||0;
+      else _roleFilter[k]=v;
+      renderRoleIndex();
+    },
+    onReset:function(){_roleFilter={work:'all',gender:'',minAct:0,tags:[]};renderRoleIndex();}
+  });
+  var resultH='';
 
   var listH='';
   if(!filtered.length){listH='<div class="result-empty"><div class="result-empty-icon">🎬</div>해당하는 배역이 없어요.</div>';}

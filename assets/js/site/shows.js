@@ -14,12 +14,6 @@ function goShows(push){
   renderShowIndex();
 }
 
-function toggleShowFilter(key,val){
-  var arr=_showFilter[key];
-  var idx=arr.indexOf(val);
-  if(idx>-1)arr.splice(idx,1);else arr.push(val);
-  renderShowIndex();
-}
 function clearShowFilter(){
   _showFilter={troupes:[],years:[],venues:[]};
   renderShowIndex();
@@ -47,52 +41,25 @@ function renderShowIndex(){
     return true;
   });
 
-  var hasFilter=_showFilter.troupes.length>0||_showFilter.years.length>0||_showFilter.venues.length>0;
-
-  // 필터 패널 HTML
-  var filterH='<div class="filter-panel">'
-    +'<div class="filter-panel-top"><span class="filter-panel-title">필터</span>'
-    +(hasFilter?'<button class="filter-clear-btn" onclick="clearShowFilter()">전체 초기화</button>':'')
-    +'</div>'
-    +'<div class="filter-rows">';
-
-  // 극단 필터
-  if(troupeIds.length>0){
-    filterH+='<div class="filter-row"><span class="filter-row-label">단체</span><div class="filter-chips">';
-    troupeIds.forEach(function(tid){
-      var on=_showFilter.troupes.indexOf(tid)>-1;
-      filterH+='<button class="fchip'+(on?' on':'')+'" onclick="toggleShowFilter(\'troupes\',\''+tid+'\')">'+nm(tid)+'</button>';
-    });
-    filterH+='</div></div>';
-  }
-  // 연도 필터
-  if(years.length>0){
-    filterH+='<div class="filter-row"><span class="filter-row-label">연도</span><div class="filter-chips">';
-    filterH+='<button class="fchip'+(_showFilter.years.indexOf('연도미상')>-1?' on':'')+'" onclick="toggleShowFilter(\'years\',\'연도미상\')">연도 미상</button>';
-    years.forEach(function(y){
-      var on=_showFilter.years.indexOf(y)>-1;
-      filterH+='<button class="fchip'+(on?' on':'')+'" onclick="toggleShowFilter(\'years\',\''+y+'\')">'+y+'</button>';
-    });
-    filterH+='</div></div>';
-  }
-  // 극장 필터
-  if(venueIds.length>0){
-    filterH+='<div class="filter-row"><span class="filter-row-label">극장</span><div class="filter-chips">';
-    venueIds.forEach(function(vid){
-      var on=_showFilter.venues.indexOf(vid)>-1;
-      filterH+='<button class="fchip'+(on?' on':'')+'" onclick="toggleShowFilter(\'venues\',\''+vid+'\')">'+nm(vid)+'</button>';
-    });
-    filterH+='</div></div>';
-  }
-  filterH+='</div></div>';
-
-  // 결과 헤더
-  var resultH='<div class="result-header">'
-    +'<span class="result-count"><em>'+filtered.length+'</em>개 공연</span>'
-    +'<div class="result-view-btns">'
-    +'<button class="rvb'+(_showIndexView==='grid'?' on':'')+'" onclick="_showIndexView=&apos;grid&apos;;renderShowIndex()">▦</button>'
-    +'<button class="rvb'+(_showIndexView==='list'?' on':'')+'" onclick="_showIndexView=&apos;list&apos;;renderShowIndex()">≡</button>'
-    +'</div></div>';
+  var cntT={},cntY={},cntV={};
+  allShows.forEach(function(s){
+    var tid=ids(fld(s,'극단'))[0]||'';if(tid)cntT[tid]=(cntT[tid]||0)+1;
+    var y=yearOf(fld(s,'공연 날짜')||'')||'연도미상';cntY[y]=(cntY[y]||0)+1;
+    var vid=ids(fld(s,'극장'))[0]||'';if(vid)cntV[vid]=(cntV[vid]||0)+1;
+  });
+  var yearOpts=years.map(function(y){return{v:y,l:y,n:cntY[y]};});
+  if(cntY['연도미상'])yearOpts.push({v:'연도미상',l:'연도 미상',n:cntY['연도미상']});
+  var filterH=filterBar('shows',[
+    {key:'years',label:'연도',type:'multi',value:_showFilter.years,options:yearOpts},
+    {key:'troupes',label:'단체',type:'multi',value:_showFilter.troupes,options:troupeIds.map(function(t){return{v:t,l:nm(t),n:cntT[t]};})},
+    {key:'venues',label:'극장',type:'multi',value:_showFilter.venues,options:venueIds.map(function(v){return{v:v,l:nm(v),n:cntV[v]};})}
+  ],{
+    count:'<em>'+filtered.length+'</em>개 공연',
+    view:{value:_showIndexView,onChange:function(v){_showIndexView=v;renderShowIndex();}},
+    onChange:function(k,v){_showFilter[k]=v;renderShowIndex();},
+    onReset:clearShowFilter
+  });
+  var resultH='';
 
   // 결과 목록
   var listH='';

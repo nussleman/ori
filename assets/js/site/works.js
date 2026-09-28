@@ -52,36 +52,17 @@ function renderWorkIndex(){
     return true;
   });
 
-  var hasFilter=!!_workFilter.country||!!_workFilter.genre||_workFilter.minCast>0;
-  var filterH='<div class="filter-panel"><div class="filter-panel-top"><span class="filter-panel-title">필터</span>'+(hasFilter?'<button class="filter-clear-btn" onclick="clearWorkFilter()">전체 초기화</button>':'')+'</div><div class="filter-rows">';
-
-  // 장르 필터
-  if(genres.length){
-    filterH+='<div class="filter-row"><span class="filter-row-label">장르</span><div class="filter-chips">';
-    filterH+='<button class="fchip'+(!_workFilter.genre?' on':'')+'" onclick="_workFilter.genre=\'\';renderWorkIndex()">전체</button>';
-    genres.forEach(function(g){var on=_workFilter.genre===g;filterH+='<button class="fchip'+(on?' on':'')+'" onclick="_workFilter.genre=\''+g+'\';renderWorkIndex()">'+g+'</button>';});
-    filterH+='</div></div>';
-  }
-
-  // 국가 필터
-  if(countries.length){
-    filterH+='<div class="filter-row"><span class="filter-row-label">국가</span><div class="filter-chips">';
-    filterH+='<button class="fchip'+(!_workFilter.country?' on':'')+'" onclick="_workFilter.country=\'\';renderWorkIndex()">전체</button>';
-    countries.forEach(function(c){var on=_workFilter.country===c;filterH+='<button class="fchip'+(on?' on':'')+'" onclick="_workFilter.country=\''+c+'\';renderWorkIndex()">'+c+'</button>';});
-    filterH+='</div></div>';
-  }
-
-  // 배역 인원 필터
-  var mc=_workFilter.minCast;
-  filterH+='<div class="filter-row"><span class="filter-row-label">배역 인원</span><div class="filter-chips">'
-    +'<button class="fchip'+(mc===0?' on':'')+'" onclick="_workFilter.minCast=0;renderWorkIndex()">전체</button>'
-    +'<button class="fchip'+(mc===3?' on':'')+'" onclick="_workFilter.minCast=3;renderWorkIndex()">3명 이상</button>'
-    +'<button class="fchip'+(mc===5?' on':'')+'" onclick="_workFilter.minCast=5;renderWorkIndex()">5명 이상</button>'
-    +'<button class="fchip'+(mc===10?' on':'')+'" onclick="_workFilter.minCast=10;renderWorkIndex()">10명 이상</button>'
-    +'</div></div>';
-
-  filterH+='</div></div>';
-  var resultH='<div class="result-header"><span class="result-count"><em>'+filtered.length+'</em>개 작품</span><div class="result-view-btns"><button class="rvb'+(_workIndexView==='grid'?' on':'')+'" onclick="_workIndexView=\'grid\';renderWorkIndex()">▦</button><button class="rvb'+(_workIndexView==='list'?' on':'')+'" onclick="_workIndexView=\'list\';renderWorkIndex()">≡</button></div></div>';
+  var filterH=filterBar('works',[
+    {key:'genre',label:'장르',type:'single',value:_workFilter.genre,options:genres.map(function(g){return{v:g,l:g};})},
+    {key:'country',label:'국가',type:'single',value:_workFilter.country,options:countries.map(function(c){return{v:c,l:c};})},
+    {key:'minCast',label:'배역 인원',type:'single',value:_workFilter.minCast||'',options:[{v:3,l:'3명 이상'},{v:5,l:'5명 이상'},{v:10,l:'10명 이상'}]}
+  ],{
+    count:'<em>'+filtered.length+'</em>개 작품',
+    view:{value:_workIndexView,onChange:function(v){_workIndexView=v;renderWorkIndex();}},
+    onChange:function(k,v){_workFilter[k]=(k==='minCast'?(v||0):v);renderWorkIndex();},
+    onReset:clearWorkFilter
+  });
+  var resultH='';
 
   var listH='';
   if(!filtered.length){listH='<div class="result-empty"><div class="result-empty-icon">📖</div>조건에 맞는 작품이 없어요.</div>';}

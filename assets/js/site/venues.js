@@ -1,4 +1,5 @@
 /* 오리 사이트 — 극장 목록·상세 */
+var _venueFilter={sizeTier:'',sort:'name',parkingOnly:false};
 function goVenues(push){
   if(push!==false)history.pushState({view:'venues'},'','#venues');
   setNav('venues');_sbContext='venues';  _allVenues=DB.venues.filter(function(v){return fld(v,'극장명');});
@@ -55,24 +56,16 @@ function renderVenueIndex(){
     filtered=filtered.slice().sort(function(a,b){return(fld(a,'극장명')||'').localeCompare(fld(b,'극장명')||'');});
   }
 
-  var hasFilter=!!_venueFilter.sizeTier||_venueFilter.sort!=='name'||_venueFilter.parkingOnly;
-  var filterH='<div class="filter-panel"><div class="filter-panel-top"><span class="filter-panel-title">필터 / 정렬</span>'
-    +(hasFilter?'<button class="filter-clear-btn" onclick="clearVenueFilter()">전체 초기화</button>':'')
-    +'</div><div class="filter-rows">'
-    +'<div class="filter-row"><span class="filter-row-label">규모</span><div class="filter-chips">'
-    +'<button class="fchip'+(!_venueFilter.sizeTier?' on':'')+'" onclick="_venueFilter.sizeTier=\'\';renderVenueIndex()">전체</button>'
-    +['소극장','중극장','대극장'].map(function(t){return '<button class="fchip'+(_venueFilter.sizeTier===t?' on':'')+'" onclick="_venueFilter.sizeTier=\''+t+'\';renderVenueIndex()">'+t+'</button>';}).join('')
-    +'</div></div>'
-    +'<div class="filter-row"><span class="filter-row-label">접근성</span><div class="filter-chips">'
-    +'<button class="fchip'+(_venueFilter.parkingOnly?' on':'')+'" onclick="_venueFilter.parkingOnly=!_venueFilter.parkingOnly;renderVenueIndex()">🚗 주차 가능만</button>'
-    +'</div></div>'
-    +'<div class="filter-row"><span class="filter-row-label">정렬</span><div class="filter-chips">'
-    +'<button class="fchip'+(_venueFilter.sort==='name'?' on':'')+'" onclick="_venueFilter.sort=\'name\';renderVenueIndex()">이름순</button>'
-    +'<button class="fchip'+(_venueFilter.sort==='shows'?' on':'')+'" onclick="_venueFilter.sort=\'shows\';renderVenueIndex()">공연 많은순</button>'
-    +'<button class="fchip'+(_venueFilter.sort==='seats'?' on':'')+'" onclick="_venueFilter.sort=\'seats\';renderVenueIndex()">좌석수 많은순</button>'
-    +'</div></div></div></div>';
-
-  var resultH='<div class="result-header"><span class="result-count"><em>'+filtered.length+'</em>개 극장</span></div>';
+  var filterH=filterBar('venues',[
+    {key:'sizeTier',label:'규모',type:'single',value:_venueFilter.sizeTier,options:[{v:'소극장',l:'소극장 (100석 미만)'},{v:'중극장',l:'중극장 (100~299석)'},{v:'대극장',l:'대극장 (300석 이상)'}]},
+    {key:'parkingOnly',label:'주차 가능',type:'toggle',value:_venueFilter.parkingOnly}
+  ],{
+    count:'<em>'+filtered.length+'</em>개 극장',
+    sort:{value:_venueFilter.sort,options:[{v:'name',l:'이름순'},{v:'shows',l:'공연 많은순'},{v:'seats',l:'좌석 많은순'}],onChange:function(v){_venueFilter.sort=v;renderVenueIndex();}},
+    onChange:function(k,v){_venueFilter[k]=v;renderVenueIndex();},
+    onReset:function(){_venueFilter={sizeTier:'',sort:_venueFilter.sort,parkingOnly:false};renderVenueIndex();}
+  });
+  var resultH='';
   var listH='';
   if(!filtered.length){
     listH='<div class="result-empty"><div class="result-empty-icon">📍</div>해당하는 극장이 없어요.</div>';

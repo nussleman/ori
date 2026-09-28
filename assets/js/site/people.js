@@ -34,36 +34,21 @@ function renderPeopleIndex(){
     filtered=filtered.slice().sort(function(a,b){return histByPerson(b.id).length-histByPerson(a.id).length;});
   }
 
-  var hasFilter=_peopleFilter.type!=='all'||!!_peopleFilter.staffRole||_peopleFilter.sort!=='name';
-  var filterH='<div class="filter-panel"><div class="filter-panel-top"><span class="filter-panel-title">필터 / 정렬</span>'
-    +(hasFilter?'<button class="filter-clear-btn" onclick="_peopleFilter={type:\'all\',staffRole:\'\',sort:\'name\'};renderPeopleIndex()">전체 초기화</button>':'')
-    +'</div><div class="filter-rows">'
-    +'<div class="filter-row"><span class="filter-row-label">역할</span><div class="filter-chips">'
-    +'<button class="fchip'+(_peopleFilter.type==='all'?' on':'')+'" onclick="_peopleFilter.type=\'all\';_peopleFilter.staffRole=\'\';renderPeopleIndex()">전체</button>'
-    +'<button class="fchip'+(_peopleFilter.type==='actor'?' on':'')+'" onclick="_peopleFilter.type=\'actor\';_peopleFilter.staffRole=\'\';renderPeopleIndex()">배우</button>'
-    +'<button class="fchip'+(_peopleFilter.type==='staff'?' on':'')+'" onclick="_peopleFilter.type=\'staff\';renderPeopleIndex()">스텝</button>'
-    +'</div></div>';
-
-  if((_peopleFilter.type==='staff'||_peopleFilter.type==='all')&&staffRoleIds.length){
-    filterH+='<div class="filter-row"><span class="filter-row-label">스텝 역할</span><div class="filter-chips">';
-    staffRoleIds.forEach(function(srid){
-      var on=_peopleFilter.staffRole===srid;
-      filterH+='<button class="fchip'+(on?' on':'')+'" onclick="_peopleFilter.staffRole=\''+(on?'':srid)+'\';renderPeopleIndex()">'+nm(srid)+'</button>';
-    });
-    filterH+='</div></div>';
-  }
-
-  filterH+='<div class="filter-row"><span class="filter-row-label">정렬</span><div class="filter-chips">'
-    +'<button class="fchip'+(_peopleFilter.sort==='name'?' on':'')+'" onclick="_peopleFilter.sort=\'name\';renderPeopleIndex()">이름순</button>'
-    +'<button class="fchip'+(_peopleFilter.sort==='count'?' on':'')+'" onclick="_peopleFilter.sort=\'count\';renderPeopleIndex()">참여 이력순</button>'
-    +'</div></div>'
-    +'</div></div>';
-
-  var resultH='<div class="result-header"><span class="result-count"><em>'+filtered.length+'</em>명</span>'
-    +'<div class="result-view-btns">'
-    +'<button class="rvb'+(_peopleIndexView==='grid'?' on':'')+'" onclick="_peopleIndexView=\'grid\';renderPeopleIndex()">▦</button>'
-    +'<button class="rvb'+(_peopleIndexView==='list'?' on':'')+'" onclick="_peopleIndexView=\'list\';renderPeopleIndex()">≡</button>'
-    +'</div></div>';
+  var filterH=filterBar('people',[
+    {key:'type',label:'역할',type:'single',value:_peopleFilter.type==='all'?'':_peopleFilter.type,options:[{v:'actor',l:'배우'},{v:'staff',l:'스텝'}]},
+    {key:'staffRole',label:'스텝 역할',type:'single',value:_peopleFilter.staffRole,options:_peopleFilter.type==='actor'?[]:staffRoleIds.map(function(r){return{v:r,l:nm(r)};})}
+  ],{
+    count:'<em>'+filtered.length+'</em>명',
+    sort:{value:_peopleFilter.sort,options:[{v:'name',l:'이름순'},{v:'count',l:'참여 이력순'}],onChange:function(v){_peopleFilter.sort=v;renderPeopleIndex();}},
+    view:{value:_peopleIndexView,onChange:function(v){_peopleIndexView=v;renderPeopleIndex();}},
+    onChange:function(k,v){
+      if(k==='type'){_peopleFilter.type=v||'all';if(v==='actor')_peopleFilter.staffRole='';}
+      else _peopleFilter[k]=v;
+      renderPeopleIndex();
+    },
+    onReset:function(){_peopleFilter={type:'all',staffRole:'',sort:_peopleFilter.sort};renderPeopleIndex();}
+  });
+  var resultH='';
 
   var listH='';
   if(!filtered.length){

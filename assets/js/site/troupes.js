@@ -89,8 +89,6 @@ function showTroupe(tid,push){
   injectBackBtn('← 단체',function(){goTroupes();});
 }
 
-var _venueFilter={sizeTier:'',sort:'name',parkingOnly:false};
-
 function goTroupes(push){
   if(push!==false)history.pushState({view:'troupes'},'','#troupes');
   setNav('troupes');_sbContext='troupes';  _allTroupes=DB.troupes.filter(function(t){return fld(t,'극단명');});
@@ -116,7 +114,7 @@ function renderTroupeIndex(){
   });
 
   var orgTypeSet={},memberBaseSet={},regionSet={},statusSet={};
-  all.forEach(function(t){var o=fld(t,'조직형태')||[];(Array.isArray(o)?o:[o]).forEach(function(v){if(v)orgTypeSet[v]=true;});var m=fld(t,'구성원기반');if(m)memberBaseSet[m]=true;var r=fld(t,'활동지역');if(r)regionSet[r]=true;var s=fld(t,'운영상태');if(s)statusSet[s]=true;});
+  all.forEach(function(t){var o=fld(t,'조직형태')||[];(Array.isArray(o)?o:[o]).forEach(function(v){if(v)orgTypeSet[v]=true;});var m=fld(t,'구성원기반');if(m)memberBaseSet[m]=true;(function(r){(Array.isArray(r)?r:[r]).forEach(function(x){if(x)regionSet[x]=true;});})(fld(t,'활동지역'));var s=fld(t,'운영상태');if(s)statusSet[s]=true;});
   var orgTypes=Object.keys(orgTypeSet).sort();
   var memberBases=Object.keys(memberBaseSet).sort();
   var regions=Object.keys(regionSet).sort();
@@ -125,7 +123,7 @@ function renderTroupeIndex(){
   var filtered=all.filter(function(t){
     if(_troupeFilter.orgType&&(fld(t,'조직형태')||[]).indexOf(_troupeFilter.orgType)===-1)return false;
     if(_troupeFilter.memberBase&&fld(t,'구성원기반')!==_troupeFilter.memberBase)return false;
-    if(_troupeFilter.region&&fld(t,'활동지역')!==_troupeFilter.region)return false;
+    if(_troupeFilter.region){var rg=fld(t,'활동지역');if((Array.isArray(rg)?rg:[rg]).indexOf(_troupeFilter.region)===-1)return false;}
     if(_troupeFilter.status&&fld(t,'운영상태')!==_troupeFilter.status)return false;
     return true;
   });
@@ -138,42 +136,19 @@ function renderTroupeIndex(){
     filtered=filtered.slice().sort(function(a,b){return(fld(a,'극단명')||'').localeCompare(fld(b,'극단명')||'');});
   }
 
-  var hasFilter=!!_troupeFilter.orgType||!!_troupeFilter.memberBase||!!_troupeFilter.region||!!_troupeFilter.status||_troupeFilter.sort!=='name';
-  var filterH='<div class="filter-panel"><div class="filter-panel-top"><span class="filter-panel-title">필터 / 정렬</span>'
-    +(hasFilter?'<button class="filter-clear-btn" onclick="clearTroupeFilter()">전체 초기화</button>':'')
-    +'</div><div class="filter-rows">';
-
-  if(orgTypes.length){
-    filterH+='<div class="filter-row"><span class="filter-row-label">조직형태</span><div class="filter-chips">'
-      +'<button class="fchip'+(!_troupeFilter.orgType?' on':'')+'" onclick="_troupeFilter.orgType=\'\';renderTroupeIndex()">전체</button>'
-      +orgTypes.map(function(o){return '<button class="fchip'+(_troupeFilter.orgType===o?' on':'')+'" onclick="_troupeFilter.orgType=\''+o+'\';renderTroupeIndex()">'+o+'</button>';}).join('')
-      +'</div></div>';
-  }
-  if(memberBases.length){
-    filterH+='<div class="filter-row"><span class="filter-row-label">구성원기반</span><div class="filter-chips">'
-      +'<button class="fchip'+(!_troupeFilter.memberBase?' on':'')+'" onclick="_troupeFilter.memberBase=\'\';renderTroupeIndex()">전체</button>'
-      +memberBases.map(function(m){return '<button class="fchip'+(_troupeFilter.memberBase===m?' on':'')+'" onclick="_troupeFilter.memberBase=\''+m+'\';renderTroupeIndex()">'+m+'</button>';}).join('')
-      +'</div></div>';
-  }
-  if(regions.length){
-    filterH+='<div class="filter-row"><span class="filter-row-label">활동지역</span><div class="filter-chips">'
-      +'<button class="fchip'+(!_troupeFilter.region?' on':'')+'" onclick="_troupeFilter.region=\'\';renderTroupeIndex()">전체</button>'
-      +regions.map(function(r){return '<button class="fchip'+(_troupeFilter.region===r?' on':'')+'" onclick="_troupeFilter.region=\''+r+'\';renderTroupeIndex()">'+r+'</button>';}).join('')
-      +'</div></div>';
-  }
-  if(statuses.length){
-    filterH+='<div class="filter-row"><span class="filter-row-label">운영상태</span><div class="filter-chips">'
-      +'<button class="fchip'+(!_troupeFilter.status?' on':'')+'" onclick="_troupeFilter.status=\'\';renderTroupeIndex()">전체</button>'
-      +statuses.map(function(s){return '<button class="fchip'+(_troupeFilter.status===s?' on':'')+'" onclick="_troupeFilter.status=\''+s+'\';renderTroupeIndex()">'+s+'</button>';}).join('')
-      +'</div></div>';
-  }
-  filterH+='<div class="filter-row"><span class="filter-row-label">정렬</span><div class="filter-chips">'
-    +'<button class="fchip'+(_troupeFilter.sort==='name'?' on':'')+'" onclick="_troupeFilter.sort=\'name\';renderTroupeIndex()">이름순</button>'
-    +'<button class="fchip'+(_troupeFilter.sort==='shows'?' on':'')+'" onclick="_troupeFilter.sort=\'shows\';renderTroupeIndex()">공연 많은순</button>'
-    +'<button class="fchip'+(_troupeFilter.sort==='members'?' on':'')+'" onclick="_troupeFilter.sort=\'members\';renderTroupeIndex()">참여 사람 많은순</button>'
-    +'</div></div></div></div>';
-
-  var resultH='<div class="result-header"><span class="result-count"><em>'+filtered.length+'</em>개 단체</span></div>';
+  var opt=function(arr){return arr.map(function(x){return{v:x,l:x};});};
+  var filterH=filterBar('troupes',[
+    {key:'orgType',label:'조직형태',type:'single',value:_troupeFilter.orgType,options:opt(orgTypes)},
+    {key:'memberBase',label:'구성원',type:'single',value:_troupeFilter.memberBase,options:opt(memberBases)},
+    {key:'region',label:'지역',type:'single',value:_troupeFilter.region,options:opt(regions)},
+    {key:'status',label:'운영상태',type:'single',value:_troupeFilter.status,options:opt(statuses)}
+  ],{
+    count:'<em>'+filtered.length+'</em>개 단체',
+    sort:{value:_troupeFilter.sort,options:[{v:'name',l:'이름순'},{v:'shows',l:'공연 많은순'},{v:'members',l:'참여 사람 많은순'}],onChange:function(v){_troupeFilter.sort=v;renderTroupeIndex();}},
+    onChange:function(k,v){_troupeFilter[k]=v;renderTroupeIndex();},
+    onReset:function(){_troupeFilter={orgType:'',memberBase:'',region:'',status:'',sort:_troupeFilter.sort};renderTroupeIndex();}
+  });
+  var resultH='';
 
   var listH='';
   if(!filtered.length){
