@@ -109,8 +109,9 @@ function showRole(rid,push){
     kicker:'배역'+(wid?' · '+dvLink('work',wid,nm(wid)):''),
     title:fld(role,'배역명'),
     tags:fld(role,'태그')||[],
-    facts:[['작품',dvLink('work',wid,nm(wid))],['성별',escHtml(fld(role,'성별')||'')],['맡은 사람',hists.length?hists.length+'명':''],['공연',showIds.length?showIds.length+'편':'']],
-    actions:[dvFavBtn('role',rid,'wishlist'),dvEditBtn('role',rid)],
+    favs:[dvFavIcon('role',rid,'wishlist')],
+    info:[['작품',dvLink('work',wid,nm(wid))],['성별',escHtml(fld(role,'성별')||'')],['맡은 사람',hists.length?hists.length+'명':''],['공연',showIds.length?showIds.length+'편':'']],
+    links:[dvEditBtn('role',rid)],
     sections:[
       {title:'맡은 사람',items:actorItems,layout:'people',peek:true,peekMax:8},
       {title:'같은 작품의 다른 배역',items:siblings.map(function(r){return dvChip('role',r.id,fld(r,'배역명'));}),layout:'chips',peek:true,peekMax:12},

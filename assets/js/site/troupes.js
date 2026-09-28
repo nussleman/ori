@@ -25,11 +25,13 @@ function showTroupe(tid,push){
     thumb:{url:iurl(photos),shape:'square',ph:'🏢'},
     kicker:'단체'+(arr(fld(troupe,'조직형태'))?' · '+escHtml(arr(fld(troupe,'조직형태'))):''),
     title:fld(troupe,'극단명'),
-    facts:[['지역',escHtml(arr(fld(troupe,'활동지역')))],['운영상태',escHtml(fld(troupe,'운영상태')||'')],['창단',fld(troupe,'창단연도')?fld(troupe,'창단연도')+'년':''],['구성원',escHtml(fld(troupe,'구성원기반')||'')],['공연',shows.length?shows.length+'편':''],['참여한 사람',members.length?members.length+'명':''],['단원 모집',escHtml(fld(troupe,'모집정보')||'')]],
-    actions:[dvFavBtn('troupe',tid),dvLinkChips(fld(troupe,'주요링크')),dvEditBtn('troupe',tid)],
+    favs:[dvFavIcon('troupe',tid)],
+    chips:dvLinkChips(fld(troupe,'주요링크')),
+    info:[['지역',escHtml(arr(fld(troupe,'활동지역')))],['운영상태',escHtml(fld(troupe,'운영상태')||'')],['창단',fld(troupe,'창단연도')?fld(troupe,'창단연도')+'년':''],['구성원',escHtml(fld(troupe,'구성원기반')||'')],['공연',shows.length?shows.length+'편':''],['참여한 사람',members.length?members.length+'명':''],['단원 모집',escHtml(fld(troupe,'모집정보')||'')]],
+    links:[dvEditBtn('troupe',tid)],
     widget:'<span id="troupe-claim-widget"></span>',
     sections:[
-      {title:'공연 목록',n:shows.length,items:shows.map(function(s){return dvShowCard(s,dvShowSub(s,['work','date']));}),layout:'cards',peek:true,body:dvYearShows('troupe-shows',shows,['work','date'])},
+      {title:'공연 목록',n:shows.length,items:shows.map(function(s){return dvShowFilm(s);}),layout:'film',peekMax:5,peek:true,body:dvYearShows('troupe-shows',shows,['work','date'])},
       {title:'많이 참여한 사람',items:memberItems,layout:'rows',peek:true,peekMax:5},
       {title:'사진',body:buildPhotoGalleryHtml(photos,fld(troupe,'극단명'))}
     ],

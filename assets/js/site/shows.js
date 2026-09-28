@@ -125,12 +125,25 @@ function showShow(sid,push){
   var result=[fld(show,'매진여부')?'매진':'',fld(show,'재공연여부')?'재공연':''].filter(Boolean).join(' · ');
 
   var sortedActors=actors.slice().sort(function(a,b){var ra=ids(fld(a,'배역'))[0]||'',rb=ids(fld(b,'배역'))[0]||'';var oa=ROLE_ORDER[ra],ob=ROLE_ORDER[rb];if(oa==null&&ob==null)return 0;if(oa==null)return 1;if(ob==null)return -1;return oa-ob;});
-  var castItems=sortedActors.map(function(rec){
+  // 배역별로 묶는다 (더블캐스팅이면 한 줄에 여러 이름)
+  var roleGroups=[],roleIdx={};
+  sortedActors.forEach(function(rec){
     var pid=ids(fld(rec,'참여자'))[0]||'',rid=ids(fld(rec,'배역'))[0]||'';
-    return dvPersonCard(pid,rid?dvLink('role',rid,nm(rid)):'','',iurl(fld(rec,'사진')));
+    var k=rid||('_'+pid);
+    if(roleIdx[k]==null){roleIdx[k]=roleGroups.length;roleGroups.push({rid:rid,pids:[],photo:''});}
+    var g=roleGroups[roleIdx[k]];if(pid&&g.pids.indexOf(pid)===-1)g.pids.push(pid);
+    if(!g.photo)g.photo=iurl(fld(rec,'사진'))||'';
   });
+  var castItems=roleGroups.map(function(g){return dvRoleRow(g.rid,g.rid?nm(g.rid):'',g.pids,g.photo);});
   var sortedStaff=staff.slice().sort(function(a,b){var ra=ids(fld(a,'스텝'))[0]||'',rb=ids(fld(b,'스텝'))[0]||'';return(STAFF_ORDER[ra]||999)-(STAFF_ORDER[rb]||999);});
-  var staffItems=sortedStaff.map(function(rec){var pid=ids(fld(rec,'참여자'))[0]||'',rid=ids(fld(rec,'스텝'))[0]||'';return dvPersonRow(pid,escHtml(nm(rid)));});
+  var staffGroups=[],staffIdx={};
+  sortedStaff.forEach(function(rec){
+    var pid=ids(fld(rec,'참여자'))[0]||'',rid=ids(fld(rec,'스텝'))[0]||'';
+    var k=rid||'_';
+    if(staffIdx[k]==null){staffIdx[k]=staffGroups.length;staffGroups.push({label:rid?nm(rid):'스텝',pids:[]});}
+    var g=staffGroups[staffIdx[k]];if(pid&&g.pids.indexOf(pid)===-1)g.pids.push(pid);
+  });
+  var staffItems=staffGroups.map(function(g){return dvCredit(g.label,g.pids);});
 
   // 관련 공연: 같은 작품(재공연) > 같은 단체 > 출연진 겹침 > 같은 극장
   var currentPeople={};actors.forEach(function(h){var pid=ids(fld(h,'참여자'))[0]||'';if(pid)currentPeople[pid]=true;});
@@ -150,20 +163,26 @@ function showShow(sid,push){
   scored.sort(function(a,b){return b.score-a.score;});
   var related=scored.slice(0,6).map(function(r){return dvShowCard(r.show,dvShowSub(r.show,['troupe','date']));});
 
+  var photoBody=buildPhotoGalleryHtml(fld(show,'포스터'),fld(show,'공연명'));
   dvRender({
-    type:'show',id:sid,back:{label:'공연 목록',go:'goShows()'},
+    type:'show',id:sid,back:{label:'공연 목록',go:'goShows()'},hero:true,
     thumb:{url:POSTER[sid]||'',shape:'poster',ph:'🎭'},
     kicker:'공연'+(wid?' · '+dvLink('work',wid,nm(wid)):''),
     title:fld(show,'공연명'),
-    facts:[['단체',dvLink('troupe',trid,nm(trid))],['극장',dvLink('venue',vid,nm(vid))],['기간',dateLabel],['라이선스',licLabel],['관객',audience!=null?audience+'명':''],['결과',result]],
-    actions:[dvFavBtn('show',sid),dvActBtn('라이선스 문의','openLicenseInquiry(\''+sid+'\',\''+wid+'\')','💬'),dvEditBtn('show',sid)],
+    favs:[dvFavIcon('show',sid)],
+    sub:[dateLabel?dateLabel.replace(/-/g,'.'):'',vid&&nm(vid)?escHtml(nm(vid)):''].filter(Boolean).join(' · '),
+    info:[['작품',dvLink('work',wid,nm(wid))],['단체',dvLink('troupe',trid,nm(trid))],['극장',dvLink('venue',vid,nm(vid))],['기간',dateLabel?dateLabel.replace(/-/g,'.'):''],['라이선스',licLabel],['관객',audience!=null?audience+'명':''],['결과',result]],
     sections:[
-      {title:'출연진',items:castItems,layout:'people',peek:true,peekMax:8},
-      {title:'스텝',items:staffItems,layout:'rows',peek:true,peekMax:6},
-      {title:'사진',body:buildPhotoGalleryHtml(fld(show,'포스터'),fld(show,'공연명'))},
+      {title:'출연진',tab:'출연진',items:castItems,layout:'roles',peek:true,peekMax:8,homeMax:6},
+      {title:'제작진',tab:'출연진',items:staffItems,layout:'credits',peek:true,peekMax:6,homeMax:4},
+      {title:'사진',tab:photoBody?'사진':'',body:photoBody,items:[]},
       {title:'관련 공연',items:related,layout:'cards'}
     ],
     empty:'아직 등록된 출연진·스텝이 없어요.',
-    footer:'<div class="dv-footer"><span class="report-copyright-link" onclick="openCopyrightReport(\''+sid+'\')">이 공연에 저작권 문제가 있나요? 신고하기</span></div>'
+    links:[
+      dvTextLink('라이선스 문의','openLicenseInquiry(\''+sid+'\',\''+wid+'\')'),
+      dvEditBtn('show',sid),
+      dvTextLink('저작권 신고','openCopyrightReport(\''+sid+'\')')
+    ]
   });
 }
