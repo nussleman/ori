@@ -19,6 +19,9 @@ function $$(sel){return(_domScope||document).querySelectorAll(sel);}
 function sb(h){$('sb').innerHTML=h;}
 /* 화면 렌더: 평소엔 본문(#mn)에, 미리보기 패널을 그리는 중이면 패널에 넣는다.
    카드 클릭(한 번=패널, 두 번=전용 페이지)과 이미지 확대 처리는 peek.js의 이벤트 위임이 담당한다. */
+/* 편집 모드 기본값: 사이트에선 항상 꺼져 있다. 어드민이 ?edit=1로 띄우면 edit.js가 이 둘을 덮어쓴다. */
+function isEditMode(){return false;}
+function edPrivBadge(){return '';}
 function mn(h){
   if(PEEK.rendering){$('peek-body').innerHTML=h;return;}
   $('mn').innerHTML=h;

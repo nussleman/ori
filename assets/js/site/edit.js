@@ -1,10 +1,11 @@
-/* 오리 사이트 — 관리자 편집 모드
-   관리자(user_profiles.is_admin)는 상단바의 "편집" 스위치로 사이트를 그대로 둘러보면서 고칠 수 있다.
-   - 켜면 비공개(라이선스 미상·미확보, 숨김) 공연과 이력 없는 사람까지 모두 보인다 (core.js load()).
+/* 오리 어드민 — 사이트에서 편집
+   어드민(admin.html > 사이트에서 편집)이 오리 사이트를 ?edit=1 로 품어 띄울 때만 불러온다 (gongyon-db.html 맨 아래).
+   일반 사이트에는 이 파일이 아예 로드되지 않는다. 관리자(user_profiles.is_admin)일 때만 켜진다.
+   - 비공개(라이선스 미상·미확보, 숨김) 공연과 이력 없는 사람까지 모두 보인다 (core.js load()).
    - 상세(전용 페이지·오른쪽 패널)의 기본 정보는 값을 눌러 그 자리에서 고친다.
    - 사진 관리·삭제는 상세 맨 위 편집 줄에서, 출연진·제작진·배역·창작진은 해당 섹션의 + / × 로.
    - 목록 화면에서는 오른쪽 아래 "+ 새 …" 버튼으로 추가한다.
-   쓰기 권한은 DB 정책(is_admin())이 최종으로 막는다. 화면의 스위치는 편의일 뿐이다. */
+   쓰기 권한은 DB 정책(is_admin())이 최종으로 막는다. */
 var EDIT={admin:false,on:false};
 function isEditMode(){return EDIT.admin&&EDIT.on;}
 
@@ -40,26 +41,12 @@ var ED_SCHEMA={
 var ED_FK_LIST={work:function(){return DB.works;},troupe:function(){return DB.troupes;},venue:function(){return DB.venues;}};
 var ED_LIST_VIEWS={shows:'show',works:'work',people:'person',troupes:'troupe',venues:'venue',roles:'role'};
 
-/* ── 켜고 끄기 ── */
+/* ── 켜기: 관리자면 바로 켠다 ── */
 function edInit(){
   EDIT.admin=!!(CURRENT_USER&&CURRENT_USER.isAdmin);
-  var saved=false;try{saved=localStorage.getItem('ori-edit-mode')==='1';}catch(e){}
-  EDIT.on=EDIT.admin&&saved;
-  edSyncUI();
-}
-function edSyncUI(){
+  EDIT.on=EDIT.admin;
   document.body.classList.toggle('edit-mode',isEditMode());
-  var b=document.getElementById('edit-toggle');
-  if(b){b.hidden=!EDIT.admin;b.classList.toggle('on',isEditMode());b.setAttribute('aria-pressed',String(isEditMode()));
-    b.innerHTML=isEditMode()?'<span class="et-dot"></span>편집 중':'✎ 편집';}
   edSyncFab(window._edNavV);
-}
-async function toggleEditMode(){
-  if(!EDIT.admin)return;
-  EDIT.on=!EDIT.on;
-  try{localStorage.setItem('ori-edit-mode',EDIT.on?'1':'0');}catch(e){}
-  edSyncUI();
-  await edReload();
 }
 /* 데이터를 다시 읽고 지금 화면(과 열려 있던 패널)을 그대로 다시 그린다 */
 async function edReload(){

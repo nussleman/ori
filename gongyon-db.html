@@ -13,7 +13,7 @@
 <meta name="twitter:description" content="프로와 아마추어를 가리지 않는 연극·뮤지컬 공연 기록. 사람·극장·작품으로 이어지는 이력을 찾아보고, 내 공연의 기획부터 라이선스·제작·운영까지 한 곳에서.">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&display=swap">
-<link rel="stylesheet" href="assets/css/site.css?v=20260928n">
+<link rel="stylesheet" href="assets/css/site.css?v=20260928o">
 </head>
 <body>
 
@@ -98,7 +98,6 @@
         <button class="gs-clear" id="gs-clear" onclick="gsClear()">✕</button>
         <div class="gs-dropdown" id="gs-dropdown"></div>
       </div>
-      <button type="button" class="edit-toggle" id="edit-toggle" hidden onclick="toggleEditMode()" title="관리자 편집 모드: 사이트를 둘러보며 바로 고쳐요" aria-pressed="false">✎ 편집</button>
     </div>
     <main id="mn"></main>
   </div>
@@ -253,31 +252,32 @@
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/config.js?v=20260928n"></script>
-<script src="assets/js/site/core.js?v=20260928n"></script>
-<script src="assets/js/site/filters.js?v=20260928n"></script>
-<script src="assets/js/site/detail.js?v=20260928n"></script>
-<script src="assets/js/site/account.js?v=20260928n"></script>
-<script src="assets/js/site/edit-request.js?v=20260928n"></script>
-<script src="assets/js/site/mypage.js?v=20260928n"></script>
-<script src="assets/js/site/project.js?v=20260928n"></script>
-<script src="assets/js/site/project-home.js?v=20260928n"></script>
-<script src="assets/js/site/project-schedule.js?v=20260928n"></script>
-<script src="assets/js/site/project-wizard.js?v=20260928n"></script>
-<script src="assets/js/site/project-browse.js?v=20260928n"></script>
-<script src="assets/js/site/pages.js?v=20260928n"></script>
-<script src="assets/js/site/dashboard.js?v=20260928n"></script>
-<script src="assets/js/site/home.js?v=20260928n"></script>
-<script src="assets/js/site/shows.js?v=20260928n"></script>
-<script src="assets/js/site/works.js?v=20260928n"></script>
-<script src="assets/js/site/roles.js?v=20260928n"></script>
-<script src="assets/js/site/people.js?v=20260928n"></script>
-<script src="assets/js/site/troupes.js?v=20260928n"></script>
-<script src="assets/js/site/venues.js?v=20260928n"></script>
-<script src="assets/js/site/peek.js?v=20260928n"></script>
-<script src="assets/js/site/make.js?v=20260928n"></script>
-<script src="assets/js/site/bridges.js?v=20260928n"></script>
-<script src="assets/js/site/edit.js?v=20260928n"></script>
-<script src="assets/js/site/router.js?v=20260928n"></script>
+<script src="assets/js/config.js?v=20260928o"></script>
+<script src="assets/js/site/core.js?v=20260928o"></script>
+<script src="assets/js/site/filters.js?v=20260928o"></script>
+<script src="assets/js/site/detail.js?v=20260928o"></script>
+<script src="assets/js/site/account.js?v=20260928o"></script>
+<script src="assets/js/site/edit-request.js?v=20260928o"></script>
+<script src="assets/js/site/mypage.js?v=20260928o"></script>
+<script src="assets/js/site/project.js?v=20260928o"></script>
+<script src="assets/js/site/project-home.js?v=20260928o"></script>
+<script src="assets/js/site/project-schedule.js?v=20260928o"></script>
+<script src="assets/js/site/project-wizard.js?v=20260928o"></script>
+<script src="assets/js/site/project-browse.js?v=20260928o"></script>
+<script src="assets/js/site/pages.js?v=20260928o"></script>
+<script src="assets/js/site/dashboard.js?v=20260928o"></script>
+<script src="assets/js/site/home.js?v=20260928o"></script>
+<script src="assets/js/site/shows.js?v=20260928o"></script>
+<script src="assets/js/site/works.js?v=20260928o"></script>
+<script src="assets/js/site/roles.js?v=20260928o"></script>
+<script src="assets/js/site/people.js?v=20260928o"></script>
+<script src="assets/js/site/troupes.js?v=20260928o"></script>
+<script src="assets/js/site/venues.js?v=20260928o"></script>
+<script src="assets/js/site/peek.js?v=20260928o"></script>
+<script src="assets/js/site/make.js?v=20260928o"></script>
+<script src="assets/js/site/bridges.js?v=20260928o"></script>
+<!-- 편집 모드는 어드민(admin.html > 사이트에서 편집) 안에서 ?edit=1 로 띄울 때만 불러온다 -->
+<script>if(/[?&]edit=1(&|$)/.test(location.search))document.write('<script src="assets/js/site/edit.js?v=20260928o"><\/script>');</script>
+<script src="assets/js/site/router.js?v=20260928o"></script>
 </body>
 </html>

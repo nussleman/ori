@@ -86,8 +86,32 @@ function switchAdminTab(tab) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   const panel = document.getElementById('tab-' + tab);
   if (panel) panel.classList.add('active');
+  if (tab === 'browse') initBrowseFrame();
   if (location.hash !== '#' + tab) history.replaceState(null, '', '#' + tab);
 }
+
+// ---------- 사이트에서 편집: 오리 사이트를 ?edit=1 로 품어 띄운다 (assets/js/site/edit.js) ----------
+const BROWSE_URL = 'gongyon-db.html?edit=1';
+function initBrowseFrame() {
+  const fr = document.getElementById('browse-frame');
+  if (!fr || fr.dataset.ready) return;
+  fr.dataset.ready = '1';
+  fr.src = BROWSE_URL + '#shows';
+  document.getElementById('browse-open').href = BROWSE_URL + '#shows';
+}
+document.addEventListener('click', (e) => {
+  const j = e.target.closest('.browse-jumps button[data-go]');
+  if (j) {
+    const fr = document.getElementById('browse-frame');
+    try { fr.contentWindow.location.hash = j.dataset.go; } catch (err) { fr.src = BROWSE_URL + j.dataset.go; }
+    document.getElementById('browse-open').href = BROWSE_URL + j.dataset.go;
+    return;
+  }
+  if (e.target.closest('#browse-reload')) {
+    const w = document.getElementById('browse-frame').contentWindow;
+    if (w && w.edReload) w.edReload(); else if (w) w.location.reload();
+  }
+});
 window.switchAdminTab = switchAdminTab;
 document.getElementById('navTabs').addEventListener('click', (e) => {
   const btn = e.target.closest('button[data-tab]');
