@@ -1054,3 +1054,61 @@ body.mode-make #mn{max-width:1200px}
   .dv-tabs{gap:1.2rem}
   .dv-info-row{grid-template-columns:72px 1fr}
 }
+
+/* ══ 만들기 모드 — 극장의 공기: 무대 조명, 벨벳 막, 티켓, 전광판 ══ */
+body.mode-make{--velvet:#3a1519;--velvet2:#241012;--spot:rgba(232,196,128,0.10)}
+body.mode-make .content-area{background:
+  radial-gradient(ellipse 60% 42% at 50% -6%,var(--spot),transparent 72%),
+  var(--bg)}
+/* 상단바 아래 얇은 막 주름 */
+body.mode-make .top-bar{box-shadow:0 1px 0 rgba(0,0,0,0.4)}
+body.mode-make .top-bar::after{content:'';position:absolute;left:0;right:0;bottom:-5px;height:5px;pointer-events:none;
+  background:repeating-linear-gradient(90deg,#471a1f 0,#2a0e11 8px,#471a1f 16px);opacity:0.85;z-index:1}
+body.mode-make .mode-switch #mode-make.active,body.mode-make .mode-switch #mode-make[aria-selected="true"]{color:#f1d9a8;background:linear-gradient(180deg,#4a1a1f,#2c0f12)}
+/* 첫 화면 머리 */
+.ms-kicker{font-size:0.7rem;letter-spacing:0.28em;color:var(--accent);margin-bottom:0.5rem}
+.ms-tagline{margin-top:0.5rem;font-size:0.92rem;color:var(--muted)}
+.ms-tagline em{font-style:normal;color:#f1d9a8}
+/* 티켓 카드 (오른쪽 절취선 + 반원 홈) */
+.ms-ticket{--stub:108px;flex-direction:row;align-items:stretch;gap:0;padding:0;border:none;border-radius:12px;
+  background:linear-gradient(135deg,#221c16 0%,#1a1714 55%,#17161a 100%);
+  -webkit-mask:radial-gradient(circle 10px at calc(100% - var(--stub)) 0,#0000 97%,#000) top/100% 51% no-repeat,radial-gradient(circle 10px at calc(100% - var(--stub)) 100%,#0000 97%,#000) bottom/100% 51% no-repeat;
+          mask:radial-gradient(circle 10px at calc(100% - var(--stub)) 0,#0000 97%,#000) top/100% 51% no-repeat,radial-gradient(circle 10px at calc(100% - var(--stub)) 100%,#0000 97%,#000) bottom/100% 51% no-repeat;
+  transition:transform .18s ease,filter .18s ease}
+.ms-ticket:hover{background:linear-gradient(135deg,#2a2219 0%,#1f1b17 55%,#1b1a1f 100%);transform:translateY(-2px);filter:drop-shadow(0 8px 18px rgba(0,0,0,0.45))}
+.ms-main{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:0.35rem;padding:1.15rem 1.2rem 1.2rem}
+.ms-ticket .ms-title{font-size:1.12rem;font-weight:500;color:#f3ece0}
+.ms-venue::before{content:'📍 ';opacity:0.7}
+.ms-stub{width:var(--stub);flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.3rem;padding:0.8rem 0.4rem;
+  border-left:2px dashed rgba(255,255,255,0.13);text-align:center}
+.ms-dday{font-size:1.35rem;font-weight:600;letter-spacing:0.02em;color:#f1d9a8;line-height:1.1;font-variant-numeric:tabular-nums}
+.ms-ddate{font-size:0.72rem;color:var(--muted)}
+.ms-stub-soon .ms-dday{color:#ffcf7a;text-shadow:0 0 12px rgba(255,190,90,0.45)}
+.ms-stub-live .ms-dday{font-size:1.05rem;color:#9fe0a8;text-shadow:0 0 12px rgba(127,200,138,0.4)}
+.ms-stub-tbd .ms-dday{color:var(--muted)}
+.ms-stub-done .ms-dday{font-size:1rem;color:var(--muted)}
+.ms-grid-past .ms-ticket{filter:grayscale(0.6);opacity:0.75}
+/* 프로젝트 머리: 벨벳 막 + 전광판 D-day */
+body.mode-make .pj-header{background:linear-gradient(180deg,var(--velvet2) 0%,#1a1113 55%,var(--bg2) 100%)}
+.pj-header{padding-right:calc(2rem + 150px)}
+.pj-marquee{position:absolute;right:2rem;top:1rem;display:flex;flex-direction:column;align-items:center;gap:0.15rem;min-width:118px;padding:0.55rem 0.9rem;border-radius:10px;
+  background:#120d0b;border:2px dotted rgba(241,217,168,0.55);box-shadow:0 0 0 3px #120d0b,0 0 22px rgba(232,196,128,0.14),inset 0 0 14px rgba(232,196,128,0.08)}
+.pj-mq-d{font-size:1.3rem;font-weight:600;color:#f1d9a8;letter-spacing:0.04em;line-height:1.15;text-shadow:0 0 10px rgba(241,217,168,0.45);font-variant-numeric:tabular-nums}
+.pj-mq-s{font-size:0.7rem;color:rgba(241,217,168,0.65)}
+.pj-mq-soon .pj-mq-d{color:#ffcf7a}
+.pj-mq-live{border-color:rgba(159,224,168,0.6)}
+.pj-mq-live .pj-mq-d{color:#9fe0a8;text-shadow:0 0 10px rgba(127,200,138,0.5)}
+.pj-mq-tbd .pj-mq-d,.pj-mq-done .pj-mq-d{color:var(--muted);text-shadow:none}
+.pj-mq-tbd,.pj-mq-done{border-color:rgba(255,255,255,0.18);box-shadow:0 0 0 3px #120d0b}
+@media(max-width:768px){
+  .pj-header{padding-right:calc(1.2rem + 100px)}
+  .pj-marquee{right:1rem;top:0.8rem;min-width:88px;padding:0.4rem 0.6rem}
+  .pj-mq-d{font-size:1.05rem}
+  .ms-ticket{--stub:88px}
+  .ms-dday{font-size:1.1rem}
+}
+@media(max-width:768px){
+  .pj-header .mypage-tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-right:calc(-100px)}
+  .pj-header .mypage-tabs::-webkit-scrollbar{display:none}
+  .pj-header .mypage-tab-btn{flex-shrink:0;padding:0.6rem 0.8rem}
+}

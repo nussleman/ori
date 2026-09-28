@@ -138,11 +138,16 @@ async function loadHomeScheduleBits(){
       eel.innerHTML=(up.length?up.slice(0,3).map(function(ev){return eventRowHtml(ev,false);}).join(''):'<div class="ph-empty-line">예정된 일정이 없어요.</div>')
         +'<button type="button" class="dv-more" onclick="switchProjectTab(\'schedule\')">'+(ctx.isAdmin&&!evs.length?'일정 추가하러 가기 →':'전체 일정 보기 →')+'</button>';
     }
-    // 공연까지 남은 날
-    var perf=evs.filter(function(e){return e.kind==='performance'&&new Date(e.starts_at)>=now;})[0];
-    var target=perf?new Date(perf.starts_at):(ctx.pr.target_start_date?new Date(ctx.pr.target_start_date+'T00:00'):null);
-    var dd=$('ph-dday');
-    if(dd&&target&&dayDiff(target)>=0)dd.innerHTML='공연까지 <b>'+ddayLabel(target)+'</b>';
+    // 전광판 D-day: 첫 '공연' 일정이 있으면 그 날짜를 따른다
+    var perf=evs.filter(function(e){return e.kind==='performance'&&new Date(e.ends_at||e.starts_at)>=now;})[0];
+    var mq=document.querySelector('.pj-marquee');
+    if(perf&&mq){
+      var ps=perf.starts_at.slice(0,10),pl=new Date(perf.starts_at);
+      var localDay=pl.getFullYear()+'-'+String(pl.getMonth()+1).padStart(2,'0')+'-'+String(pl.getDate()).padStart(2,'0');
+      var d2=projectDday(localDay||ps,ctx.pr.target_end_date&&ctx.pr.target_end_date>localDay?ctx.pr.target_end_date:null,ctx.pr.status);
+      mq.className='pj-marquee pj-mq-'+d2.cls;
+      mq.innerHTML='<span class="pj-mq-d">'+d2.big+'</span>'+(d2.small?'<span class="pj-mq-s">'+d2.small+'</span>':'');
+    }
     ctx.eventCount=evs.length;
   }catch(e){var e2=$('ph-events');if(e2)e2.innerHTML='<div class="ph-empty-line">일정을 불러오지 못했어요.</div>';}
 }

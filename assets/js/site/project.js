@@ -85,7 +85,9 @@ async function goProject(pid,push){
     if(window._projectTabNext){window._projectTab=window._projectTabNext;window._projectTabNext=null;}
     var tabs=currentProjectTabs();
     if(!tabs.some(function(t){return t[0]===window._projectTab;}))window._projectTab='home';
-    var h='<div class="mypage-sticky-header"><div class="dv-kicker">프로젝트 · '+escHtml(PROJECT_STATUS_LABEL[pr.data.status]||'')+(!isAdmin?' · 팀원으로 보는 중':'')+'</div>'
+    var dd=projectDday(pr.data.target_start_date,pr.data.target_end_date,pr.data.status);
+    var marquee='<div class="pj-marquee pj-mq-'+dd.cls+'" title="'+escHtml(dd.small||'')+'"><span class="pj-mq-d">'+dd.big+'</span>'+(dd.small?'<span class="pj-mq-s">'+dd.small+'</span>':'')+'</div>';
+    var h='<div class="mypage-sticky-header pj-header">'+marquee+'<div class="dv-kicker">프로젝트 · '+escHtml(PROJECT_STATUS_LABEL[pr.data.status]||'')+(!isAdmin?' · 팀원으로 보는 중':'')+'</div>'
       +'<div class="detail-title" id="project-title-display" style="margin-bottom:0.8rem;display:flex;align-items:center;gap:0.6rem"><span>'+escHtml(pr.data.title||'새 프로젝트')+'</span>'+(isAdmin?'<button class="myinfo-edit-toggle" style="flex-shrink:0" onclick="editProjectTitle(\''+pid+'\')" title="제목 수정">✎</button>':'')+'</div>'
       +'<div class="mypage-tabs">'+tabs.map(function(t){
         var badge=t[0]==='people'?'<span class="nav-badge-dot"></span>':'';

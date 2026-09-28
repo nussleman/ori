@@ -44,8 +44,8 @@ function renderProjectHome(el){
     +'<div class="dv-fact"><dt>라이선스</dt><dd>'+(pr.is_licensed?escHtml(pr.is_licensed):empty)+editBtn('license')+'</dd></div>'
     +'</dl>';
 
-  var h='<div class="ph-top"><div id="ph-dday" class="ph-dday"></div>'
-    +(!isAdmin?'<div class="ph-me">이 공연에서 내 역할 <b>'+(myRole?escHtml(myRole):'아직 정해지지 않았어요')+'</b></div>':'')+'</div>';
+  var h='<div class="ph-top">'
+    +(!isAdmin?'<div class="ph-me">이 프로젝트에서 내 역할 <b>'+(myRole?escHtml(myRole):'아직 정해지지 않았어요')+'</b></div>':'')+'</div>';
   h+=stageH;
   if(isAdmin)h+='<section class="dv-sec ph-todo-sec">'+dvSection('지금 할 일')+'<div id="ph-todo" class="ph-todo"><div class="hf-loading">확인하는 중…</div></div></section>';
   h+='<div class="ph-2col">'+homeNoticesHtml()+homeUpcomingHtml()+'</div>';

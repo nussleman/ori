@@ -13,14 +13,33 @@ function goMake(push){
   loadMyProjectsCache().then(function(){if(location.hash==='#make')renderMyShows();});
 }
 
+/* 막이 오르기까지 남은 날: {big:'D-68', small:'12.05 첫 공연'} */
+function projectDday(start,end,status){
+  if(status==='completed')return{big:'막 내림',small:start?String(start).slice(0,10).replace(/-/g,'.'):'',cls:'done'};
+  if(status==='cancelled')return{big:'취소',small:'',cls:'done'};
+  if(!start)return{big:'D-?',small:'날짜 미정',cls:'tbd'};
+  var t=new Date();t.setHours(0,0,0,0);
+  var d=new Date(String(start).slice(0,10)+'T00:00:00');
+  var e=end?new Date(String(end).slice(0,10)+'T00:00:00'):d;
+  var n=Math.round((d-t)/86400000);
+  var md=String(start).slice(5,10).replace('-','.');
+  if(n>0)return{big:'D-'+n,small:md+' 첫 공연',cls:n<=14?'soon':''};
+  if(t<=e)return{big:'공연 중',small:md+' 개막',cls:'live'};
+  return{big:'D+'+(-n),small:md+' 개막',cls:'done'};
+}
+
 function myShowCard(p){
   var st=p.status||'planning';
   var meta=[p.work_name,p.troupe_name].filter(Boolean).map(escHtml).join(' · ');
-  return '<button type="button" class="ms-card ms-'+st+'" onclick="goProject(\''+p.id+'\')">'
+  var dd=projectDday(p.target_start_date,p.target_end_date,st);
+  return '<button type="button" class="ms-card ms-ticket ms-'+st+'" onclick="goProject(\''+p.id+'\')">'
+    +'<span class="ms-main">'
     +'<span class="ms-status"><span class="ms-dot"></span>'+(PROJECT_STATUS_LABEL[st]||st)+'</span>'
     +'<span class="ms-title">'+escHtml(p.title||'새 프로젝트')+'</span>'
     +'<span class="ms-meta">'+(meta||'작품·단체 미정')+'</span>'
-    +(p.owner_nickname?'<span class="ms-owner">대표 '+escHtml(p.owner_nickname)+'</span>':'')
+    +(p.venue_name?'<span class="ms-meta ms-venue">'+escHtml(p.venue_name)+'</span>':'')
+    +'</span>'
+    +'<span class="ms-stub ms-stub-'+dd.cls+'"><span class="ms-dday">'+dd.big+'</span>'+(dd.small?'<span class="ms-ddate">'+dd.small+'</span>':'')+'</span>'
     +'</button>';
 }
 
@@ -28,7 +47,7 @@ function renderMyShows(){
   var list=MY_PROJECTS_CACHE||[];
   var active=list.filter(function(p){return PROJECT_ACTIVE_STATUS.indexOf(p.status||'planning')>-1;});
   var past=list.filter(function(p){return PROJECT_ACTIVE_STATUS.indexOf(p.status||'planning')===-1;});
-  var h='<div class="ms-page"><header class="ms-head"><div><div class="dv-kicker">만들기</div><h1 class="dv-title">내 프로젝트</h1></div>'
+  var h='<div class="ms-page"><header class="ms-head"><div><div class="ms-kicker">BACKSTAGE · 무대 뒤</div><h1 class="dv-title">내 프로젝트</h1>'+(active.length?'<div class="ms-tagline">다음 막이 오르기까지 — <em>'+active.length+'편</em> 준비 중</div>':'<div class="ms-tagline">당신의 다음 무대를 여기서 준비해요</div>')+'</div>'
     +'<button type="button" class="ms-new" onclick="startNewProject()">+ 새 프로젝트</button></header>';
   if(!list.length){
     h+='<div class="ms-empty">'
