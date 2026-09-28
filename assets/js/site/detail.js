@@ -162,10 +162,13 @@ function dvRender(m,keepScroll){
       return '<button type="button" role="tab" class="dv-tab'+(tab===t[0]?' active':'')+'" onclick="dvSwitchTab(\''+t[0]+'\')">'+t[1]+'</button>';
     }).join('')+'</div>';
   }
+  var editing=isEditMode()&&ED_SCHEMA[m.type];
+  if(editing&&tab==='home')h+=edBar(m.type,m.id);
   if(tab==='home'){
     if(m.intro)h+=m.intro;
-    var infoH=dvInfoHtml(m.info);
-    if(infoH)h+='<section class="dv-sec dv-sec-info">'+infoH+'</section>';
+    if(editing)h+=edInfoSlot(m.type,m.id);
+    else{var infoH=dvInfoHtml(m.info);
+    if(infoH)h+='<section class="dv-sec dv-sec-info">'+infoH+'</section>';}
   }
 
   var shown=0;
@@ -198,6 +201,7 @@ function dvRender(m,keepScroll){
   else if(m.links&&m.links.filter(Boolean).length&&tab==='home')h+='<footer class="dv-foot">'+m.links.filter(Boolean).join('')+'</footer>';
   h+='</article></div>';
   mn(h);
+  if(editing)edAfterRender(peek?document.getElementById('peek-body'):document.getElementById('mn'));
   if(m.after)m.after();
   if(!peek&&!keepScroll)window.scrollTo(0,0);
 }

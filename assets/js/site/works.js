@@ -123,8 +123,10 @@ function showWork(wid,push){
     links:[dvTextLink('라이선스 문의','openLicenseInquiry(\'\',\''+wid+'\')'),dvEditBtn('work',wid)],
     sections:[
       {title:'공연 이력',tab:'공연 이력',homeMax:4,items:shows.map(function(s){return dvShowFilm(s);}),layout:'film',peek:true,peekMax:5},
-      {title:'창작진',items:creators.map(function(p){return dvPersonRow(p,'');}),layout:'rows',peek:true},
-      {title:'등장인물',tab:'등장인물',homeMax:12,items:roles.map(function(r){return dvChip('role',r.id,fld(r,'배역명'));}),layout:'chips',peek:true,peekMax:20},
+      {title:'창작진',items:isEditMode()
+        ?creators.map(function(p){return '<div class="ed-creator">'+dvPersonRow(p,'')+'<button type="button" class="ed-chip-x" data-ed="rmcreator" data-wid="'+wid+'" data-pid="'+p+'" title="창작진에서 빼기">✕</button></div>';}).concat([edAddBtn('창작진 추가','data-ed="addcreator" data-wid="'+wid+'"')])
+        :creators.map(function(p){return dvPersonRow(p,'');}),layout:'rows',peek:true},
+      {title:'등장인물',tab:'등장인물',homeMax:12,items:roles.map(function(r){return dvChip('role',r.id,fld(r,'배역명'));}).concat(isEditMode()?[edAddBtn('배역 추가','data-ed="addrole" data-wid="'+wid+'"')]:[]),layout:'chips',peek:true,peekMax:isEditMode()?99:20},
       {title:'해보고 싶어하는 사람들',body:'<div id="wish-interest-work"></div>'},
       {title:'사진',tab:'사진',body:buildPhotoGalleryHtml(photos,fld(work,'작품명'))}
     ],

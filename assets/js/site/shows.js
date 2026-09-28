@@ -75,7 +75,7 @@ function renderShowIndex(){
       listH+='<div class="result-card" data-action="show" data-id="'+s.id+'">'+favBtnHtml('show',s.id)
         +(p?'<img src="'+p+'" alt="'+fld(s,'공연명')+'">':'<div class="result-card-ph">🎭</div>')
         +'<div class="result-card-body">'
-        +'<div class="result-card-title">'+fld(s,'공연명')+'</div>'
+        +'<div class="result-card-title">'+fld(s,'공연명')+'</div>'+edPrivBadge(s)
         +'<div class="result-card-sub">'+(nm(trid)||nm(wid)||'')+'</div>'
         +(date?'<div class="result-card-sub">'+date+'</div>':'')
         +'</div></div>';
@@ -134,16 +134,19 @@ function showShow(sid,push){
     var g=roleGroups[roleIdx[k]];if(pid&&g.pids.indexOf(pid)===-1)g.pids.push(pid);
     if(!g.photo)g.photo=iurl(fld(rec,'사진'))||'';
   });
-  var castItems=roleGroups.map(function(g){return dvRoleRow(g.rid,g.rid?nm(g.rid):'',g.pids,g.photo);});
+  var EDM=isEditMode();
+  var castItems=roleGroups.map(function(g){return EDM?edCastRow(sid,g.rid,g.rid?nm(g.rid):'',g.pids,g.photo):dvRoleRow(g.rid,g.rid?nm(g.rid):'',g.pids,g.photo);});
+  if(EDM)castItems.push(edAddBtn('출연진 추가','data-ed="addcast" data-sid="'+sid+'" data-kind="actor"'));
   var sortedStaff=staff.slice().sort(function(a,b){var ra=ids(fld(a,'스텝'))[0]||'',rb=ids(fld(b,'스텝'))[0]||'';return(STAFF_ORDER[ra]||999)-(STAFF_ORDER[rb]||999);});
   var staffGroups=[],staffIdx={};
   sortedStaff.forEach(function(rec){
     var pid=ids(fld(rec,'참여자'))[0]||'',rid=ids(fld(rec,'스텝'))[0]||'';
     var k=rid||'_';
-    if(staffIdx[k]==null){staffIdx[k]=staffGroups.length;staffGroups.push({label:rid?nm(rid):'스텝',pids:[]});}
+    if(staffIdx[k]==null){staffIdx[k]=staffGroups.length;staffGroups.push({label:rid?nm(rid):'스텝',rid:rid,pids:[]});}
     var g=staffGroups[staffIdx[k]];if(pid&&g.pids.indexOf(pid)===-1)g.pids.push(pid);
   });
-  var staffItems=staffGroups.map(function(g){return dvCredit(g.label,g.pids);});
+  var staffItems=staffGroups.map(function(g){return EDM?edCreditRow(sid,g.rid,g.label,g.pids):dvCredit(g.label,g.pids);});
+  if(EDM)staffItems.push(edAddBtn('제작진 추가','data-ed="addcast" data-sid="'+sid+'" data-kind="staff"'));
 
   // 관련 공연: 같은 작품(재공연) > 같은 단체 > 출연진 겹침 > 같은 극장
   var currentPeople={};actors.forEach(function(h){var pid=ids(fld(h,'참여자'))[0]||'';if(pid)currentPeople[pid]=true;});
@@ -167,14 +170,14 @@ function showShow(sid,push){
   dvRender({
     type:'show',id:sid,back:{label:'공연 목록',go:'goShows()'},hero:true,
     thumb:{url:POSTER[sid]||'',shape:'poster',ph:'🎭'},
-    kicker:'공연'+(wid?' · '+dvLink('work',wid,nm(wid)):''),
+    kicker:'공연'+(wid?' · '+dvLink('work',wid,nm(wid)):'')+edPrivBadge(show),
     title:fld(show,'공연명'),
     favs:[dvFavIcon('show',sid)],
     sub:[dateLabel?dateLabel.replace(/-/g,'.'):'',vid&&nm(vid)?escHtml(nm(vid)):''].filter(Boolean).join(' · '),
     info:[['작품',dvLink('work',wid,nm(wid))],['단체',dvLink('troupe',trid,nm(trid))],['극장',dvLink('venue',vid,nm(vid))],['기간',dateLabel?dateLabel.replace(/-/g,'.'):''],['라이선스',licLabel],['관객',audience!=null?audience+'명':''],['결과',result]],
     sections:[
-      {title:'출연진',tab:'출연진',items:castItems,layout:'roles',peek:true,peekMax:8,homeMax:6},
-      {title:'제작진',tab:'출연진',items:staffItems,layout:'credits',peek:true,peekMax:6,homeMax:4},
+      {title:'출연진',tab:'출연진',items:castItems,layout:'roles',peek:true,peekMax:EDM?99:8,homeMax:EDM?99:6},
+      {title:'제작진',tab:'출연진',items:staffItems,layout:'credits',peek:true,peekMax:EDM?99:6,homeMax:EDM?99:4},
       {title:'사진',tab:photoBody?'사진':'',body:photoBody,items:[]},
       {title:'관련 공연',items:related,layout:'cards'}
     ],

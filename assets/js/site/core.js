@@ -60,7 +60,7 @@ function groupBy(rows,key){
 
 async function load(){
   var raw=await Promise.all([
-    rest('shows','select=id,title,show_date,end_date,troupe_id,venue_id,work_id,poster_urls,audience_count,is_sold_out,has_rerun,is_licensed&is_hidden=is.false'),
+    rest('shows','select=id,title,show_date,end_date,troupe_id,venue_id,work_id,poster_urls,audience_count,is_sold_out,has_rerun,is_licensed,is_hidden'+((window.isEditMode&&isEditMode())?'':'&is_hidden=is.false')),
     rest('people','select=id,name,photo_urls,social_links'),
     rest('participation_history','select=id,person_id,show_id,photo_urls'),
     rest('participation_roles','select=participation_id,role_id'),
@@ -103,11 +103,13 @@ async function load(){
     '작품':s.work_id?[s.work_id]:[],
     '포스터':photoField(s.poster_urls),
     '관객수':s.audience_count,'매진여부':s.is_sold_out,'재공연여부':s.has_rerun,
-    '라이선스상태':s.is_licensed
+    '라이선스상태':s.is_licensed,'숨김':!!s.is_hidden
   }};});
   // 공개 기준: 라이선스가 해결된 공연만 다룬다 — 창작(자체 창작) 또는 완료(라이선스 확보).
   // 미확보·미상(아직 분류 안 됨)은 사이트 어디에도 나오지 않는다. 분류는 어드민 > 계정·설정 > 설정.
-  DB.shows=DB.shows.filter(function(s){var l=fld(s,'라이선스상태');return l==='창작'||l==='완료';});
+  // 관리자 편집 모드(edit.js)에서는 고칠 수 있게 비공개 공연·사람까지 모두 불러온다.
+  var EDITING=!!(window.isEditMode&&isEditMode());
+  if(!EDITING)DB.shows=DB.shows.filter(function(s){var l=fld(s,'라이선스상태');return l==='창작'||l==='완료';});
   var visibleShowIds={};
   DB.shows.forEach(function(s){visibleShowIds[s.id]=true;});
   partHist=partHist.filter(function(ph){return visibleShowIds[ph.show_id];});
@@ -134,7 +136,7 @@ async function load(){
   DB.history.forEach(function(h){ids(fld(h,'참여자')).forEach(function(p){visiblePeople[p]=true;});});
   DB.creationHistory.forEach(function(c){ids(fld(c,'창작자')).forEach(function(p){visiblePeople[p]=true;});});
   if(CURRENT_USER&&CURRENT_USER.personId)visiblePeople[CURRENT_USER.personId]=true;
-  DB.people=DB.people.filter(function(p){return visiblePeople[p.id];});
+  if(!EDITING)DB.people=DB.people.filter(function(p){return visiblePeople[p.id];});
 
   MAP={};
   DB.shows.forEach(function(r){MAP[r.id]=fld(r,'공연명')||'';});
@@ -284,6 +286,7 @@ function setNav(v,projectId){
   document.querySelectorAll('#make-nav-projects button').forEach(function(b){b.classList.toggle('active',b.dataset.pid===window._currentProjectNav);});
   // 첫 화면에서는 검색창이 화면 가운데(home.js)로 옮겨가 있다 — 다른 화면에선 상단바로 되돌린다
   if(v!=='home'){var wrap=$('gs-wrap'),bar=$('top-bar');if(wrap&&bar&&wrap.parentNode!==bar)bar.appendChild(wrap);}
+  if(window.edSyncFab)edSyncFab(v);
 }
 /* ── 오리 스타일 모달 (네이티브 alert/confirm/prompt 대체) ── */
 var _oriModalResolve=null;

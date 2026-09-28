@@ -55,8 +55,8 @@ function renderProfileFab(){
 }
 async function loadUserProfile(){
   try{
-    var r=await sbClient.from('user_profiles').select('nickname,person_id,intro,contact,avatar_emoji,preferred_roles').eq('id',CURRENT_USER.id).maybeSingle();
-    if(r.data){CURRENT_USER.nickname=r.data.nickname;CURRENT_USER.personId=r.data.person_id;CURRENT_USER.intro=r.data.intro;CURRENT_USER.contact=r.data.contact;CURRENT_USER.avatarEmoji=r.data.avatar_emoji;CURRENT_USER.preferredRoles=r.data.preferred_roles||[];}
+    var r=await sbClient.from('user_profiles').select('nickname,person_id,intro,contact,avatar_emoji,preferred_roles,is_admin').eq('id',CURRENT_USER.id).maybeSingle();
+    if(r.data){CURRENT_USER.nickname=r.data.nickname;CURRENT_USER.personId=r.data.person_id;CURRENT_USER.intro=r.data.intro;CURRENT_USER.contact=r.data.contact;CURRENT_USER.avatarEmoji=r.data.avatar_emoji;CURRENT_USER.preferredRoles=r.data.preferred_roles||[];CURRENT_USER.isAdmin=!!r.data.is_admin;}
   }catch(e){}
 }
 async function loadFavorites(){
@@ -129,6 +129,7 @@ async function handleAuthSession(session){
   if(session&&session.user){
     CURRENT_USER={id:session.user.id,email:session.user.email};
     await loadUserProfile();
+    if(window.edInit)edInit();
     await loadFavorites();
     loadMyProjectsCache();
     renderProfileFab();
