@@ -5,7 +5,15 @@
 var PROJECT_ACTIVE_STATUS=['planning','upcoming','running'];
 var PROJECT_STATUS_ICON={planning:'✏️',upcoming:'📅',running:'🎭',completed:'✓',cancelled:'—'};
 
+/* 만들기 모드: 프로필 메뉴에서 전환한다 (기업회원으로 들어가는 느낌). 한 번 들어오면 기억해 두었다가 다음에 바로 연다. */
+function modeSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+function modeGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function isProducer(){return !!((MY_PROJECTS_CACHE&&MY_PROJECTS_CACHE.length)||modeGet('ori-producer')==='1');}
+function savedModeIsMake(){return modeGet('ori-mode')==='make';}
+function enterMakeMode(){modeSet('ori-mode','make');modeSet('ori-producer','1');goMake();}
+function leaveMakeMode(){modeSet('ori-mode','browse');goHome();}
 function goMake(push){
+  modeSet('ori-mode','make');modeSet('ori-producer','1');
   if(push!==false)history.pushState({view:'make'},'','#make');
   setNav('make');sb('');_sbContext='';mobShowDetail();
   if(!CURRENT_USER){mn('<div class="tab-index"><div class="result-empty">로그인이 필요해요</div></div>');return;}
@@ -59,7 +67,7 @@ function renderMyShows(){
       +'<li>공연이 끝나면 <b>아카이브에 올려</b> 모두가 볼 수 있는 공연 기록으로 남겨요</li>'
       +'</ol>'
       +'<button type="button" class="ms-new ms-new-lg" onclick="startNewProject()">첫 프로젝트 시작하기</button>'
-      +'<div class="ms-empty-alt">다른 프로젝트에 참여하고 싶다면 <span class="link" onclick="goProjectBrowse()">모집 중인 자리 보기 →</span></div>'
+      +'<div class="ms-empty-alt">다른 공연에 참여하고 싶다면 둘러보기의 <span class="link" onclick="goProjectBrowse()">기회 보기 →</span></div>'
       +'</div>';
   }else{
     h+='<section class="dv-sec">'+dvSection('진행 중',active.length)

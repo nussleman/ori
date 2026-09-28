@@ -170,12 +170,15 @@ function showShow(sid,push){
     kicker:'공연'+(wid?' · '+dvLink('work',wid,nm(wid)):''),
     title:fld(show,'공연명'),
     favs:[dvFavIcon('show',sid)],
+    primary:reviewBtn('show',sid),
+    after:function(){loadReviews('show',sid);},
     sub:[dateLabel?dateLabel.replace(/-/g,'.'):'',vid&&nm(vid)?escHtml(nm(vid)):''].filter(Boolean).join(' · '),
     info:[['작품',dvLink('work',wid,nm(wid))],['단체',dvLink('troupe',trid,nm(trid))],['극장',dvLink('venue',vid,nm(vid))],['기간',dateLabel?dateLabel.replace(/-/g,'.'):''],['라이선스',licLabel],['관객',audience!=null?audience+'명':''],['결과',result]],
     sections:[
       {title:'출연진',tab:'출연진',items:castItems,layout:'roles',peek:true,peekMax:8,homeMax:6},
       {title:'제작진',tab:'출연진',items:staffItems,layout:'credits',peek:true,peekMax:6,homeMax:4},
       {title:'사진',tab:photoBody?'사진':'',body:photoBody,items:[]},
+      reviewSection('show',sid),
       {title:'관련 공연',items:related,layout:'cards'}
     ],
     empty:'아직 등록된 출연진·스텝이 없어요.',

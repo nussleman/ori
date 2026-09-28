@@ -34,10 +34,12 @@ function showTroupe(tid,push){
     sections:[
       {title:'공연 목록',tab:'공연',homeMax:4,n:shows.length,items:shows.map(function(s){return dvShowFilm(s,'','troupe');}),layout:'film',peekMax:5,peek:true,body:dvYearShows('troupe-shows',shows,['work','date'])},
       {title:'많이 참여한 사람',tab:'사람',homeMax:6,items:memberItems,layout:'rows',peek:true,peekMax:5},
+      reviewSection('troupe',tid),
       {title:'사진',tab:'사진',body:buildPhotoGalleryHtml(photos,fld(troupe,'극단명'))}
     ],
     empty:'이 단체에 등록된 공연이 아직 없어요.',
-    after:function(){dvYearShowsRender('troupe-shows');renderTroupeClaimWidget(tid);}
+    primary:reviewBtn('troupe',tid),
+    after:function(){dvYearShowsRender('troupe-shows');renderTroupeClaimWidget(tid);loadReviews('troupe',tid);}
   });
 }
 function goTroupes(push){

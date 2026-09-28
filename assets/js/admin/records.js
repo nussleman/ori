@@ -2,8 +2,8 @@
    왼쪽: 목록(검색·보기·채울 것 필터·정렬), 오른쪽: 편집기.
    편집기의 값은 바꾸는 즉시 저장된다(자동 저장). 사진·연결(출연진, 배역, 창작진, 참여 이력)도 그 자리에서. */
 import { sb, S, byId, IX, nameOf, firstImg, update, insert, remove, insertLink, removeLink, uploadPhoto,
-  esc, $, $$, fmtDate, fmtWhen, toast, confirmDlg, promptDlg, dialog } from './lib.js?v=20260928s';
-import { ENT, BOOL } from './schema.js?v=20260928s';
+  esc, $, $$, fmtDate, fmtWhen, toast, confirmDlg, promptDlg, dialog } from './lib.js?v=20260928t';
+import { ENT, BOOL } from './schema.js?v=20260928t';
 
 const LS = {};  // 목록 상태: table → {q, f, sort}
 let CUR = { table: null, id: null, req: null };

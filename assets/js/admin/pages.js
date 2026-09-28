@@ -1,7 +1,7 @@
 /* 오리 어드민 — 할 일 홈, 요청 처리, 분류 대기열, 운영·설정 화면 */
-import { sb, S, byId, IX, nameOf, firstImg, update, insert, remove, esc, $, $$, fmtDate, fmtWhen, toast, confirmDlg, dialog } from './lib.js?v=20260928s';
-import { ENT, ENT_ORDER, isPublicShow } from './schema.js?v=20260928s';
-import { picker } from './records.js?v=20260928s';
+import { sb, S, byId, IX, nameOf, firstImg, update, insert, remove, esc, $, $$, fmtDate, fmtWhen, toast, confirmDlg, dialog } from './lib.js?v=20260928t';
+import { ENT, ENT_ORDER, isPublicShow } from './schema.js?v=20260928t';
+import { picker } from './records.js?v=20260928t';
 
 /* ══════════ 요청 건수 (사이드바 배지·홈) ══════════ */
 export const REQ = {
@@ -11,6 +11,8 @@ export const REQ = {
     tabs: [['pending', '대기'], ['confirmed', '승인됨'], ['rejected', '거절됨'], ['all', '전체']] },
   edits: { label: '수정 요청', load: st => { let q = sb.from('edit_requests').select('*').order('created_at', { ascending: false }); if (st !== 'all') q = q.eq('status', st); return q; }, pending: 'pending',
     tabs: [['pending', '대기'], ['done', '완료'], ['rejected', '반려'], ['all', '전체']] },
+  reviews: { label: '후기 신고', load: st => { let q = sb.from('review_reports').select('id,reason,status,created_at,review:reviews(id,target_type,target_id,keywords,body,is_hidden)').order('created_at', { ascending: false }); if (st !== 'all') q = q.eq('status', st); return q; }, pending: 'pending',
+    tabs: [['pending', '대기'], ['done', '처리함'], ['all', '전체']] },
   inquiries: { label: '라이선스 문의', load: st => sb.rpc('list_license_inquiries', { p_status: st }), pending: 'new',
     tabs: [['new', '새 문의'], ['answered', '답변함'], ['closed', '종료'], ['all', '전체']] },
 };
@@ -79,6 +81,13 @@ function reqCard(kind, r) {
       <div class="rq-b"><b>${esc(r.summary || '')}</b>${r.details ? `<div>${esc(r.details)}</div>` : ''}</div><div class="rq-s">${fmtWhen(r.created_at)}</div></div>
       <div class="rq-a">${t && r.target_id ? `<a class="btn primary sm" href="#/data/${t}/${r.target_id}?req=${r.id}">열어서 고치기</a>` : ''}${r.status === 'pending' ? `<button type="button" class="btn ghost sm" data-do="done" data-id="${r.id}">완료</button><button type="button" class="btn ghost sm" data-do="rejected" data-id="${r.id}">반려</button>` : ''}</div></div>`;
   }
+  if (kind === 'reviews') {
+    const v = r.review || {}, t = TYPE_TABLE[v.target_type];
+    return `<div class="rq"><div class="rq-m"><div class="rq-t">${stPill(r.status)} <span class="muted">${TYPE_LABEL[v.target_type] || ''} 후기 · </span><b>${esc(t ? nameOf(t, v.target_id) : '')}</b>${v.is_hidden ? ' <em class="pill pill-priv">숨김</em>' : ''}</div>
+      <div class="rq-b">${(v.keywords || []).map(k => `<span class="pill">${esc(k)}</span>`).join(' ')}${v.body ? `<div>${esc(v.body)}</div>` : ''}</div>
+      <div class="rq-s">신고 사유: ${esc(r.reason || '(없음)')} · ${fmtWhen(r.created_at)}</div></div>
+      <div class="rq-a">${r.status === 'pending' ? `<button type="button" class="btn primary sm" data-do="hide" data-id="${r.id}">후기 숨기기</button><button type="button" class="btn ghost sm" data-do="keep" data-id="${r.id}">문제없음</button>` : (v.is_hidden ? `<button type="button" class="btn ghost sm" data-do="unhide" data-id="${r.id}">다시 보이기</button>` : '')}</div></div>`;
+  }
   return `<div class="rq"><div class="rq-m"><div class="rq-t">${stPill(r.status)} <b>${esc(r.show_title || r.work_title || '(일반 문의)')}</b></div>
     <div class="rq-b">${esc(r.message || '')}${r.admin_note ? `<div class="muted">메모: ${esc(r.admin_note)}</div>` : ''}</div>
     <div class="rq-s">${esc(r.requester_nickname || r.requester_email || '')}${r.contact ? ' · 연락처 ' + esc(r.contact) : ''} · ${fmtWhen(r.created_at)}</div></div>
@@ -88,6 +97,11 @@ async function reqAct(root, kind, act, id) {
   let res;
   if (kind === 'claims') res = await sb.rpc(act === 'ok' ? 'approve_person_claim' : 'reject_person_claim', { claim_id: id });
   else if (kind === 'troupeclaims') res = await sb.rpc(act === 'ok' ? 'approve_troupe_claim' : 'reject_troupe_claim', { p_claim_id: id });
+  else if (kind === 'reviews') {
+    const { data: rep } = await sb.from('review_reports').select('review_id').eq('id', id).single();
+    if (act !== 'keep') { const h = await sb.from('reviews').update({ is_hidden: act === 'hide' }).eq('id', rep.review_id); if (h.error) { toast(h.error.message, 'err'); return; } }
+    res = await sb.from('review_reports').update({ status: 'done' }).eq('id', id);
+  }
   else if (kind === 'edits') { const u = (await sb.auth.getUser()).data.user; res = await sb.from('edit_requests').update({ status: act, reviewed_by: u && u.id, reviewed_at: new Date().toISOString() }).eq('id', id); }
   else {
     let note = null;

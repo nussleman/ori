@@ -3,7 +3,7 @@
      text · textarea · number · date · bool(—/예/아니오) · seg(몇 개 중 하나) · select · suggest(자유입력+추천)
      fk:<테이블>(검색해서 고르기, 없으면 새로 만들기) · tags:<옵션분류>(여러 개) · links(이름+주소 목록)
    checks: 목록 필터 겸 "채울 것" 경고. [키, 라벨, 행 → 문제면 true] */
-import { S, IX, nameOf } from './lib.js?v=20260928s';
+import { S, IX, nameOf } from './lib.js?v=20260928t';
 
 const BOOL = [['', '—'], [true, '예'], [false, '아니오']];
 const isPublicShow = s => (s.is_licensed === '창작' || s.is_licensed === '완료') && !s.is_hidden;

@@ -71,8 +71,8 @@ async function loadFavorites(){
 /* ── 게이트 표시 제어 ── */
 function showAuthGate(){$('auth-gate').classList.add('open');$('oath-gate').classList.remove('open');}
 function hideAuthGate(){$('auth-gate').classList.remove('open');}
-function hasDeclaredThisSession(){try{return sessionStorage.getItem('oridb_declared')==='1';}catch(e){return false;}}
-function markDeclared(){try{sessionStorage.setItem('oridb_declared','1');}catch(e){}}
+function hasDeclaredThisSession(){try{return localStorage.getItem('oridb_declared')==='1'||sessionStorage.getItem('oridb_declared')==='1';}catch(e){return false;}}
+function markDeclared(){try{localStorage.setItem('oridb_declared','1');}catch(e){}}
 
 /* ── 선언 의식: 문구를 한 글자씩 스르르 띄운 뒤, "선언합니다"를 입력하면 입장 ── */
 function playOathRitual(){
@@ -259,7 +259,7 @@ async function requestTroupeLink(tid){
 }
 function maybeShowConnectPrompt(){
   if(!CURRENT_USER||CURRENT_USER.personId)return;
-  try{if(sessionStorage.getItem('oridb_connect_dismissed')==='1')return;}catch(e){}
+  try{if(localStorage.getItem('oridb_connect_dismissed')==='1')return;}catch(e){}
   var overlay=$('connect-overlay');if(overlay)overlay.classList.add('open');
 }
 function maybeForceShowConnectPrompt(){
@@ -268,7 +268,7 @@ function maybeForceShowConnectPrompt(){
 }
 function closeConnectPrompt(){
   var overlay=$('connect-overlay');if(overlay)overlay.classList.remove('open');
-  try{sessionStorage.setItem('oridb_connect_dismissed','1');}catch(e){}
+  try{localStorage.setItem('oridb_connect_dismissed','1');}catch(e){}
 }
 function connectFilterList(q){
   var el=$('connect-results');if(!el)return;

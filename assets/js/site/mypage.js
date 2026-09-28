@@ -7,8 +7,8 @@ function myCardHtml(type,id,listType){
   var imgH=imgUrl?'<img class="cast-img" src="'+imgUrl+'">':'<div class="cast-img-ph">&nbsp;</div>';
   return '<div class="cast-card" data-action="'+type+'" data-id="'+id+'" style="position:relative">'+favBtnHtml(type,id,listType)+imgH+'<div class="cast-name">'+name+'</div></div>';
 }
-var MYPAGE_TABS=[['info','내 정보'],['dashboard','대시보드'],['favorites','즐겨찾기'],['wishlist','해보고 싶은'],['troupes','내 단체']];
-window._myPageTab='info';
+var MYPAGE_TABS=[['records','내 기록'],['apply','지원 현황'],['saved','저장한 것'],['info','내 정보'],['troupes','내 단체']];
+window._myPageTab='records';
 async function renderMyPage(){
   await loadFavorites();
   await loadUserProfile();
@@ -34,10 +34,10 @@ function switchMyPageTab(tab){
 function renderMyPageTabContent(){
   var el=$('mypage-tab-content');if(!el)return;
   var tab=window._myPageTab;
-  if(tab==='info')renderMyPageInfo(el);
-  else if(tab==='dashboard')renderMyPageDashboard(el);
-  else if(tab==='favorites')renderMyPageFavorites(el);
-  else if(tab==='wishlist')renderMyPageWishlist(el);
+  if(tab==='records')renderMyRecords(el);
+  else if(tab==='apply')renderMyApplications(el);
+  else if(tab==='saved')renderMySaved(el);
+  else if(tab==='info')renderMyPageInfo(el);
   else if(tab==='projects'){goMake();return;}
   else if(tab==='troupes')renderMyPageTroupes(el);
 }
@@ -285,105 +285,13 @@ function renderMyPageFavorites(el){
   if(!any)h='<div class="result-empty"><div class="result-empty-icon">🦆</div><div style="font-size:0.95rem;margin-bottom:0.4rem">아직 즐겨찾기한 게 없어요</div><div style="font-size:0.8rem;color:var(--muted)">공연·작품·단체·극장·사람 페이지에서 오리 아이콘을 눌러보세요.</div></div>';
   el.innerHTML=h;
 }
-function renderMyPageDashboard(el){
-  if(!CURRENT_USER.personId){
-    el.innerHTML='<div class="result-empty"><div class="result-empty-icon">📊</div><div style="font-size:0.95rem;margin-bottom:0.4rem">아직 연결된 프로필이 없어요</div><div style="font-size:0.8rem;color:var(--muted);margin-bottom:0.8rem">내 참여 이력을 찾아 연결하면, 여기에 내 활동 통계가 떠요.</div><button class="pf-btn pf-active" onclick="maybeForceShowConnectPrompt()">내 프로필 찾기</button></div>';
-    return;
-  }
-  var pid=CURRENT_USER.personId;
-  var hist=sortHistByShowDate(histByPerson(pid));
-  var actors=hist.filter(function(h){return tname(h)==='배우';});
-  var staff=hist.filter(function(h){return tname(h)==='스텝';});
-  var showIds=[];hist.forEach(function(h){var sid=ids(fld(h,'공연'))[0]||'';if(sid&&showIds.indexOf(sid)===-1)showIds.push(sid);});
-  var roleIds=[];actors.forEach(function(h){var rid=ids(fld(h,'배역'))[0]||'';if(rid&&roleIds.indexOf(rid)===-1)roleIds.push(rid);});
-  var creationRecs=DB.creationHistory.filter(function(c){return ids(fld(c,'창작자')).indexOf(pid)>-1;});
-  var creationWorkIds=[];creationRecs.forEach(function(c){var wid=ids(fld(c,'작품'))[0]||'';if(wid&&creationWorkIds.indexOf(wid)===-1)creationWorkIds.push(wid);});
-  var troupeCntMap={};showIds.forEach(function(sid){var s=DB.shows.find(function(x){return x.id===sid;});if(!s)return;var tid=ids(fld(s,'극단'))[0]||'';if(!tid)return;troupeCntMap[tid]=(troupeCntMap[tid]||0)+1;});
-  var troupeRanked=Object.keys(troupeCntMap).sort(function(a,b){return troupeCntMap[b]-troupeCntMap[a];}).slice(0,5);
-  var yearCntMap={};showIds.forEach(function(sid){var y=yearOf(showDate(sid));if(y)yearCntMap[y]=(yearCntMap[y]||0)+1;});
-  var allYears=Object.keys(yearCntMap).sort();var maxYearCnt=Math.max.apply(null,Object.values(yearCntMap).concat([1]));
-  var roleById={};DB.roles.forEach(function(r){roleById[r.id]=r;});
-  var tagCounts={};
-  actors.forEach(function(h){ids(fld(h,'배역')).forEach(function(rid){var role=roleById[rid];if(!role)return;(fld(role,'태그')||[]).forEach(function(t){if(t)tagCounts[t]=(tagCounts[t]||0)+1;});});});
-  var tagRanked=Object.keys(tagCounts).sort(function(a,b){return tagCounts[b]-tagCounts[a];}).slice(0,10);
-
-  // 함께한 사람 (배우+스텝 통틀어)
-  var coMap={};
-  showIds.forEach(function(sid){DB.history.filter(function(h){return isValidH(h)&&ids(fld(h,'공연')).indexOf(sid)>-1;}).forEach(function(h){var cpid=ids(fld(h,'참여자'))[0]||'';if(!cpid||cpid===pid)return;coMap[cpid]=(coMap[cpid]||0)+1;});});
-  var coRanked=Object.keys(coMap).sort(function(a,b){return coMap[b]-coMap[a];}).slice(0,8);
-
-  // 최근 활동 (최근 5개 공연, 역할 라벨 포함)
-  var showMap={};
-  hist.forEach(function(rec){
-    var sid=ids(fld(rec,'공연'))[0]||'';if(!sid)return;
-    if(!showMap[sid])showMap[sid]={sid:sid,roles:[],staffRoles:[],d:showDate(sid)};
-    if(tname(rec)==='배우'){var rid=ids(fld(rec,'배역'))[0]||'';if(rid&&nm(rid))showMap[sid].roles.push(nm(rid));}
-    else{var srid=ids(fld(rec,'스텝'))[0]||'';if(srid&&nm(srid))showMap[sid].staffRoles.push(nm(srid));}
-  });
-  var recentShows=Object.values(showMap).sort(function(a,b){if(!a.d&&!b.d)return 0;if(!a.d)return 1;if(!b.d)return -1;return b.d.localeCompare(a.d);}).slice(0,5);
-
-  // 즐겨찾기/위시/프로젝트 개수 (빠른 링크용)
-  var favCnt=FAVORITES_LIST.filter(function(f){return f.list_type==='favorite';}).length;
-  var wishCnt=FAVORITES_LIST.filter(function(f){return f.list_type==='wishlist';}).length;
-  var projCnt=MY_PROJECTS_CACHE.length;
-
-  var statsH='<div class="person-stats-inline">'
-    +'<div class="psi-item"><div class="psi-num">'+showIds.length+'</div><div class="psi-label">총 공연</div></div>'
-    +'<div class="psi-item"><div class="psi-num">'+actors.length+'</div><div class="psi-label">배우 참여</div></div>'
-    +'<div class="psi-item"><div class="psi-num">'+staff.length+'</div><div class="psi-label">스텝 참여</div></div>'
-    +(creationWorkIds.length?'<div class="psi-item"><div class="psi-num">'+creationWorkIds.length+'</div><div class="psi-label">창작 참여</div></div>':'')
-    +'<div class="psi-item"><div class="psi-num">'+roleIds.length+'</div><div class="psi-label">맡은 배역</div></div>'
-    +'</div>';
-
-  var h='<div class="dash-quicklinks">'
-    +'<button class="dash-quick-pill" onclick="switchMyPageTab(\'favorites\')">🦆 즐겨찾기 <b>'+favCnt+'</b></button>'
-    +'<button class="dash-quick-pill" onclick="switchMyPageTab(\'wishlist\')">🚩 해보고 싶은 <b>'+wishCnt+'</b></button>'
-    +'<button class="dash-quick-pill" onclick="switchMyPageTab(\'projects\')">🎪 프로젝트 <b>'+projCnt+'</b></button>'
-    +'</div>';
-
-  h+='<div class="person-overview-grid">';
-  h+='<div class="person-side-card person-card-medium"><div class="person-side-title">내 활동 요약</div>'+statsH+'</div>';
-  if(allYears.length){
-    h+='<div class="year-chart-block person-card-medium"><div class="year-chart-title">연도별 공연 수</div><div class="mini-chart">';
-    allYears.forEach(function(y){var cnt=yearCntMap[y];var barPx=Math.max(4,Math.round((cnt/maxYearCnt)*44));h+='<div class="mini-bar-wrap"><div class="mini-bar-cnt">'+cnt+'</div><div class="mini-bar" style="height:'+barPx+'px"></div><div class="mini-bar-label">'+y+'</div></div>';});
-    h+='</div></div>';
-  }
-  if(troupeRanked.length){
-    h+='<div class="person-side-card"><div class="person-side-title">주로 함께한 단체</div><div class="person-troupes-inline">';
-    troupeRanked.forEach(function(tid){h+='<span class="troupe-chip" data-action="troupe" data-id="'+tid+'">'+nm(tid)+'<span class="troupe-chip-cnt">'+troupeCntMap[tid]+'회</span></span>';});
-    h+='</div></div>';
-  }
-  if(tagRanked.length){
-    h+='<div class="person-side-card"><div class="person-side-title">자주 맡은 배역 유형</div>';
-    tagRanked.forEach(function(t){h+='<span class="role-tag-chip">'+t+'<span class="role-tag-chip-cnt">'+tagCounts[t]+'</span></span>';});
-    h+='</div>';
-  }
-  if(creationWorkIds.length){
-    h+='<div class="person-side-card"><div class="person-side-title">창작 참여 작품</div><div class="person-troupes-inline">';
-    creationWorkIds.forEach(function(wid){h+='<span class="troupe-chip" data-action="work" data-id="'+wid+'">'+nm(wid)+'</span>';});
-    h+='</div></div>';
-  }
-  h+='</div>';
-
-  if(recentShows.length){
-    h+='<div class="sec"><div class="sec-label">최근 활동</div><div style="display:flex;flex-direction:column;gap:0.4rem">'+recentShows.map(function(s){
-      var p=POSTER[s.sid]||'';
-      var roleLabel=s.roles.concat(s.staffRoles).join(', ');
-      return '<div class="dash-recent-row" data-action="show" data-id="'+s.sid+'">'
-        +(p?'<img src="'+p+'">':'<div class="dash-recent-ph">🎭</div>')
-        +'<div><div style="font-size:0.85rem">'+nm(s.sid)+'</div><div style="font-size:0.72rem;color:var(--muted)">'+(roleLabel?roleLabel+' · ':'')+(ym(s.d)||'')+'</div></div></div>';
-    }).join('')+'</div></div>';
-  }
-
-  if(coRanked.length){
-    h+='<div class="sec"><div class="sec-label">자주 함께한 사람</div><div class="coactor-grid">'+coRanked.map(function(cpid){
-      var cphoto=PERSON_PHOTO[cpid]||'';var cphotoH=cphoto?'<img class="coactor-photo" src="'+cphoto+'">':'<div class="coactor-photo-ph">🎭</div>';
-      return '<div class="coactor-card" data-action="person" data-id="'+cpid+'">'+cphotoH+'<div class="coactor-info"><div class="coactor-name">'+nm(cpid)+'</div><div class="coactor-cnt">'+coMap[cpid]+'회 함께</div></div></div>';
-    }).join('')+'</div></div>';
-  }
-
-  h+='<div style="text-align:center;margin-top:1rem"><button class="pf-btn" onclick="showPerson(\''+pid+'\')">내 프로필 전체 보기 →</button></div>';
-  el.innerHTML=h;
+/* 저장한 것: 즐겨찾기 + 해보고 싶은 것 한곳에 */
+function renderMySaved(el){
+  var a=document.createElement('div'),b=document.createElement('div');
+  renderMyPageFavorites(a);renderMyPageWishlist(b);
+  var ea=a.querySelector('.result-empty'),eb=b.querySelector('.result-empty');
+  if(ea&&eb){el.innerHTML='<div class="result-empty"><div class="result-empty-icon">🦆</div><div style="font-size:0.95rem;margin-bottom:0.4rem">아직 저장한 게 없어요</div><div style="font-size:0.8rem;color:var(--muted)">공연·작품·사람 페이지의 오리 아이콘으로 저장하고, 작품·배역은 깃발 아이콘으로 "해보고 싶어요"를 남길 수 있어요.</div></div>';return;}
+  el.innerHTML=(ea?'':a.innerHTML)+(eb?'':b.innerHTML);
 }
 function renderMyPageWishlist(el){
   var byType={};
@@ -407,6 +315,6 @@ function goMyPage(push,keepTab){
     mn('<div class="tab-index"><div class="result-empty"><div class="result-empty-icon">👤</div><div style="font-size:0.95rem;margin-bottom:0.4rem">로그인이 필요해요</div><div style="font-size:0.8rem;color:var(--muted);margin-bottom:1rem">구글 계정으로 로그인하면 즐겨찾기를 저장할 수 있어요.</div><button class="pf-btn" onclick="loginWithGoogle()">구글로 로그인</button></div></div>');
     return;
   }
-  if(!keepTab)window._myPageTab='info';
+  if(!keepTab)window._myPageTab='records';
   renderMyPage();
 }

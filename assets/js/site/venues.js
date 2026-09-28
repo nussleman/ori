@@ -96,14 +96,15 @@ function showVenue(vid,push){
     sub:[venueSeatsLabel(venue),escHtml(fld(venue,'대중교통정보')||'')].filter(Boolean).join(' · '),
     favs:[dvFavIcon('venue',vid)],
     info:[['좌석',venueSeatsLabel(venue)],['대관',yn(fld(venue,'대관가능여부'))],['대관료',escHtml(fld(venue,'대관료')||'')],['주차',yn(fld(venue,'주차가능여부'))],['대중교통',escHtml(fld(venue,'대중교통정보')||'')],['연락처',escHtml(fld(venue,'연락처')||'')],['공연',shows.length?shows.length+'편':'']],
-    primary:dvActBtn('내 프로젝트 후보에 담기','addVenueToMyProject(\''+vid+'\')','＋',true),
+    primary:reviewBtn('venue',vid)+(isProducer()?dvActBtn('내 프로젝트 후보에 담기','addVenueToMyProject(\''+vid+'\')','＋'):''),
     links:[dvEditBtn('venue',vid)],
     sections:[
       {title:'공연 목록',tab:'공연',homeMax:4,n:shows.length,items:shows.map(function(s){return dvShowFilm(s,'','venue');}),layout:'film',peekMax:5,peek:true,body:dvYearShows('venue-shows',shows,['troupe','date'])},
+      reviewSection('venue',vid),
       {title:'사진',tab:'사진',body:buildPhotoGalleryHtml(photos,fld(venue,'극장명'))}
     ],
     empty:'이 극장에 등록된 공연이 아직 없어요.',
-    after:function(){dvYearShowsRender('venue-shows');}
+    after:function(){dvYearShowsRender('venue-shows');loadReviews('venue',vid);}
   });
 }
 var _troupeFilter={orgType:'',memberBase:'',region:'',status:'',sort:'name'};

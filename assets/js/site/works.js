@@ -119,16 +119,17 @@ function showWork(wid,push){
     tags:fld(work,'태그')||[],
     favs:[dvFavIcon('work',wid),dvFavIcon('work',wid,'wishlist')],
     info:[['국가',escHtml(country)],['초연',fld(work,'초연 연도')?fld(work,'초연 연도')+'년':''],['등장인물',roles.length?roles.length+'명':''],['공연',shows.length?shows.length+'편':'']],
-    primary:dvActBtn('이 작품으로 프로젝트 시작','startProjectFromWork(\''+wid+'\')','🎭',true),
+    primary:reviewBtn('work',wid)+(isProducer()?dvActBtn('이 작품으로 프로젝트 시작','startProjectFromWork(\''+wid+'\')','🎭'):''),
     links:[dvTextLink('라이선스 문의','openLicenseInquiry(\'\',\''+wid+'\')'),dvEditBtn('work',wid)],
     sections:[
       {title:'공연 이력',tab:'공연 이력',homeMax:4,items:shows.map(function(s){return dvShowFilm(s);}),layout:'film',peek:true,peekMax:5},
       {title:'창작진',items:creators.map(function(p){return dvPersonRow(p,'');}),layout:'rows',peek:true},
       {title:'등장인물',tab:'등장인물',homeMax:12,items:roles.map(function(r){return dvChip('role',r.id,fld(r,'배역명'));}),layout:'chips',peek:true,peekMax:20},
       {title:'해보고 싶어하는 사람들',body:'<div id="wish-interest-work"></div>'},
+      reviewSection('work',wid),
       {title:'사진',tab:'사진',body:buildPhotoGalleryHtml(photos,fld(work,'작품명'))}
     ],
     empty:'아직 연결된 공연이나 배역이 없어요.',
-    after:function(){renderWishlistInterest('work',wid,'wish-interest-work');}
+    after:function(){renderWishlistInterest('work',wid,'wish-interest-work');loadReviews('work',wid);}
   });
 }

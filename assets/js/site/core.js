@@ -273,10 +273,7 @@ function setNav(v,projectId){
   var make=MAKE_MODE_VIEWS.indexOf(v)>-1;
   document.body.classList.toggle('mode-make',make);
   document.body.classList.toggle('is-home',v==='home');
-  var mb=$('mode-browse'),mm=$('mode-make');
-  if(mb){mb.classList.toggle('active',!make);mb.setAttribute('aria-selected',String(!make));}
-  if(mm){mm.classList.toggle('active',make);mm.setAttribute('aria-selected',String(make));}
-  ['home','shows','people','works','roles','venues','troupes','dashboard','projects','make'].forEach(function(n){
+  ['home','shows','people','works','roles','venues','troupes','projects','make'].forEach(function(n){
     var el=$('nav-'+n);if(el)el.classList.toggle('active',n===v);
     var mel=$('mobt-'+n);if(mel)mel.classList.toggle('active',n===v||(n==='make'&&make));
   });
