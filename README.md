@@ -30,7 +30,7 @@ assets/
     project-home.js        프로젝트 탭 구성: 홈(지금 할 일)·사람·준비
     project-schedule.js    프로젝트 일정·공지
     bridges.js             둘러보기↔만들기 연결 버튼, 공통 선택 창 pickOne()
-    edit.js                어드민 "사이트에서 편집" 전용: admin.html이 사이트를 ?edit=1로 품어 띄울 때만 로드. 그 자리에서 고치기·추가·삭제
+    edit.js                관리자 편집 모드: 사이트를 둘러보며 그 자리에서 고치기·추가·삭제 (상단바 "편집")
     project-wizard.js      프로젝트 위저드
     project-browse.js      프로젝트 둘러보기 / 모집 중인 자리
     pages.js               콘텐츠(준비중)·라이선스 문의·약관·개인정보처리방침

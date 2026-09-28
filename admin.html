@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>오리 Admin</title>
 <link rel="icon" href="assets/favicon-admin.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/css/admin.css?v=20260928e">
+<link rel="stylesheet" href="assets/css/admin.css?v=20260928c">
 </head>
 <body>
 
@@ -16,7 +16,6 @@
 
 <!-- 상단 메뉴(그룹) → 누르면 좌측 레일에 그 그룹의 하위 메뉴가 뜬다. 상단 메뉴는 스크롤해도 고정 -->
 <nav class="admin-topnav" id="navGroups">
-  <button data-group="browse">사이트에서 편집</button>
   <button data-group="archive">아카이브 <span class="nav-badge" data-group-badge="archive"></span></button>
   <button data-group="directory">사람·단체·극장 <span class="nav-badge" data-group-badge="directory"></span></button>
   <button data-group="requests">요청 처리 <span class="nav-badge" data-group-badge="requests"></span></button>
@@ -25,10 +24,6 @@
 
 <div class="layout">
   <nav id="navTabs" class="admin-rail">
-    <div class="nav-section" data-group="browse">
-      <div class="nav-section-label">사이트에서 편집</div>
-      <button data-tab="browse">오리 화면으로 보기</button>
-    </div>
     <div class="nav-section" data-group="archive">
       <div class="nav-section-label">아카이브</div>
       <button data-tab="show">공연</button>
@@ -64,25 +59,6 @@
   <main>
 
     <!-- ================= 공연 ================= -->
-    <!-- ================= 사이트에서 편집 ================= -->
-    <!-- 오리 사이트를 그대로 띄우고(?edit=1), 그 안에서 바로 고치기·추가·삭제 (assets/js/site/edit.js) -->
-    <section class="tab-panel" id="tab-browse">
-      <div class="browse-bar">
-        <div class="browse-jumps">
-          <button type="button" data-go="#shows">공연</button>
-          <button type="button" data-go="#works">작품</button>
-          <button type="button" data-go="#people">사람</button>
-          <button type="button" data-go="#troupes">단체</button>
-          <button type="button" data-go="#venues">극장</button>
-          <button type="button" data-go="#roles">배역</button>
-        </div>
-        <span class="browse-hint">한 번 클릭 → 오른쪽 페이지, 두 번 → 전용 페이지. 값을 누르면 바로 고쳐져요. 비공개 공연도 보여요.</span>
-        <button type="button" class="btn secondary browse-reload" id="browse-reload" title="데이터 다시 불러오기">↻</button>
-        <a class="btn secondary" id="browse-open" target="_blank" rel="noopener">새 창 ↗</a>
-      </div>
-      <iframe id="browse-frame" title="오리 사이트 편집 화면" loading="lazy"></iframe>
-    </section>
-
     <section class="tab-panel" id="tab-show">
       <h2>공연</h2>
       <p class="sub">새 공연을 등록해요. 상연 작품은 여러 개 고를 수 있어요.</p>
@@ -718,6 +694,6 @@
 </div>
 
 <script src="assets/js/config.js?v=20260928c"></script>
-<script type="module" src="assets/js/admin/admin.js?v=20260928e"></script>
+<script type="module" src="assets/js/admin/admin.js?v=20260928c"></script>
 </body>
 </html>
