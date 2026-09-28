@@ -674,7 +674,7 @@ window.quickAdd = async function(table, promptText, buildPayload, onCreated) {
     const tbl = CANCEL_TABLE_MAP[wasEditingKey];
     const editId = editState[tbl];
     const btn = editId && document.querySelector(`.edit-btn[data-edit-table="${tbl}"][data-edit-id="${editId}"]`);
-    if (btn) moveCardToRow(wasEditingKey, rowOf(btn));
+    if (btn) moveCardToRow(wasEditingKey, btn.closest('tr'));
   }
   onCreated(data.id);
 };
@@ -891,74 +891,6 @@ document.getElementById('participation-role-type').addEventListener('change', ap
 
 // ---------- 목록 렌더 ----------
 const tableSortState = {}; // containerId -> {idx, dir}
-
-// ---------- 카드 보기 ----------
-// 사진이 있는 목록(공연·작품·배역·단체·극장·사람)은 표 대신 카드로도 볼 수 있다.
-// 카드에서는 값을 한 번만 클릭해도 그 자리에서 고칠 수 있고, 사진을 누르면 전체 수정 폼이 열린다.
-const CARD_TABLES = { shows: 'show', works: 'work', roles: 'role', troupes: 'troupe', venues: 'venue', people: 'person' };
-const adminView = (() => { try { return JSON.parse(localStorage.getItem('ori-admin-view') || '{}'); } catch (e) { return {}; } })();
-function adminViewOf(tableName) { return CARD_TABLES[tableName] ? (adminView[tableName] || 'card') : 'table'; }
-function setAdminView(tableName, v) {
-  if (currentEditKey) moveCardHome(currentEditKey);
-  adminView[tableName] = v;
-  try { localStorage.setItem('ori-admin-view', JSON.stringify(adminView)); } catch (e) {}
-  syncViewToggles();
-  renderAllLists();
-}
-function syncViewToggles() {
-  document.querySelectorAll('.view-toggle').forEach(el => {
-    const v = adminViewOf(el.dataset.table);
-    el.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.view === v));
-  });
-}
-function installViewToggles() {
-  Object.entries(CARD_TABLES).forEach(([table, key]) => {
-    const list = document.getElementById('list-' + key);
-    const search = document.getElementById('search-' + key);
-    if (!list || document.querySelector(`.view-toggle[data-table="${table}"]`)) return;
-    const box = document.createElement('div');
-    box.className = 'view-toggle';
-    box.dataset.table = table;
-    box.innerHTML = '<button type="button" data-view="card" title="카드로 보기">▦ 카드</button><button type="button" data-view="table" title="표로 보기">☰ 표</button>';
-    box.addEventListener('click', e => { const b = e.target.closest('button'); if (b) setAdminView(table, b.dataset.view); });
-    const h3 = list.closest('.card')?.querySelector('h3');
-    if (h3) { h3.classList.add('with-toggle'); h3.appendChild(box); } else list.before(box);
-  });
-  syncViewToggles();
-}
-function isImageCol(c) { return !c.key && (c.label === '포스터' || c.label === '사진'); }
-function renderCardGrid(containerId, rows, columns, tableName, editHandler) {
-  const imgCol = columns.find(isImageCol);
-  const titleIdx = columns.findIndex(c => c.key === 'title' || c.key === 'name');
-  const imgKey = { shows: 'poster_urls', works: 'poster_urls' }[tableName] || 'photo_urls';
-  const cell = (r, c, ci, cls) => {
-    const content = c.render ? c.render(r) : (r[c.key] ?? '');
-    if (!c.editable) return `<span class="${cls}">${content}</span>`;
-    const raw = (r[c.key] ?? '').toString().replace(/"/g,'&quot;');
-    const shown = content === '' || content == null ? '<span class="ac-empty">+ 입력</span>' : content;
-    return `<span class="${cls} editable-cell" data-container="${containerId}" data-rowid="${r.id}" data-colidx="${ci}" data-value="${raw}">${shown}</span>`;
-  };
-  return '<div class="acard-grid">' + rows.map(r => {
-    const urls = r[imgKey] || [];
-    const warns = columns.map(c => c.render ? String(c.render(r) || '') : '').filter(h => h.includes('warn-badge')).length;
-    const title = titleIdx > -1 ? cell(r, columns[titleIdx], titleIdx, 'ac-title') : '';
-    const fields = columns.map((c, ci) => {
-      if (ci === titleIdx || isImageCol(c)) return '';
-      return `<div class="ac-row"><span class="ac-l">${c.label}</span>${cell(r, c, ci, 'ac-v')}</div>`;
-    }).join('');
-    const img = imgCol ? (urls.length
-        ? `<button type="button" class="ac-img edit-btn" data-edit-table="${tableName}" data-edit-id="${r.id}" title="사진·전체 정보 수정"><img src="${urls[0]}" alt="" loading="lazy">${urls.length > 1 ? `<span class="ac-imgn">+${urls.length - 1}</span>` : ''}</button>`
-        : `<button type="button" class="ac-img ac-img-empty edit-btn" data-edit-table="${tableName}" data-edit-id="${r.id}" title="사진 추가">＋ 사진</button>`)
-      : '';
-    return `<div class="acard${tableName === 'people' ? ' acard-person' : ''}${tableName === 'venues' || tableName === 'troupes' ? ' acard-wide' : ''}" data-rowid="${r.id}">`
-      + img
-      + `<div class="ac-body">${warns ? `<span class="ac-warn" title="채워야 할 항목">⚠ ${warns}</span>` : ''}${title}<div class="ac-fields">${fields}</div></div>`
-      + `<div class="ac-acts">${editHandler ? `<button class="edit-btn" data-edit-table="${tableName}" data-edit-id="${r.id}">전체 수정</button>` : ''}<button class="del-btn" data-table="${tableName}" data-id="${r.id}">삭제</button></div>`
-      + '</div>';
-  }).join('') + '</div>';
-}
-// 수정 폼을 여는 자리: 표면 그 행 아래, 카드면 가운데 창
-function rowOf(btn) { return btn && (btn.closest('tr') || btn.closest('.acard')); }
 const tableMeta = {}; // containerId -> {columns, tableName}
 
 function renderTable(containerId, rows, columns, tableName, countId, editHandler) {
@@ -981,8 +913,6 @@ function renderTable(containerId, rows, columns, tableName, countId, editHandler
       });
     }
   }
-
-  if (adminViewOf(tableName) === 'card') { container.innerHTML = renderCardGrid(containerId, sortedRows, columns, tableName, editHandler); return; }
 
   const head = columns.map((c, i) => {
     const sortable = !!(c.sortValue || c.key);
@@ -1037,13 +967,8 @@ function patchCacheRow(tableName, rowId, patch) {
 }
 
 // 셀 더블클릭 -> 그 자리에서 바로 수정 (텍스트/숫자/날짜/셀렉트/참조검색)
-document.querySelector('main').addEventListener('dblclick', (e) => startCellEdit(e.target.closest('.editable-cell')));
-// 카드에서는 한 번 클릭으로 바로 고친다
-document.querySelector('main').addEventListener('click', (e) => {
-  const el = e.target.closest('.acard .editable-cell');
-  if (el && !e.target.closest('input,select,button,.combo-dropdown')) startCellEdit(el);
-});
-function startCellEdit(td) {
+document.querySelector('main').addEventListener('dblclick', (e) => {
+  const td = e.target.closest('.editable-cell');
   if (!td || td.querySelector('input,select')) return;
   const containerId = td.dataset.container;
   const rowId = td.dataset.rowid;
@@ -1103,7 +1028,7 @@ function startCellEdit(td) {
           const tbl = CANCEL_TABLE_MAP[wasEditingKey];
           const editId = editState[tbl];
           const btn = editId && document.querySelector(`.edit-btn[data-edit-table="${tbl}"][data-edit-id="${editId}"]`);
-          if (btn) moveCardToRow(wasEditingKey, rowOf(btn));
+          if (btn) moveCardToRow(wasEditingKey, btn.closest('tr'));
         }
       });
     });
@@ -1156,7 +1081,7 @@ function startCellEdit(td) {
         const tbl = CANCEL_TABLE_MAP[wasEditingKey];
         const editId = editState[tbl];
         const btn = editId && document.querySelector(`.edit-btn[data-edit-table="${tbl}"][data-edit-id="${editId}"]`);
-        if (btn) moveCardToRow(wasEditingKey, rowOf(btn));
+        if (btn) moveCardToRow(wasEditingKey, btn.closest('tr'));
       }
     });
   }
@@ -1165,7 +1090,7 @@ function startCellEdit(td) {
     if (ev.key === 'Enter') { ev.preventDefault(); inputEl.blur(); }
     if (ev.key === 'Escape') { cancelled = true; td.innerHTML = oldHtml; }
   });
-}
+});
 
 function thumbHtml(urls) {
   if (!urls || !urls.length) return '';
@@ -1516,10 +1441,8 @@ function moveCardHome(key) {
   const home = cardHomes[key];
   if (!card || !home) return;
   const wrapperTr = card.closest('tr.inline-edit-row');
-  const inModal = card.closest('#edit-modal');
   home.parent.insertBefore(card, home.next);
   if (wrapperTr) wrapperTr.remove();
-  if (inModal) { inModal.classList.remove('open'); document.body.classList.remove('em-open'); card.style.display = 'none'; }
   if (currentEditKey === key) currentEditKey = null;
 }
 function moveCardToRow(key, rowEl) {
@@ -1527,24 +1450,6 @@ function moveCardToRow(key, rowEl) {
   if (!card || !rowEl) return;
   Object.keys(cardHomes).forEach(k => { if (k !== key) moveCardHome(k); });
   card.style.display = 'block';
-  if (rowEl.tagName !== 'TR') {   // 카드 보기: 가운데 창으로 연다
-    let modal = document.getElementById('edit-modal');
-    if (!modal) {
-      modal = document.createElement('div');
-      modal.id = 'edit-modal';
-      modal.innerHTML = '<div class="em-back"></div><div class="em-panel"><button type="button" class="em-close" title="닫기">✕</button><div class="em-slot"></div></div>';
-      document.querySelector('main').appendChild(modal);
-      const close = () => { const b = document.getElementById('cancel-' + currentEditKey); if (b) b.click(); else if (currentEditKey) moveCardHome(currentEditKey); };
-      modal.querySelector('.em-back').addEventListener('click', close);
-      modal.querySelector('.em-close').addEventListener('click', close);
-      document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && modal.classList.contains('open') && !ev.target.closest('input,select,textarea')) close(); });
-    }
-    modal.querySelector('.em-slot').appendChild(card);
-    modal.classList.add('open');
-    document.body.classList.add('em-open');
-    currentEditKey = key;
-    return;
-  }
   const tr = document.createElement('tr');
   tr.className = 'inline-edit-row';
   const td = document.createElement('td');
@@ -1622,7 +1527,7 @@ document.querySelector('main').addEventListener('click', async (e) => {
     resetPhotoWidget('show', row.poster_urls);
     editState['shows'] = id;
     setEditMode('form-show', 'shows', true);
-    moveCardToRow('show', rowOf(btn));
+    moveCardToRow('show', btn.closest('tr'));
   }
   else if (table === 'participation_history') {
     const row = (await supabase.from('participation_history').select('*').eq('id', id).single()).data;
@@ -1638,7 +1543,7 @@ document.querySelector('main').addEventListener('click', async (e) => {
     applyRoleTypeGate();
     editState['participation_history'] = id;
     setEditMode('form-participation', 'participation_history', true);
-    moveCardToRow('participation', rowOf(btn));
+    moveCardToRow('participation', btn.closest('tr'));
   }
   else if (table === 'works') {
     const row = cache.works.find(w => w.id === id);
@@ -1649,7 +1554,7 @@ document.querySelector('main').addEventListener('click', async (e) => {
     resetWorkTags(row.tags || []);
     editState['works'] = id;
     setEditMode('form-work', 'works', true);
-    moveCardToRow('work', rowOf(btn));
+    moveCardToRow('work', btn.closest('tr'));
   }
   else if (table === 'people') {
     const row = cache.people.find(p => p.id === id);
@@ -1660,7 +1565,7 @@ document.querySelector('main').addEventListener('click', async (e) => {
     personRolePicker.render('person-role-chips');
     editState['people'] = id;
     setEditMode('form-person', 'people', true);
-    moveCardToRow('person', rowOf(btn));
+    moveCardToRow('person', btn.closest('tr'));
   }
   else {
     // roles, troupes, venues, staff_roles, creation_history 등 단순 폼
@@ -1683,7 +1588,7 @@ document.querySelector('main').addEventListener('click', async (e) => {
     if (table === 'roles') { resetRoleTags(row.tags || []); resetPhotoWidget('role', row.photo_urls); }
     editState[table] = id;
     setEditMode(formId, table, true);
-    moveCardToRow(TABLE_TO_KEY[table], rowOf(btn));
+    moveCardToRow(TABLE_TO_KEY[table], btn.closest('tr'));
   }
 });
 
@@ -1815,7 +1720,6 @@ simpleFormHandler('form-creation', 'creation_history', 'msg-creation');
 
 // ---------- 초기화 ----------
 captureCardHomes();
-installViewToggles();
 wireSingleCombo('show-troupe');
 wireSingleCombo('show-venue');
 wireSingleCombo('show-work');
