@@ -101,7 +101,7 @@ async function goProject(pid,push){
     mn('<div class="tab-index"><div class="result-empty">프로젝트를 불러올 수 없어요. 접근 권한이 없거나 삭제되었을 수 있어요.</div></div>');
   }
 }
-var PROJECT_TABS_ALL=[['home','홈'],['people','사람'],['prep','준비'],['budget','예산']];  // 탭 구성은 project-home.js
+var PROJECT_TABS_ALL=[['home','홈'],['people','사람'],['schedule','일정'],['prep','준비'],['budget','예산']];  // 탭 구성은 project-home.js
 function currentProjectTabs(){
   var ctx=window._projectCtx;if(!ctx)return PROJECT_TABS_ALL;
   return PROJECT_TABS_ALL.filter(function(t){
@@ -119,6 +119,7 @@ function renderProjectTabContent(){
   var tab=window._projectTab;
   if(tab==='home')renderProjectHome(el);
   else if(tab==='people')renderProjectPeople(el);
+  else if(tab==='schedule')renderProjectSchedule(el);
   else if(tab==='prep')renderProjectPrep(el);
   else if(tab==='budget')renderProjectBudget(el);
 }

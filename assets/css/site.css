@@ -861,3 +861,63 @@ body.mode-my .nav-my{display:flex}
   .ph-todo-item{flex-direction:column;align-items:flex-start}
 }
 .nav-my button{width:100%;text-align:left}
+
+/* ── 일정 · 공지 (assets/js/site/project-schedule.js) ── */
+.ph-top{display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1.2rem}
+.ph-top:empty{display:none}
+.ph-dday{font-size:0.9rem;color:var(--muted)}
+.ph-dday:empty{display:none}
+.ph-dday b{font-family:'Noto Serif KR',serif;font-weight:400;font-size:1.5rem;color:var(--accent);margin-left:0.3rem}
+.ph-2col{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:0 1.6rem}
+.ph-empty-line{font-size:0.86rem;color:var(--muted);padding:0.6rem 0}
+.ev-month{font-size:0.8rem;color:var(--muted);margin:1rem 0 0.45rem}
+.ev-row{display:flex;align-items:center;gap:1rem;padding:0.75rem 1rem;background:var(--bg2);border:1px solid var(--line);border-radius:10px;margin-bottom:0.45rem}
+.ev-row.past{opacity:0.6}
+.ev-date{display:flex;flex-direction:column;min-width:84px;flex-shrink:0}
+.ev-date b{font-weight:500;font-size:0.9rem;color:var(--text)}
+.ev-date span{font-size:0.76rem;color:var(--muted)}
+.ev-main{flex:1;min-width:0}
+.ev-title{font-size:0.9rem;color:var(--text);display:flex;align-items:center;gap:0.45rem;flex-wrap:wrap}
+.ev-sub{font-size:0.78rem;color:var(--muted);margin-top:0.2rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ev-kind{font-size:0.72rem;padding:0.08rem 0.45rem;border-radius:4px;background:var(--bg3);color:var(--text);white-space:nowrap}
+.ev-reh{background:rgba(110,181,200,0.14);color:#8ecbdb}
+.ev-perf{background:rgba(200,169,110,0.18);color:var(--accent)}
+.ev-meet{background:rgba(160,140,220,0.16);color:#b8a9e8}
+.ev-dead{background:rgba(217,83,79,0.15);color:#e8837f}
+.ev-dday{font-size:0.78rem;color:var(--muted);white-space:nowrap}
+.ev-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.85rem;padding:0.2rem 0.4rem;border-radius:4px}
+.ev-del:hover{color:#e8837f;background:var(--bg3)}
+.ev-form-wrap{margin-bottom:1.4rem}
+.ev-add{display:inline-block;list-style:none;cursor:pointer;padding:0.55rem 1rem;border:1px solid var(--accent);border-radius:10px;color:var(--accent);font-size:0.86rem}
+.ev-add::-webkit-details-marker{display:none}
+.ev-form-wrap[open] .ev-add{background:var(--accent);color:var(--bg)}
+.ev-form{margin-top:0.8rem;padding:1.1rem 1.2rem;background:var(--bg2);border:1px solid var(--line);border-radius:12px;max-width:760px}
+.ev-kinds{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1rem}
+.ev-kind-opt{cursor:pointer}
+.ev-kind-opt input{position:absolute;opacity:0;pointer-events:none}
+.ev-kind-opt .ev-kind{display:inline-block;padding:0.35rem 0.8rem;font-size:0.82rem;border:1px solid transparent;opacity:0.55}
+.ev-kind-opt input:checked+.ev-kind{opacity:1;border-color:currentColor}
+.ev-kind-opt input:focus-visible+.ev-kind{outline:2px solid var(--accent)}
+.ev-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0.7rem}
+.ev-field{display:flex;flex-direction:column;gap:0.3rem;font-size:0.76rem;color:var(--muted)}
+.ev-wide{grid-column:1/-1}
+.ev-field input,.ev-field select,.nt-write textarea{background:var(--bg3);border:1px solid var(--line);border-radius:8px;color:var(--text);font-family:inherit;font-size:0.88rem;padding:0.55rem 0.7rem;outline:none;color-scheme:dark}
+.ev-field input:focus,.ev-field select:focus,.nt-write textarea:focus{border-color:var(--accent)}
+.ev-form-actions{display:flex;align-items:center;justify-content:flex-end;gap:1rem;margin-top:1rem}
+.ev-msg{font-size:0.8rem;color:var(--muted)}
+.ev-past>summary{list-style:none;cursor:pointer}
+.ev-past>summary::-webkit-details-marker{display:none}
+.ev-past>summary .dv-h::after{content:'펼치기 ▾';font-size:0.76rem;color:var(--muted);font-weight:400;margin-left:0.4rem}
+.ev-past[open]>summary .dv-h::after{content:'접기 ▴'}
+.nt-write{margin-bottom:0.8rem}
+.nt-write textarea{width:100%;resize:vertical;min-height:60px}
+.nt-write-row{display:flex;align-items:center;justify-content:space-between;margin-top:0.5rem}
+.nt-pin{font-size:0.8rem;color:var(--muted);display:flex;align-items:center;gap:0.35rem;cursor:pointer}
+.nt-pin input{accent-color:var(--accent)}
+.nt-item{padding:0.8rem 1rem;background:var(--bg2);border:1px solid var(--line);border-radius:10px;margin-bottom:0.45rem}
+.nt-item.pinned{border-color:rgba(200,169,110,0.45)}
+.nt-pin-badge{display:inline-block;font-size:0.7rem;color:var(--accent);margin-bottom:0.25rem}
+.nt-body{font-size:0.9rem;color:var(--text);line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.nt-meta{font-size:0.76rem;color:var(--muted);margin-top:0.35rem}
+.nt-meta .link{cursor:pointer}
+@media(max-width:768px){.ev-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ev-date{min-width:70px}}

@@ -1,5 +1,5 @@
 /* 오리 사이트 — 공연 프로젝트 공간의 탭 구성
-   탭: 홈(지금 할 일) · 사람(배역·제작진·팀원·참여 요청) · 준비(극장 후보·홍보) · 예산
+   탭: 홈(지금 할 일·공지·다가오는 일정) · 사람(배역·제작진·팀원·참여 요청) · 일정(project-schedule.js) · 준비(극장 후보·홍보) · 예산
    예전의 개요/배우/제작진/극장/팀/홍보/참여요청 8개 탭 렌더러는 project.js에 그대로 있고, 여기서 묶어서 쓴다. */
 var PROJECT_STAGES=['기획','팀 꾸리기','공연 준비','공연','마무리'];
 var PEOPLE_SUBTABS=[['actor','배역'],['crew','제작진'],['team','팀원'],['requests','참여 요청']];
@@ -44,10 +44,11 @@ function renderProjectHome(el){
     +'<div class="dv-fact"><dt>라이선스</dt><dd>'+(pr.is_licensed?escHtml(pr.is_licensed):empty)+editBtn('license')+'</dd></div>'
     +'</dl>';
 
-  var h='';
-  if(!isAdmin)h+='<div class="ph-me">이 공연에서 내 역할 <b>'+(myRole?escHtml(myRole):'아직 정해지지 않았어요')+'</b></div>';
+  var h='<div class="ph-top"><div id="ph-dday" class="ph-dday"></div>'
+    +(!isAdmin?'<div class="ph-me">이 공연에서 내 역할 <b>'+(myRole?escHtml(myRole):'아직 정해지지 않았어요')+'</b></div>':'')+'</div>';
   h+=stageH;
   if(isAdmin)h+='<section class="dv-sec ph-todo-sec">'+dvSection('지금 할 일')+'<div id="ph-todo" class="ph-todo"><div class="hf-loading">확인하는 중…</div></div></section>';
+  h+='<div class="ph-2col">'+homeNoticesHtml()+homeUpcomingHtml()+'</div>';
   h+='<section class="dv-sec">'+dvSection('공연 정보')+factsH+'</section>';
   h+='<section class="dv-sec">'+dvSection('팀')+'<div id="ph-team" class="ph-team"><div class="hf-loading">불러오는 중…</div></div></section>';
   if(pr.published_show_id)h+='<section class="dv-sec"><div class="ph-published">이 공연은 아카이브에 올라가 있어요. <span class="link" data-action="show" data-id="'+pr.published_show_id+'">공연 페이지 보기 →</span></div></section>';
@@ -60,17 +61,19 @@ function renderProjectHome(el){
   }
   el.innerHTML=h;
   loadProjectHomeData();
+  loadHomeScheduleBits();
 }
 
 async function loadProjectHomeData(){
   var ctx=window._projectCtx,pid=ctx.pid,pr=ctx.pr;
-  var reqs=[],budgetCnt=0;
+  var reqs=[],budgetCnt=0,eventCnt=0;
   try{
     var posr=await sbClient.from('project_positions').select('*').eq('project_id',pid);ctx.positions=posr.data||[];
     var md=await sbClient.rpc('list_project_members_detail',{p_project_id:pid});ctx.memberDetail=md.data||[];
     if(ctx.isAdmin){
       var rq=await sbClient.rpc('list_project_join_requests',{p_project_id:pid});reqs=rq.data||[];
       var bd=await sbClient.from('project_budget_items').select('id').eq('project_id',pid);budgetCnt=(bd.data||[]).length;
+      var evr=await sbClient.from('project_events').select('id').eq('project_id',pid);eventCnt=(evr.data||[]).length;
     }
   }catch(e){}
   if(window._projectCtx!==ctx||window._projectTab!=='home')return;  // 그새 다른 화면으로 갔으면 그리지 않는다
@@ -116,6 +119,7 @@ async function loadProjectHomeData(){
   }
   if(pr.work_id&&!pr.is_licensed)todos.push({t:'라이선스 상태를 정해요',s:'창작인지, 확보했는지, 아직인지',btn:'정하기',go:'openProjectWizard('+pidQ+',[\'license\'])'});
   if(pr.is_licensed==='미확보')todos.push({t:'라이선스를 확보해요',s:'오리에 문의하면 확보 방법을 안내해드려요',btn:'라이선스 문의',go:'openLicenseInquiry(\'\',\''+(pr.work_id||'')+'\')'});
+  if(!eventCnt)todos.push({t:'연습 일정을 잡아요',s:'매주 반복 일정은 한 번에 여러 주를 넣을 수 있어요',btn:'일정 추가',go:'window._evFormOpen=true;switchProjectTab(\'schedule\')'});
   if(!budgetCnt)todos.push({t:'예산을 잡아요',s:'표준 항목으로 한 번에 채울 수 있어요',btn:'예산 시작',go:'switchProjectTab(\'budget\')'});
   if(pr.status==='planning'&&pr.work_id&&pr.target_start_date&&pr.venue_id&&!open.length)
     todos.push({t:'준비가 거의 끝났어요',s:'상태를 "공연 예정"으로 바꾸면 공연 페이지가 만들어져요',btn:'공연 예정으로',go:'updateProjectStatus('+pidQ+',\'upcoming\')'});
