@@ -106,20 +106,27 @@ function showWork(wid,push){
   var work=DB.works.find(function(w){return w.id===wid;});if(!work)return;
   var shows=sortShows(DB.shows.filter(function(s){return ids(fld(s,'작품')).indexOf(wid)>-1;}));
   var roles=DB.roles.filter(function(r){return ids(fld(r,'작품')).indexOf(wid)>-1;});
-  var genre=workGenre(work);
-  var wTags=fld(work,'태그')||[];
-  var wTagsRowH=wTags.length?('<div class="result-card-tags" style="margin-top:0.5rem">'+wTags.map(function(t){return '<span class="result-card-tag">'+t+'</span>';}).join('')+'</div>'):'';
-  var h='<div class="detail-header"><div class="eyebrow">작품'+(genre?' · '+genre:'')+'</div><div class="detail-title">'+fld(work,'작품명')+favBtnHtml('work',wid)+wishBtnHtml('work',wid)+'</div>'+(fld(work,'작품명 (영문)')?'<div class="detail-meta"><span>'+fld(work,'작품명 (영문)')+'</span></div>':'')+wTagsRowH+'</div>';
-  h+=buildPhotoGalleryHtml(fld(work,'사진'),fld(work,'작품명'),false);
-  if(shows.length){h+='<div class="sec"><div class="sec-label">공연 이력</div><div class="item-grid">'+shows.map(function(s){
-    var p=POSTER[s.id]||'';
-    var trid=ids(fld(s,'극단'))[0]||'';
-    var date=fld(s,'공연 날짜')||'';
-    var subParts=[];if(nm(trid))subParts.push(nm(trid));if(date)subParts.push(date);
-    return '<div class="item-card" data-action="show" data-id="'+s.id+'">'+( p?'<img src="'+p+'" style="width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:4px;margin-bottom:0.6rem">':'')+'<div class="item-card-title">'+fld(s,'공연명')+'</div><div class="item-card-sub">'+subParts.join(' · ')+'</div></div>';
-  }).join('')+'</div></div>';}
-  if(roles.length){h+='<div class="sec"><div class="sec-label">등장인물</div><div class="item-grid">'+roles.map(function(r){return '<div class="item-card" data-action="role" data-id="'+r.id+'"><div class="item-card-title">'+fld(r,'배역명')+'</div></div>';}).join('')+'</div></div>';}
-  h+='<div class="sec"><div class="sec-label">해보고 싶어하는 사람들</div><div id="wish-interest-work"></div></div>';
-  mn(h);injectBackBtn('← 작품',function(){goWorks();});
-  renderWishlistInterest('work',wid,'wish-interest-work');
+  roles.sort(function(a,b){var oa=ROLE_ORDER[a.id],ob=ROLE_ORDER[b.id];if(oa==null&&ob==null)return 0;if(oa==null)return 1;if(ob==null)return -1;return oa-ob;});
+  var country=fld(work,'국가');country=Array.isArray(country)?country.join(', '):(country||'');
+  var creators=[];DB.creationHistory.forEach(function(c){if(ids(fld(c,'작품')).indexOf(wid)>-1){var p=ids(fld(c,'창작자'))[0];if(p&&creators.indexOf(p)===-1)creators.push(p);}});
+  var photos=fld(work,'사진')||[];
+  dvRender({
+    type:'work',id:wid,back:{label:'작품 목록',go:'goWorks()'},
+    thumb:{url:iurl(photos),shape:'poster',ph:'📖'},
+    kicker:'작품'+(workGenre(work)?' · '+escHtml(workGenre(work)):''),
+    title:fld(work,'작품명'),
+    sub:fld(work,'작품명 (영문)')?escHtml(fld(work,'작품명 (영문)')):'',
+    tags:fld(work,'태그')||[],
+    facts:[['국가',escHtml(country)],['초연',fld(work,'초연 연도')?fld(work,'초연 연도')+'년':''],['등장인물',roles.length?roles.length+'명':''],['공연',shows.length?shows.length+'편':'']],
+    actions:[dvFavBtn('work',wid),dvFavBtn('work',wid,'wishlist'),dvActBtn('라이선스 문의','openLicenseInquiry(\'\',\''+wid+'\')','💬'),dvEditBtn('work',wid)],
+    sections:[
+      {title:'공연 이력',items:shows.map(function(s){return dvShowCard(s,dvShowSub(s,['troupe','date']));}),layout:'cards',peek:true},
+      {title:'창작진',items:creators.map(function(p){return dvPersonRow(p,'');}),layout:'rows',peek:true},
+      {title:'등장인물',items:roles.map(function(r){return dvChip('role',r.id,fld(r,'배역명'));}),layout:'chips',peek:true,peekMax:20},
+      {title:'해보고 싶어하는 사람들',body:'<div id="wish-interest-work"></div>'},
+      {title:'사진',body:buildPhotoGalleryHtml(photos,fld(work,'작품명'))}
+    ],
+    empty:'아직 연결된 공연이나 배역이 없어요.',
+    after:function(){renderWishlistInterest('work',wid,'wish-interest-work');}
+  });
 }

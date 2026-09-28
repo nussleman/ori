@@ -62,7 +62,7 @@ function filterBar(bar,specs,opts){
   specs=specs.filter(function(s){return s.type==='toggle'||(s.options&&s.options.length);});
   FB[bar]={specs:specs,opts:opts};
   var anyOn=specs.some(fbIsOn);
-  var h='<div class="fbar" data-bar="'+bar+'"><div class="fbar-left">';
+  var h='<div class="fbar'+(opts.inline?' fbar-inline':'')+'" data-bar="'+bar+'"><div class="fbar-left">';
   specs.forEach(function(spec){
     if(spec.type==='toggle'){
       h+='<button type="button" class="fdd-btn fdd-toggle'+(spec.value?' on':'')+'" aria-pressed="'+(spec.value?'true':'false')+'" onclick="fbPick(\''+bar+'\',\''+spec.key+'\',0)">'+fbEsc(spec.label)+'</button>';
@@ -73,7 +73,7 @@ function filterBar(bar,specs,opts){
   if(opts.count)h+='<span class="fbar-count">'+opts.count+'</span>';
   if(opts.sort){
     var s=opts.sort;
-    h+=fbDropdownHtml(bar,{key:'__sort',label:'정렬',type:'single',noAll:true,options:s.options,value:s.value},'fdd-sort fdd-right');
+    h+=fbDropdownHtml(bar,{key:'__sort',label:s.label||'정렬',type:'single',noAll:true,options:s.options,value:s.value},'fdd-sort fdd-right');
   }
   if(opts.view){
     h+='<div class="fbar-view" role="group" aria-label="보기 방식">'

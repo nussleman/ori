@@ -21,6 +21,8 @@ assets/
   js/admin/admin.js        관리자 로직 (ES 모듈)
   js/site/                 사이트 로직 (일반 스크립트, 아래 순서대로 로드)
     core.js                전역 상태, $() 헬퍼, mn() 렌더, REST 어댑터, 데이터 로드, 전역 검색, 모달
+    filters.js             공통 필터 바 filterBar() — 목록·상세의 모든 필터
+    detail.js              상세 화면 공통 틀 dvRender() — 같은 모델로 전용 페이지/오른쪽 패널을 그림
     account.js             구글 로그인, 선언 의식, 즐겨찾기, 사람/단체 클레임
     edit-request.js        정보 제보·수정요청 모달
     mypage.js              마이페이지
@@ -38,6 +40,8 @@ assets/
 ## 규칙
 
 - 사이트 JS는 전역 함수 방식(`onclick="goShows()"`)이라 파일을 나눠도 같은 전역 공간을 쓴다. 새 파일을 만들면 `gongyon-db.html` 하단 `<script>` 목록에 추가한다. `router.js`는 항상 마지막.
+- 상세 화면은 모델 객체(헤더·핵심 정보·액션·섹션)를 만들어 `dvRender()`에 넘긴다. 섹션에 `peek:true`를 주면 패널 요약판에도 나온다.
+- 필터는 `filterBar(이름, specs, opts)` 하나로 만든다. 버튼을 나열하지 않는다.
 - 목록/상세의 카드는 `data-action="show|person|work|role|venue|troupe"` + `data-id`만 달면 클릭 동작(미리보기/전용 페이지)이 자동으로 붙는다.
 - 상세 화면 안에서 DOM을 찾을 땐 `document.getElementById` 대신 `$()`, `$1()`, `$$()`를 쓴다 — 같은 화면이 본문과 미리보기 패널에 동시에 떠도 올바른 쪽을 찾는다.
 - CSS/JS를 고치면 HTML의 `?v=날짜` 값을 올려서 브라우저 캐시를 무효화한다.

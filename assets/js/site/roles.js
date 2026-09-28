@@ -94,42 +94,30 @@ function showRole(rid,push){
   var role=DB.roles.find(function(r){return r.id===rid;});if(!role)return;
   var wid=ids(fld(role,'작품'))[0]||'';
   var hists=DB.history.filter(function(h){return isValidH(h)&&ids(fld(h,'배역')).indexOf(rid)>-1;});
+  hists.sort(function(a,b){var da=showDate(ids(fld(a,'공연'))[0]||''),db=showDate(ids(fld(b,'공연'))[0]||'');if(!da&&!db)return 0;if(!da)return 1;if(!db)return -1;return db.localeCompare(da);});
   var showIds=[];hists.forEach(function(h){var sid=ids(fld(h,'공연'))[0]||'';if(sid&&showIds.indexOf(sid)===-1)showIds.push(sid);});
-  var siblingRoles=wid?DB.roles.filter(function(r){return r.id!==rid&&ids(fld(r,'작품')).indexOf(wid)>-1&&fld(r,'배역명');}):[];
-  var roleTags=fld(role,'태그')||[];
-  var tagsRowH=roleTags.length?('<div class="result-card-tags" style="margin-top:0.5rem">'+roleTags.map(function(t){return '<span class="result-card-tag">'+t+'</span>';}).join('')+'</div>'):'';
-  var h='<div class="detail-header"><div class="eyebrow">'+(wid?'<span class="link" data-action="work" data-id="'+wid+'">'+nm(wid)+'</span> · 배역':'배역')+'</div><div class="detail-title">'+fld(role,'배역명')+wishBtnHtml('role',rid)+'</div>'+tagsRowH+'<div class="detail-meta"><span>출연 '+hists.length+'건</span>'+(showIds.length?'<span>공연 '+showIds.length+'개</span>':'')+'</div></div>';
-  h+=buildPhotoGalleryHtml(fld(role,'사진'),fld(role,'배역명'),false);
-  if(hists.length){
-    // 공연별로 묶어서 날짜순 정렬
-    var byShow={};hists.forEach(function(h){var sid=ids(fld(h,'공연'))[0]||'';if(!sid)return;if(!byShow[sid])byShow[sid]=[];byShow[sid].push(h);});
-    var showOrder=Object.keys(byShow).sort(function(a,b){var da=showDate(a),db=showDate(b);if(!da&&!db)return 0;if(!da)return 1;if(!db)return -1;return db.localeCompare(da);});
-    h+='<div class="sec"><div class="sec-label">출연 이력</div><div class="cast-grid">';
-    showOrder.forEach(function(sid){
-      var sHists=byShow[sid];
-      var sDate=ym(showDate(sid));
-      var showRec=DB.shows.find(function(x){return x.id===sid;})||{};
-      var trid=ids(fld(showRec,'극단'))[0]||'';
-      sHists.forEach(function(rec){
-        var pid=ids(fld(rec,'참여자'))[0]||'';
-        var u=iurl(fld(rec,'사진'))||PERSON_PHOTO[pid]||'';
-        var imgH=u?'<img class="cast-img" src="'+u+'">':'<div class="cast-img-ph">🎭</div>';
-        h+='<div class="cast-card" data-action="person" data-id="'+pid+'">'
-          +imgH
-          +'<div class="cast-name">'+nm(pid)+'</div>'
-          +'<div class="cast-role"><span class="link" data-action="show" data-id="'+sid+'">'+nm(sid)+'</span></div>'
-          +(sDate||nm(trid)?'<div class="cast-role" style="opacity:.65">'+(sDate||'')+(sDate&&nm(trid)?' · ':'')+nm(trid)+'</div>':'')
-          +'</div>';
-      });
-    });
-    h+='</div></div>';
-  } else {h+='<div class="empty">출연 이력이 없습니다.</div>';}
-  if(siblingRoles.length){
-    h+='<div class="sec"><div class="sec-label">같은 작품의 다른 배역</div><div class="item-grid">';
-    siblingRoles.forEach(function(r){var actCnt=DB.history.filter(function(h){return isValidH(h)&&ids(fld(h,'배역')).indexOf(r.id)>-1;}).length;h+='<div class="item-card" data-action="role" data-id="'+r.id+'"><div class="item-card-title">'+fld(r,'배역명')+'</div><div class="item-card-sub">출연 '+actCnt+'명</div></div>';});
-    h+='</div></div>';
-  }
-  h+='<div class="sec"><div class="sec-label">해보고 싶어하는 사람들</div><div id="wish-interest-role"></div></div>';
-  mn(h);injectBackBtn('← 배역',function(){goRoles();});
-  renderWishlistInterest('role',rid,'wish-interest-role');
+  var actorItems=hists.map(function(rec){
+    var pid=ids(fld(rec,'참여자'))[0]||'',sid=ids(fld(rec,'공연'))[0]||'';
+    var s=DB.shows.find(function(x){return x.id===sid;})||{};
+    return dvPersonCard(pid,dvLink('show',sid,nm(sid)),dvShowSub(s,['troupe','date']),iurl(fld(rec,'사진')));
+  });
+  var siblings=wid?DB.roles.filter(function(r){return r.id!==rid&&ids(fld(r,'작품')).indexOf(wid)>-1&&fld(r,'배역명');}):[];
+  var photos=fld(role,'사진')||[];
+  dvRender({
+    type:'role',id:rid,back:{label:'배역 목록',go:'goRoles()'},
+    thumb:{url:iurl(photos),shape:'square',ph:'🎬'},
+    kicker:'배역'+(wid?' · '+dvLink('work',wid,nm(wid)):''),
+    title:fld(role,'배역명'),
+    tags:fld(role,'태그')||[],
+    facts:[['작품',dvLink('work',wid,nm(wid))],['성별',escHtml(fld(role,'성별')||'')],['맡은 사람',hists.length?hists.length+'명':''],['공연',showIds.length?showIds.length+'편':'']],
+    actions:[dvFavBtn('role',rid,'wishlist'),dvEditBtn('role',rid)],
+    sections:[
+      {title:'맡은 사람',items:actorItems,layout:'people',peek:true,peekMax:8},
+      {title:'같은 작품의 다른 배역',items:siblings.map(function(r){return dvChip('role',r.id,fld(r,'배역명'));}),layout:'chips',peek:true,peekMax:12},
+      {title:'해보고 싶어하는 사람들',body:'<div id="wish-interest-role"></div>'},
+      {title:'사진',body:buildPhotoGalleryHtml(photos,fld(role,'배역명'))}
+    ],
+    empty:'아직 이 배역을 맡은 사람이 등록되지 않았어요.',
+    after:function(){renderWishlistInterest('role',rid,'wish-interest-role');}
+  });
 }

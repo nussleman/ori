@@ -86,58 +86,21 @@ function showVenue(vid,push){
   setNav('venues');mobShowDetail();
   var venue=DB.venues.find(function(v){return v.id===vid;});if(!venue)return;
   var shows=sortShows(DB.shows.filter(function(s){return ids(fld(s,'극장')).indexOf(vid)>-1;}));
-  var seatsLabel=venueSeatsLabel(venue);
-  var venuePhotos=fld(venue,'사진')||[];
-  var h='<div class="detail-header"><div class="eyebrow">극장</div><div class="detail-title">'+fld(venue,'극장명')+favBtnHtml('venue',vid)+'</div><div class="detail-meta"><span>공연 '+shows.length+'개</span>'+(seatsLabel?'<span>💺 좌석 '+seatsLabel+'</span>':'')+'</div></div>';
-  h+=buildPhotoGalleryHtml(venuePhotos,fld(venue,'극장명'),false);
-  var vRentalFee=fld(venue,'대관료');
-  var vRentalAvail=fld(venue,'대관가능여부');
-  var vContact=fld(venue,'연락처');
-  var vParking=fld(venue,'주차가능여부');
-  var vTransit=fld(venue,'대중교통정보');
-  var vInfoRows=[];
-  if(vRentalAvail!=null)vInfoRows.push('<div class="info-row"><span class="info-row-label">대관 가능여부</span><span>'+(vRentalAvail?'가능':'불가')+'</span></div>');
-  if(vRentalFee)vInfoRows.push('<div class="info-row"><span class="info-row-label">대관료</span><span>'+vRentalFee+'</span></div>');
-  if(vContact)vInfoRows.push('<div class="info-row"><span class="info-row-label">연락처</span><span>'+vContact+'</span></div>');
-  if(vParking!=null)vInfoRows.push('<div class="info-row"><span class="info-row-label">주차</span><span>'+(vParking?'가능':'불가')+'</span></div>');
-  if(vTransit)vInfoRows.push('<div class="info-row"><span class="info-row-label">대중교통</span><span>'+vTransit+'</span></div>');
-  if(vInfoRows.length){
-    h+='<div class="sec"><div class="sec-label">실전 정보</div><div class="info-rows">'+vInfoRows.join('')+'</div></div>';
-  }
-  if(shows.length){
-    var vYearCntMap={};shows.forEach(function(s){var y=yearOf(fld(s,'공연 날짜')||'')||'연도 미상';vYearCntMap[y]=(vYearCntMap[y]||0)+1;});
-    var vYears=Object.keys(vYearCntMap).sort().reverse();
-    window._venueShows=shows;
-    window._venueActiveYear='all';
-    window._renderVenueShowGrid=function(yearArg){
-      if(yearArg!==undefined)window._venueActiveYear=yearArg;
-      var yearFilter=window._venueActiveYear;
-      var filtered=window._venueShows.filter(function(s){
-        if(yearFilter==='all')return true;
-        return(yearOf(fld(s,'공연 날짜')||'')||'연도 미상')===yearFilter;
-      });
-      var gridH='';
-      filtered.forEach(function(s){
-        var wid=ids(fld(s,'작품'))[0]||'';
-        var p=POSTER[s.id]||'';
-        gridH+='<div class="item-card" data-action="show" data-id="'+s.id+'">'
-          +(p?'<img src="'+p+'" style="width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:4px;margin-bottom:0.6rem">':'')
-          +'<div class="item-card-title">'+fld(s,'공연명')+'</div>'
-          +'<div class="item-card-sub">'+nm(wid)+(fld(s,'공연 날짜')?' · '+ym(fld(s,'공연 날짜')):'')+'</div>'
-          +'</div>';
-      });
-      var el=$('venue-show-grid');if(el)el.innerHTML=gridH||'<div class="empty" style="grid-column:1/-1">해당 공연이 없습니다.</div>';
-      $$('.vf-year-btn').forEach(function(btn){btn.classList.toggle('pf-active',btn.dataset.year===yearFilter);});
-    };
-    var vYearBtnsH='<button class="pf-btn vf-year-btn pf-active" data-year="all" onclick="_renderVenueShowGrid(\'all\')">전체</button>';
-    vYears.forEach(function(y){vYearBtnsH+='<button class="pf-btn vf-year-btn" data-year="'+y+'" onclick="_renderVenueShowGrid(\''+y+'\')">'+y+'</button>';});
-    h+='<div class="sec"><div class="sec-label">공연 목록</div>'
-      +'<div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.8rem">'+vYearBtnsH+'</div>'
-      +'<div class="item-grid" id="venue-show-grid"></div></div>';
-  } else {h+='<div class="empty">등록된 공연이 없습니다.</div>';}
-  mn(h);
-  if(window._renderVenueShowGrid)_renderVenueShowGrid('all');
-  injectBackBtn('← 극장',function(){goVenues();});
+  var yn=function(v){return v==null?'':(v?'가능':'불가');};
+  var photos=fld(venue,'사진')||[];
+  dvRender({
+    type:'venue',id:vid,back:{label:'극장 목록',go:'goVenues()'},
+    thumb:{url:iurl(photos),shape:'square',ph:'📍'},
+    kicker:'극장',
+    title:fld(venue,'극장명'),
+    facts:[['좌석',venueSeatsLabel(venue)],['대관',yn(fld(venue,'대관가능여부'))],['대관료',escHtml(fld(venue,'대관료')||'')],['주차',yn(fld(venue,'주차가능여부'))],['대중교통',escHtml(fld(venue,'대중교통정보')||'')],['연락처',escHtml(fld(venue,'연락처')||'')],['공연',shows.length?shows.length+'편':'']],
+    actions:[dvFavBtn('venue',vid),dvEditBtn('venue',vid)],
+    sections:[
+      {title:'공연 목록',n:shows.length,items:shows.map(function(s){return dvShowCard(s,dvShowSub(s,['troupe','date']));}),layout:'cards',peek:true,body:dvYearShows('venue-shows',shows,['troupe','date'])},
+      {title:'사진',body:buildPhotoGalleryHtml(photos,fld(venue,'극장명'))}
+    ],
+    empty:'이 극장에 등록된 공연이 아직 없어요.',
+    after:function(){dvYearShowsRender('venue-shows');}
+  });
 }
-
 var _troupeFilter={orgType:'',memberBase:'',region:'',status:'',sort:'name'};

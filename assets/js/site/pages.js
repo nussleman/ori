@@ -25,7 +25,8 @@ var _licenseInquiryCtx=null;
 function openLicenseInquiry(sid,wid){
   if(!CURRENT_USER){loginWithGoogle();return;}
   _licenseInquiryCtx={showId:sid||null,workId:wid||null};
-  $('license-inquiry-title').textContent=sid?(nm(sid)+' 라이선스가 궁금하신가요?'):'라이선스가 궁금하신가요?';
+  var target=sid?nm(sid):(wid?nm(wid):'');
+  $('license-inquiry-title').textContent=target?(target+' 라이선스가 궁금하신가요?'):'라이선스가 궁금하신가요?';
   $('license-inquiry-message').value='';$('license-inquiry-contact').value='';$('license-inquiry-msg').textContent='';
   $('license-inquiry-overlay').classList.add('open');
 }

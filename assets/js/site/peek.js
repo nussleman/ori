@@ -24,7 +24,7 @@ function renderPeek(action,id){
   try{openDetail(action,id,false);}
   finally{PEEK.rendering=false;_domScope=null;}
   body.scrollTop=0;
-  $('peek-type').textContent=PEEK_LABEL[action]||'';
+  $('peek-type').textContent='';  // 종류는 패널 본문 윗줄(공연 · …)에 이미 나온다
   $('peek-back').hidden=PEEK.stack.length<2;
   markPeeked(action,id);
 }
