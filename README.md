@@ -18,7 +18,12 @@ assets/
   css/site.css             사이트 스타일
   css/admin.css            관리자 스타일
   js/config.js             Supabase 주소·공개 키 (사이트·관리자 공통)
-  js/admin/admin.js        관리자 로직 (ES 모듈)
+  js/admin/                관리자 (ES 모듈, app.js가 시작점)
+    app.js                 로그인·사이드바·주소(#/…) 라우팅·단축키
+    lib.js                 Supabase 클라이언트, 전체 데이터 캐시(S)·관계 색인(IX), 저장 도우미, 창·알림
+    schema.js              데이터 종류별 입력 칸·목록 표시·"채울 것" 점검 정의
+    records.js             레코드 작업대: 목록 + 편집기(자동 저장), 사진, 출연진·배역·창작진·참여 이력 연결
+    pages.js               할 일 홈, 요청 처리, 공개·권리 분류, 데이터 현황, 유저·관리자·선택지
   js/site/                 사이트 로직 (일반 스크립트, 아래 순서대로 로드)
     core.js                전역 상태, $() 헬퍼, mn() 렌더, REST 어댑터, 데이터 로드, 전역 검색, 모달
     filters.js             공통 필터 바 filterBar() — 목록·상세의 모든 필터
