@@ -21,7 +21,9 @@ function sb(h){$('sb').innerHTML=h;}
    카드 클릭(한 번=패널, 두 번=전용 페이지)과 이미지 확대 처리는 peek.js의 이벤트 위임이 담당한다. */
 function mn(h){
   if(PEEK.rendering){$('peek-body').innerHTML=h;return;}
-  $('mn').innerHTML=h;
+  var el=$('mn');el.innerHTML=h;
+  // 새 화면이 들어왔다는 걸 짧게 알려준다 (사용성 3단계, 동작 줄이기 설정이면 CSS에서 꺼짐)
+  el.classList.remove('ori-in');void el.offsetWidth;el.classList.add('ori-in');
 }
 function openLightbox(src){
   var lb=$('lightbox'),img=$('lightbox-img');
@@ -55,6 +57,18 @@ async function rest(table, query){
    이걸로 감싸서 실패하면 진짜 오류가 되게 한다 → 주변 try/catch의 "저장 실패" 안내가 실제로 뜬다.
    (사용성 1단계 "믿고 쓸 수 있다": 실패를 성공처럼 보이지 않는다) */
 async function sbOk(q){var r=await q;if(r&&r.error)throw r.error;return r;}
+/* 불러오기 실패 안내 + 다시 시도: 지금 화면을 처음부터 다시 그린다 (사용성 1단계) */
+function loadFailHtml(what){
+  return '<div class="load-fail"><span>'+escHtml('불러오지 못했어요'+(what?' ('+what+')':'')+'. 인터넷 연결을 확인하고 다시 시도해 주세요.')+'</span><button type="button" class="pf-btn" onclick="retryCurrentView()">다시 시도</button></div>';
+}
+/* 저장 중 버튼 잠그기 (사용성 1단계: 연타로 두 번 저장되지 않게). 방금 누른 버튼을 잠그고, 돌려받은 함수로 푼다 */
+function busyBtn(){
+  var b=document.activeElement;
+  if(!b||b.tagName!=='BUTTON')return function(){};
+  b.disabled=true;b.classList.add('is-busy');
+  return function(){b.disabled=false;b.classList.remove('is-busy');};
+}
+async function retryCurrentView(){try{await load();}catch(e){}routeFromHash(location.hash);}
 function photoField(urls){return(urls&&urls.length)?urls.map(function(u){return{url:u};}):null;}
 function groupBy(rows,key){
   var m={};
@@ -293,7 +307,30 @@ function _oriModalClose(result){
   var r=_oriModalResolve;_oriModalResolve=null;
   if(r)r(result);
 }
-function oriAlert(message){
+/* 조용한 알림 (사용성 3단계): 화면 아래에 잠깐 떴다 사라진다. 흐름을 끊지 않는다.
+   실패 안내는 빨간색으로 더 오래, 닫기 버튼과 함께 (사용성 1단계: 실패를 놓치지 않게).
+   opts.action = {label, fn}: "어디서 볼 수 있는지"로 바로 가는 버튼 (사용성 2단계) */
+var ORI_ERR_RE=/실패|못했어요|못해요|문제가 생겼|오류|할 수 없어요|보낼 수 없어요/;
+function oriToast(message,opts){
+  opts=opts||{};
+  var box=document.getElementById('ori-toasts');
+  if(!box){box=document.createElement('div');box.id='ori-toasts';box.setAttribute('role','status');box.setAttribute('aria-live','polite');document.body.appendChild(box);}
+  var kind=opts.kind||(ORI_ERR_RE.test(message)?'err':/주세요|없어요|이미 /.test(message)?'info':'ok');
+  var t=document.createElement('div');t.className='ori-toast ori-toast-'+kind;
+  var msg=document.createElement('div');msg.className='ori-toast-msg';msg.textContent=message;t.appendChild(msg);
+  if(opts.action){var a=document.createElement('button');a.type='button';a.className='ori-toast-act';a.textContent=opts.action.label;a.onclick=function(){close();opts.action.fn();};t.appendChild(a);}
+  var x=document.createElement('button');x.type='button';x.className='ori-toast-x';x.setAttribute('aria-label','닫기');x.textContent='×';x.onclick=function(){close();};t.appendChild(x);
+  box.appendChild(t);
+  while(box.children.length>3)box.removeChild(box.firstChild);
+  var ms=opts.ms||(kind==='err'?9000:Math.min(7000,2800+message.length*45));
+  var timer=setTimeout(close,ms);
+  t.onmouseenter=function(){clearTimeout(timer);};t.onmouseleave=function(){timer=setTimeout(close,2500);};
+  function close(){clearTimeout(timer);if(!t.parentNode)return;t.classList.add('out');setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},220);}
+  return Promise.resolve(true);
+}
+function oriAlert(message,opts){return oriToast(String(message==null?'':message),opts);}
+/* 꼭 읽고 넘어가야 하는 안내만 (예: 탈퇴 완료 뒤 새로고침) */
+function oriModalAlert(message){
   return new Promise(function(resolve){
     _oriModalResolve=resolve;
     $('ori-modal-message').textContent=message;
@@ -328,6 +365,7 @@ function oriPrompt(message,defaultValue){
 async function submitLicenseInquiry(){
   var message=$('license-inquiry-message').value.trim();
   if(!message){$('license-inquiry-msg').textContent='문의 내용을 적어주세요.';return;}
+  var done=busyBtn();
   try{
     await sbOk(sbClient.from('license_inquiries').insert({
       show_id:_licenseInquiryCtx?_licenseInquiryCtx.showId:null,
@@ -339,6 +377,7 @@ async function submitLicenseInquiry(){
     $('license-inquiry-msg').textContent='보냈어요! 확인 후 안내드릴게요.';
     setTimeout(closeLicenseInquiry,1200);
   }catch(e){$('license-inquiry-msg').textContent='전송 실패: '+e.message;}
+  finally{done();}
 }
 function goTerms(push){
   if(push!==false)history.pushState({view:'terms'},'','#terms');

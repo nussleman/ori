@@ -44,7 +44,7 @@ async function loadProjectBudget(){
     sbClient.rpc('list_project_members_detail',{p_project_id:pid})
   ]);
   if(window._projectCtx!==ctx||window._projectTab!=='budget')return;
-  if(res[0].error){var e=$('bg');if(e)e.innerHTML='<div class="result-empty">예산을 불러오지 못했어요.</div>';return;}
+  if(res[0].error){var e=$('bg');if(e)e.innerHTML=loadFailHtml('예산');return;}
   _bg.rows=res[0].data||[];
   var sh=(res[1].data||[]).filter(function(s){return s.median_share>0;});
   if(sh.length>=3){

@@ -1519,3 +1519,35 @@ body.mode-make .pd-to-browse{display:block}
 .wd-cta .pf-btn{flex-shrink:0}
 @media(max-width:640px){.wd-cta,.wd-done{flex-direction:column;align-items:flex-start}}
 .wd-form select{width:100%}
+
+/* ══ 사용성: 모션 원칙 (direction.md "쓰는 맛이 있다") ══
+   상태가 바뀌었다는 걸 알려줄 때만, 짧게(150–250ms). 장식용 모션은 넣지 않는다.
+   기기 설정 "동작 줄이기"면 모두 끈다. */
+:root{--ease-out:cubic-bezier(.2,.7,.2,1);--dur-fast:150ms;--dur:220ms}
+@keyframes ori-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes ori-pop{0%{transform:scale(1)}40%{transform:scale(1.28)}100%{transform:scale(1)}}
+@keyframes ori-toast-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+#mn.ori-in>*{animation:ori-in var(--dur) var(--ease-out)}
+.fav-btn.pop,.dv-icon.pop{animation:ori-pop 280ms var(--ease-out)}
+.pf-btn,.dv-act,.opp-apply{transition:transform var(--dur-fast) var(--ease-out),background-color var(--dur-fast),border-color var(--dur-fast),color var(--dur-fast),opacity var(--dur-fast)}
+.pf-btn:active:not(:disabled),.dv-act:active,.opp-apply:active{transform:scale(0.97)}
+.pf-btn.is-busy{opacity:0.6;cursor:progress}
+
+/* 조용한 알림 (core.js oriToast) */
+#ori-toasts{position:fixed;left:50%;bottom:calc(1.2rem + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:3000;display:flex;flex-direction:column;gap:0.5rem;width:min(92vw,440px);pointer-events:none}
+@media(max-width:768px){#ori-toasts{bottom:calc(4.6rem + env(safe-area-inset-bottom,0px))}}
+.ori-toast{pointer-events:auto;display:flex;align-items:flex-start;gap:0.6rem;padding:0.75rem 0.6rem 0.75rem 1rem;border-radius:10px;background:var(--bg3);color:var(--text);border:1px solid var(--line);box-shadow:0 8px 28px rgba(0,0,0,0.35);font-size:0.85rem;line-height:1.55;animation:ori-toast-in var(--dur) var(--ease-out);transition:opacity var(--dur) var(--ease-out),transform var(--dur) var(--ease-out)}
+.ori-toast.out{opacity:0;transform:translateY(6px)}
+.ori-toast-msg{flex:1;white-space:pre-wrap}
+.ori-toast-ok{border-left:3px solid var(--accent)}
+.ori-toast-info{border-left:3px solid var(--muted)}
+.ori-toast-err{border-left:3px solid #e06c6c}
+.ori-toast-act{flex-shrink:0;background:none;border:1px solid var(--accent);color:var(--accent);border-radius:6px;padding:0.2rem 0.6rem;font-size:0.78rem;cursor:pointer;white-space:nowrap}
+.ori-toast-x{flex-shrink:0;background:none;border:none;color:var(--muted);font-size:1.1rem;line-height:1;cursor:pointer;padding:0 0.3rem}
+
+/* 불러오기 실패 + 다시 시도 (core.js loadFailHtml) */
+.load-fail{display:flex;align-items:center;justify-content:space-between;gap:0.8rem;flex-wrap:wrap;padding:0.9rem 1rem;border:1px dashed var(--line);border-radius:10px;font-size:0.84rem;color:var(--muted);margin:0.6rem 0}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;scroll-behavior:auto!important}
+}

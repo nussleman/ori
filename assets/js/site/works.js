@@ -82,7 +82,7 @@ function renderWorkIndex(){
   var resultH='';
 
   var listH='';
-  if(!filtered.length){listH='<div class="result-empty"><div class="result-empty-icon">📖</div>조건에 맞는 작품이 없어요.</div>';}
+  if(!filtered.length){listH='<div class="result-empty"><div class="result-empty-icon">📖</div>조건에 맞는 작품이 없어요.'+fbEmptyReset('works')+'</div>';}
   else if(_workIndexView==='grid'){
     listH='<div class="result-grid">';
     filtered.forEach(function(w){

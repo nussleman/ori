@@ -289,7 +289,7 @@ async function loadJoinRequests(pid){
         +'<div><div style="font-size:0.82rem">'+escHtml(req.position_label||'자리 미지정')+' · '+escHtml(req.requester_nickname||req.requester_email)+'</div>'+(req.message?'<div style="font-size:0.74rem;color:var(--muted);margin-top:0.2rem">'+escHtml(req.message)+'</div>':'')+'</div>'
         +'<div style="display:flex;gap:0.4rem;flex-shrink:0"><button class="pf-btn pf-active" onclick="approveJoinReq(\''+req.request_id+'\',\''+pid+'\')">승인</button><button class="pf-btn" onclick="rejectJoinReq(\''+req.request_id+'\',\''+pid+'\')">거절</button></div></div>';
     }).join('');
-  }catch(e){el.innerHTML='<div style="font-size:0.8rem;color:var(--muted)">불러오기 실패</div>';}
+  }catch(e){el.innerHTML=loadFailHtml('참여 요청');}
 }
 async function approveJoinReq(reqId,pid){
   try{await sbOk(sbClient.rpc('approve_join_request',{request_id:reqId}));loadJoinRequests(pid);}

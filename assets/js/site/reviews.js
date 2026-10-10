@@ -21,7 +21,7 @@ function reviewBtn(type,id){
 async function loadReviews(type,id){
   var el=document.getElementById('rv-'+type+'-'+id);if(!el)return;
   var r=await sbClient.rpc('list_reviews',{p_type:type,p_id:id});
-  if(r.error){el.innerHTML='<div class="rv-empty">후기를 불러오지 못했어요.</div>';return;}
+  if(r.error){el.innerHTML=loadFailHtml('후기');return;}
   var rows=r.data||[];_rvCache[type+':'+id]=rows;
   el=document.getElementById('rv-'+type+'-'+id);if(!el)return;
   if(!rows.length){
@@ -96,7 +96,7 @@ async function reportReview(rid){
 async function renderMyRecords(el){
   el.innerHTML='<div class="hf-loading">불러오는 중…</div>';
   var r=await sbClient.rpc('my_reviews');
-  if(r.error){el.innerHTML='<div class="result-empty">불러오지 못했어요.</div>';return;}
+  if(r.error){el.innerHTML=loadFailHtml('내 기록');return;}
   var rows=r.data||[];
   var shows=rows.filter(function(x){return x.target_type==='show';}),others=rows.filter(function(x){return x.target_type!=='show';});
   if(!rows.length){

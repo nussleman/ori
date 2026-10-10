@@ -56,7 +56,7 @@ async function loadMyPageTroupesList(){
         +'<div class="item-card-title">'+escHtml(t.troupe_name)+'</div>'
         +'<div style="font-size:0.76rem;color:var(--muted);margin-top:0.4rem">'+(t.member_role==='admin'?'관리자 · 정보 수정 가능':'멤버')+'</div></div>';
     }).join('')+'</div>';
-  }catch(e){el.innerHTML='<div style="font-size:0.82rem;color:var(--muted)">불러오기 실패</div>';}
+  }catch(e){el.innerHTML=loadFailHtml('내 단체');}
 }
 var AVATAR_EMOJI_OPTIONS=['🦆','🎭','🎬','🎨','🎤','🎹','🎻','🎺','🥁','🎧','🎪','🎟️','⭐','🌙','☀️','🌈','🔥','🌊','🍀','🌸','🌵','🍄','🦊','🐯','🐰','🐼','🐨','🐸','🐙','🦉','🐧','🦁','🐶','🐱','👻','🤖','👽','🦄','🐲','😎','🥳','🤠','🧚','🧛','🧜','🥷','🕺','💃','🎯','🎲','🧩','🔮','💎','🍕','🍩','☕','🍉','🎈','⚡','❄️','🌻'];
 var PREFERRED_ROLE_OPTIONS=['배우','연출','조연출','무대','미술','안무','음악','운영','조명','소품','메이크업','음향','홍보','의상','제작·기획'];
@@ -188,10 +188,13 @@ async function saveMyTroupe(tid){
     founded_year:$('mt-founded').value?Number($('mt-founded').value):null,
     recruiting_info:$('mt-recruiting').value.trim()||null
   };
+  var done=busyBtn();
   try{
     await sbOk(sbClient.from('troupes').update(payload).eq('id',tid));
     $('mt-save-msg').textContent='저장됐어요.';
+    oriAlert('단체 정보를 저장했어요.',{action:{label:'공개 페이지 보기',fn:function(){showTroupe(tid);}}});
   }catch(e){$('mt-save-msg').textContent='저장 실패: '+e.message;}
+  finally{done();}
 }
 async function uploadTroupePhoto(input,tid){
   var file=input.files&&input.files[0];if(!file)return;
@@ -250,6 +253,7 @@ async function saveProfileInfo(){
   var contact=$('profile-contact').value.trim();
   var avatarEmoji=_pickedAvatarEmoji!==null?_pickedAvatarEmoji:CURRENT_USER.avatarEmoji;
   var preferredRoles=Array.prototype.slice.call(document.querySelectorAll('.myinfo-role-opt.on')).map(function(b){return b.dataset.role;});
+  var done=busyBtn();
   try{
     await sbOk(sbClient.from('user_profiles').update({nickname:nickname||null,intro:intro||null,contact:contact||null,avatar_emoji:avatarEmoji||null,preferred_roles:preferredRoles.length?preferredRoles:null}).eq('id',CURRENT_USER.id));
     CURRENT_USER.nickname=nickname;CURRENT_USER.intro=intro;CURRENT_USER.contact=contact;CURRENT_USER.avatarEmoji=avatarEmoji;CURRENT_USER.preferredRoles=preferredRoles;
@@ -259,7 +263,7 @@ async function saveProfileInfo(){
   }catch(e){
     var msg=$('profile-save-msg');
     if(msg)msg.textContent='저장 실패: '+e.message;
-  }
+  }finally{done();}
 }
 async function deleteMyAccount(){
   if(!await oriConfirm('정말 탈퇴하시겠어요?\n즐겨찾기, 프로젝트, 프로필 연결이 모두 삭제되고 되돌릴 수 없어요.\n(단, 참여이력 데이터 자체는 아카이브 목적상 유지돼요)'))return;
@@ -267,7 +271,7 @@ async function deleteMyAccount(){
   try{
     var r=await sbClient.rpc('delete_my_account');
     if(r.error)throw r.error;
-    oriAlert('탈퇴 처리됐어요. 그동안 이용해주셔서 감사해요.');
+    await oriModalAlert('탈퇴 처리됐어요. 그동안 이용해주셔서 감사해요.');
     await sbClient.auth.signOut();
     location.reload();
   }catch(e){oriAlert('탈퇴 처리 중 문제가 생겼어요: '+e.message);}

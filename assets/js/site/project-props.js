@@ -28,7 +28,7 @@ async function loadPropsData(){
     sbClient.from('project_positions').select('position_type,position_label,role_id').eq('project_id',pid),
     sbClient.from('project_events').select('kind').eq('project_id',pid).eq('kind','performance')]);
   if(window._projectCtx!==ctx)return;
-  if(res[0].error||res[1].error||res[2].error){var e=$('pp');if(e)e.innerHTML='<div class="result-empty">큐시트를 불러오지 못했어요.</div>';return;}
+  if(res[0].error||res[1].error||res[2].error){var e=$('pp');if(e)e.innerHTML=loadFailHtml('큐시트');return;}
   _pp.scenes=res[0].data;_pp.props=res[1].data;_pp.cues=res[2].data;_pp.perf=(res[4].data||[]).length;
   // 인물 후보: 이 프로젝트의 배역 자리 + 작품 배역 + 크루
   var names=[];

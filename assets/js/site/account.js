@@ -20,6 +20,8 @@ async function loadMyProjectsCache(){
 var OATH_PHRASE='나는 천하의 멍텅구리지만 우리들의 정직하고 행복한 공연 생활에 진심으로 임할 것을 엄숙히 선언합니다.';
 
 function loginWithGoogle(){
+  // 구글 로그인에서 돌아오면 주소의 #부분이 사라진다 → 보던 화면을 기억해 두었다가 돌아온 뒤 연다
+  try{if(location.hash&&location.hash!=='#home')sessionStorage.setItem('ori-return-hash',location.hash);}catch(e){}
   sbClient.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});
 }
 function logout(){
@@ -147,8 +149,10 @@ async function handleAuthSession(session){
 }
 async function enterSite(){
   hideAuthGate();
+  var back=null;try{back=sessionStorage.getItem('ori-return-hash');sessionStorage.removeItem('ori-return-hash');}catch(e){}
+  if(back&&(!location.hash||location.hash==='#home'))history.replaceState(null,'',back);
   try{await load();routeFromHash(location.hash);}
-  catch(e){$('mn').innerHTML='<div style="color:#e06c6c;padding:2rem">연결 실패: '+e.message+'</div>';}
+  catch(e){$('mn').innerHTML='<div class="tab-index">'+loadFailHtml('오리 데이터')+'</div>';}
   maybeShowConnectPrompt();
 }
 async function initAuth(){
@@ -171,7 +175,7 @@ function wishBtnHtml(type,id){return favBtnHtml(type,id,'wishlist');}
 async function toggleFavorite(btn){
   if(!CURRENT_USER){loginWithGoogle();return;}
   var type=btn.dataset.favType,id=btn.dataset.favId,listType=btn.dataset.listType||'favorite',key=listType+':'+type+':'+id;
-  var isOn=FAVORITES_SET.has(key);
+  var isOn=FAVORITES_SET.has(key),saved=false;
   btn.disabled=true;
   try{
     if(isOn){
@@ -183,10 +187,13 @@ async function toggleFavorite(btn){
       FAVORITES_SET.add(key);
       FAVORITES_LIST.push({target_type:type,target_id:id,list_type:listType});
     }
+    saved=true;
   }catch(e){
     oriAlert((listType==='wishlist'?'"해보고 싶어요"':'즐겨찾기')+'를 저장하지 못했어요. 잠시 뒤 다시 눌러주세요.\n('+(e.message||e)+')');
   }finally{
     btn.disabled=false;refreshFavoriteButtons();
+    // 눌렀다는 걸 손끝에 알려주는 작은 반응 (사용성 3단계)
+    if(saved&&!isOn){btn.classList.remove('pop');void btn.offsetWidth;btn.classList.add('pop');}
     if(location.hash==='#mypage')renderMyPage();
   }
 }

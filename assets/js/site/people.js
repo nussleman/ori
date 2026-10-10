@@ -52,7 +52,7 @@ function renderPeopleIndex(){
 
   var listH='';
   if(!filtered.length){
-    listH='<div class="result-empty"><div class="result-empty-icon">👤</div>해당하는 사람이 없어요.</div>';
+    listH='<div class="result-empty"><div class="result-empty-icon">👤</div>해당하는 사람이 없어요.'+fbEmptyReset('people')+'</div>';
   } else if(_peopleIndexView==='grid'){
     listH='<div class="result-grid">';
     filtered.forEach(function(p){

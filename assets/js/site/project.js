@@ -7,7 +7,7 @@ async function loadMyProjects(elId){
   try{
     var r=await sbClient.rpc('list_my_projects_detail');
     var rows=r.data||[];
-    if(!rows.length){el.innerHTML='<div style="font-size:0.82rem;color:var(--muted)">아직 시작한 프로젝트가 없어요.</div>';return;}
+    if(!rows.length){el.innerHTML='<div style="font-size:0.82rem;color:var(--muted)">아직 시작한 프로젝트가 없어요. <button type="button" class="pf-btn pf-active" style="margin-left:0.4rem" onclick="startNewProject()">+ 새 프로젝트</button></div>';return;}
     el.innerHTML='<div class="item-grid">'+rows.map(function(p){
       return '<div class="item-card proj-card">'
         +'<div class="proj-card-actions">'
@@ -17,7 +17,7 @@ async function loadMyProjects(elId){
         +'<div style="cursor:pointer" onclick="goProject(\''+p.id+'\')"><div class="item-card-title">'+escHtml(p.title||'새 프로젝트')+'</div>'
         +'<div style="font-size:0.72rem;color:var(--muted);margin-top:0.3rem">'+(PROJECT_STATUS_LABEL[p.status]||p.status)+'</div></div></div>';
     }).join('')+'</div>';
-  }catch(e){el.innerHTML='<div style="font-size:0.82rem;color:var(--muted)">불러오기 실패했어요.</div>';}
+  }catch(e){el.innerHTML=loadFailHtml('프로젝트 목록');}
 }
 function refreshProjectLists(){
   if($('my-projects-list'))loadMyProjects('my-projects-list');
@@ -192,7 +192,7 @@ async function loadOverviewAdminList(pid){
       var nameH=m.person_id?'<span class="link" data-action="person" data-id="'+m.person_id+'">'+escHtml(m.nickname||m.email)+'</span>':escHtml(m.nickname||m.email);
       return '<div style="margin-bottom:0.35rem">'+(m.member_role==='owner'?'👑 ':'')+nameH+'</div>';
     }).join('')||'<span style="color:var(--muted)">없음</span>';
-  }catch(e){el.innerHTML='<span style="color:var(--muted)">불러오기 실패</span>';}
+  }catch(e){el.innerHTML=loadFailHtml('관리자 목록');}
 }
 async function toggleBudgetVisible(pid,on){
   try{await sbOk(sbClient.from('projects').update({budget_visible_to_members:on}).eq('id',pid));window._projectCtx.pr.budget_visible_to_members=on;}
@@ -217,7 +217,7 @@ async function loadProjectPositionsData(pid,renderFn){
     var emailByMemberId={};(detailR.data||[]).forEach(function(d){emailByMemberId[d.member_id]=d.person_id?('<span class="link" data-action="person" data-id="'+d.person_id+'">'+escHtml(d.nickname||d.email)+'</span>'):escHtml(d.nickname||d.email);});
     ctx.emailByMemberId=emailByMemberId;
     renderFn();
-  }catch(e){var el=$('project-tab-content');if(el)el.innerHTML='<div style="font-size:0.82rem;color:var(--muted)">불러오기 실패: '+e.message+'</div>';}
+  }catch(e){var el=$('project-tab-content');if(el)el.innerHTML=loadFailHtml('');}
 }
 function renderActorTabBody(){
   var el=$('actor-tab-body');if(!el)return;
@@ -366,7 +366,7 @@ async function loadVenueCandidatesList(pid){
         +Object.keys(VENUE_CAND_STATUS_LABEL).map(function(k){return '<option value="'+k+'"'+(c.status===k?' selected':'')+'>'+VENUE_CAND_STATUS_LABEL[k]+'</option>';}).join('')
         +'</select></div>';
     }).join('')+'</div>';
-  }catch(e){el.innerHTML='<div style="font-size:0.82rem;color:var(--muted)">불러오기 실패</div>';}
+  }catch(e){el.innerHTML=loadFailHtml('극장 후보');}
 }
 async function setVenueCandStatus(candId,pid,venueId,status){
   try{
