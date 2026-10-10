@@ -1,7 +1,7 @@
 /* 오리 어드민 — 할 일 홈, 요청 처리, 분류 대기열, 운영·설정 화면 */
-import { sb, S, byId, IX, nameOf, firstImg, update, insert, remove, esc, $, $$, fmtDate, fmtWhen, toast, confirmDlg, dialog } from './lib.js?v=20261010b';
-import { ENT, ENT_ORDER, isPublicShow } from './schema.js?v=20261010b';
-import { picker } from './records.js?v=20261010b';
+import { sb, S, byId, IX, nameOf, firstImg, update, insert, remove, esc, $, $$, fmtDate, fmtWhen, toast, confirmDlg, dialog } from './lib.js?v=20261010c';
+import { ENT, ENT_ORDER, isPublicShow } from './schema.js?v=20261010c';
+import { picker } from './records.js?v=20261010c';
 
 /* ══════════ 요청 건수 (사이드바 배지·홈) ══════════ */
 export const REQ = {
@@ -186,7 +186,7 @@ export function renderRights(root) {
           <a class="btn ghost sm" href="https://www.google.com/search?q=${encodeURIComponent(w.title + ' 뮤지컬 연극 원작 초연')}" target="_blank" rel="noopener">검색 ↗</a><a class="btn ghost sm" href="#/data/works/${w.id}">자세히 고치기</a>
           <span class="hint">1–5 유형 · Q–R 라이선스 · ←→ 이동</span></div>
       </div></div>` : '<div class="empty big">분류할 작품이 없어요 👏</div>'}
-    <section class="ed-sec"><h3>카탈로그 후보 <small>라이선스 사업 우선순위</small></h3><div id="cat-list"><p class="muted">불러오는 중…</p></div></section>
+    <section class="ed-sec"><h3>라이선스 사업 우선순위</h3><p class="muted">작품별 수요와 접촉 상태, 권리 두 겹(원작·번역)은 <a class="lnk" href="#/demand">수요 보드</a>에서 봐요.</p></section>
   </div>`;
   root.onclick = async e => {
     const b = e.target.closest('[data-r]'); if (!b) return;
@@ -198,7 +198,6 @@ export function renderRights(root) {
     if (q.startsWith('t:')) { const was = w.rights_type; if (await update('works', w.id, { rights_type: q.slice(2) })) { if (was || RQ.all) RQ.i++; renderRights(root); } }
     if (q.startsWith('l:')) { if (await update('works', w.id, { amateur_license_status: q.slice(2) })) renderRights(root); }
   };
-  loadCatalog();
 }
 export function rightsKeys(e) {
   const root = document.getElementById('main');
@@ -207,23 +206,6 @@ export function rightsKeys(e) {
   const btn = t ? $(`[data-r="t:${t[0]}"]`, root) : l ? $(`[data-r="l:${l[0]}"]`, root) : e.key === 'ArrowRight' ? $('[data-r=next]', root) : e.key === 'ArrowLeft' ? $('[data-r=prev]', root) : null;
   if (btn) { e.preventDefault(); btn.click(); }
 }
-const CAT_ST = ['미접촉', '접촉중', '인터뷰완료', '협의중', '계약완료', '거절', '보류'];
-async function loadCatalog() {
-  const el = document.getElementById('cat-list'); if (!el) return;
-  const { data, error } = await sb.from('v_catalog_candidates').select('*').order('auto_score', { ascending: false }).limit(50);
-  if (error) { el.innerHTML = `<p class="err">불러오지 못했어요: ${esc(error.message)}</p>`; return; }
-  if (!data || !data.length) { el.innerHTML = '<p class="muted">후보가 없어요.</p>'; return; }
-  el.innerHTML = `<table class="grid"><thead><tr><th>점수</th><th>작품</th><th>권리</th><th>공연</th><th>최근</th><th>창작진</th><th>수요</th><th>사장</th><th>접촉 상태</th></tr></thead><tbody>${data.map(r => `<tr>
-    <td><b>${r.auto_score}</b></td><td><a class="lnk" href="#/data/works/${r.id}">${esc(r.title)}</a> <span class="muted">${esc(r.genre || '')}</span></td><td>${esc(r.rights_type || '')}</td>
-    <td>${r.show_count}</td><td>${r.last_show_year || ''}</td><td>${r.creator_count || '<span class="warn-t">없음</span>'}</td><td>${r.demand_score || ''}</td><td>${r.is_dormant ? '✓' : ''}</td>
-    <td><select class="inp xs" data-cat="${r.id}">${CAT_ST.map(s => `<option${r.catalog_status === s ? ' selected' : ''}>${s}</option>`).join('')}</select></td></tr>`).join('')}</tbody></table>`;
-  el.onchange = async e => {
-    const s = e.target.closest('[data-cat]'); if (!s) return;
-    const { error } = await sb.from('work_rights').upsert({ work_id: s.dataset.cat, catalog_status: s.value, updated_at: new Date().toISOString() }, { onConflict: 'work_id' });
-    if (error) toast(error.message, 'err'); else toast('저장했어요');
-  };
-}
-
 /* ══════════ 데이터 현황 ══════════ */
 export function renderHealth(root) {
   root.dataset.view = 'health';
