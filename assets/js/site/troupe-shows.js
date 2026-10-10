@@ -141,14 +141,14 @@ async function saveTroupeShow(){
   }catch(e){msg.textContent='저장하지 못했어요: '+(e.message||e);btn.disabled=false;}
 }
 async function reviewTroupeHistory(id,ok){
-  if(!ok&&!await oriConfirm('이 사람이 이 공연에 참여하지 않았나요?\n"아니에요"를 누르면 요청한 사람에게 그렇게 표시돼요.'))return;
+  if(!ok&&!await oriConfirm('이 사람이 이 공연에 참여하지 않았나요?\n"아니에요"를 누르면 요청한 사람에게 그렇게 표시돼요.',{ok:'참여 안 했어요'}))return;
   var r=await sbClient.rpc('review_participation',{p_id:id,p_ok:ok});
   if(r.error){oriAlert('처리하지 못했어요: '+r.error.message);return;}
   if(ok)await load();
   await renderTroupeShows(_ts.tid);
 }
 async function resolveTroupeEdit(id,st){
-  if(st==='rejected'&&!await oriConfirm('이 요청은 반영하지 않을까요?\n요청한 사람에게 반려로 표시돼요.'))return;
+  if(st==='rejected'&&!await oriConfirm('이 요청은 반영하지 않을까요?\n요청한 사람에게 반려로 표시돼요.',{ok:'반영 안 함'}))return;
   var r=await sbClient.rpc('resolve_troupe_edit_request',{p_id:id,p_status:st});
   if(r.error){oriAlert('처리하지 못했어요: '+r.error.message);return;}
   await renderTroupeShows(_ts.tid);

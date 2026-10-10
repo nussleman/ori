@@ -1559,3 +1559,4 @@ body.mode-make .pd-to-browse{display:block}
   -webkit-mask:linear-gradient(#000 0 14px,transparent 14px 22px,#000 22px 36px,transparent 36px 44px) 0 0/100% 100% no-repeat,linear-gradient(90deg,#000 62%,transparent 62%) 0 44px/100% 14px no-repeat;
   mask:linear-gradient(#000 0 14px,transparent 14px 22px,#000 22px 36px,transparent 36px 44px) 0 0/100% 100% no-repeat,linear-gradient(90deg,#000 62%,transparent 62%) 0 44px/100% 14px no-repeat}
 .result-empty .hf-loading,.wizard-result-empty .hf-loading{margin:0.6rem auto}
+.pf-btn.pf-danger{background:#c94f4f;border-color:#c94f4f;color:#fff}

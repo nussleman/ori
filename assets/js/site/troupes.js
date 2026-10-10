@@ -38,7 +38,8 @@ function showTroupe(tid,push){
       {title:'사진',tab:'사진',body:buildPhotoGalleryHtml(photos,fld(troupe,'극단명'))}
     ],
     empty:'이 단체에 등록된 공연이 아직 없어요.',
-    primary:reviewBtn('troupe',tid),
+    // 화면마다 주 버튼 하나 (사용성 2단계): 내가 관리하는 단체면 관리로, 아니면 후기
+    primary:MY_TROUPE_ADMIN.has(tid)?dvActBtn('우리 단체 관리','goMyTroupe(\''+tid+'\')','⚙',true)+reviewBtn('troupe',tid):reviewBtn('troupe',tid),
     after:function(){dvYearShowsRender('troupe-shows');renderTroupeClaimWidget(tid);loadReviews('troupe',tid);}
   });
 }

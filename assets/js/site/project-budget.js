@@ -200,7 +200,7 @@ function bgTable(type){
   var ro=ed?'':' readonly';
   var h='<datalist id="bg-cat-'+type+'">'+cats.map(function(c){return '<option value="'+escHtml(c)+'">';}).join('')+'</datalist>'
     +'<datalist id="bg-item-'+type+'">'+items.map(function(c){return '<option value="'+escHtml(c)+'">';}).join('')+'</datalist>';
-  if(!rows.length)h+='<div class="bg-empty">아직 없어요.</div>';
+  if(!rows.length)h+='<div class="bg-empty">'+(ed?'아직 없어요. 아래 "+ '+(type==='income'?'수입':'지출')+' 항목"으로 첫 줄을 적어보세요.':'아직 없어요. 관리자가 적으면 여기에 보여요.')+'</div>';
   else h+='<div class="bg-table-wrap"><table class="bg-table"><thead><tr><th>분류</th><th>항목</th><th>내용</th><th class="num">예상</th><th class="num">실제</th>'+(ed?'<th></th>':'')+'</tr></thead><tbody>'
     +rows.map(function(b){
       var p=bgNum(b.planned_amount),a=bgNum(b.actual_amount);
@@ -270,7 +270,7 @@ async function bgApplyRecs(){
     ups.push([g.rows[0].id,recs[k]]);
   });
   if(!ups.length&&!ins.length){oriAlert('모든 분류에 이미 금액이 있어요. 추천과 다른 곳은 표에서 직접 고쳐 주세요.');return;}
-  if(!await oriConfirm((ups.length+ins.length)+'개 분류에 추천 금액을 채울게요. 이미 적은 금액은 그대로 둬요.'))return;
+  if(!await oriConfirm((ups.length+ins.length)+'개 분류에 추천 금액을 채울게요. 이미 적은 금액은 그대로 둬요.',{ok:'채우기'}))return;
   var errs=0;
   for(var i=0;i<ups.length;i++){var r=await sbClient.from('project_budget_items').update({planned_amount:ups[i][1]}).eq('id',ups[i][0]);if(r.error)errs++;}
   if(ins.length){var r2=await sbClient.from('project_budget_items').insert(ins);if(r2.error)errs++;}

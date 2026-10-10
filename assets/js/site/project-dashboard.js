@@ -378,7 +378,7 @@ async function dashInviteTo(posId,personId){
   if(msg===null)return;
   var r=await sbClient.rpc('invite_person_to_position',{p_position_id:posId,p_person_id:personId,p_message:msg||''});
   if(r.error){
-    if(/연결되지 않은/.test(r.error.message||'')){if(await oriConfirm(nm(personId)+'님은 아직 오리에 가입하지 않았어요.\n가입 안내 메시지를 복사할까요?'))inviteThisPerson(personId);}
+    if(/연결되지 않은/.test(r.error.message||'')){if(await oriConfirm(nm(personId)+'님은 아직 오리에 가입하지 않았어요.\n가입 안내 메시지를 복사할까요?',{ok:'안내 메시지 복사'}))inviteThisPerson(personId);}
     else oriAlert('초대하지 못했어요: '+r.error.message);
     return;
   }
@@ -393,7 +393,7 @@ async function dashAddVenue(vid){
 }
 async function dashSetWork(wid){
   var ctx=window._projectCtx,pid=ctx.pid;
-  if(!await oriConfirm('"'+nm(wid)+'"(으)로 정할까요?\n작품의 배역이 자리로 자동으로 만들어져요.'))return;
+  if(!await oriConfirm('"'+nm(wid)+'"(으)로 정할까요?\n작품의 배역이 자리로 자동으로 만들어져요.',{ok:'이 작품으로 정하기'}))return;
   var u=await sbClient.from('projects').update({work_id:wid}).eq('id',pid);
   if(u.error){oriAlert('정하지 못했어요: '+u.error.message);return;}
   var p=await sbClient.rpc('populate_work_roles',{p_project_id:pid,p_work_id:wid});
