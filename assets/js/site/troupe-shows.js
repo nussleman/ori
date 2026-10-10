@@ -1,15 +1,22 @@
 /* 오리 사이트 — 단체가 직접 남기는 공연 기록 (내 단체 관리 화면 안)
    기록의 주인은 단체. 단체 관리자가 지난 공연을 등록·수정하면 '단체 확인' 기록이 된다.
    필수는 공연명·날짜 두 칸뿐, 나머지는 아는 만큼. 출연진은 시트에서 붙여넣기.
-   서버: troupe_save_show / troupe_add_cast (supabase/migrations/20261010_troupe_show_entry.sql) */
-var _ts={tid:null,rows:[],editing:null};
+   배우·스태프가 직접 추가한 이력도 여기서 확인한다 (my-history.js가 요청하는 쪽).
+   서버: troupe_save_show / troupe_add_cast (supabase/migrations/20261010_troupe_show_entry.sql),
+         list_participation_requests / review_participation (20261010_participation_requests.sql) */
+var _ts={tid:null,rows:[],editing:null,pending:[]};
 var TS_LIC=[['','모름'],['창작','우리 창작'],['완료','허락받음'],['미확보','아직']];
 
 async function renderTroupeShows(tid){
   _ts.tid=tid;_ts.editing=null;
   var el=$('troupe-shows');if(!el)return;
   el.innerHTML='<div class="person-side-title">우리 공연 기록</div><div style="font-size:0.8rem;color:var(--muted)">불러오는 중…</div>';
-  var r=await sbClient.from('shows').select('id,title,show_date,end_date,work_id,venue_id,ticket_type,performers_paid,performance_count,is_licensed,record_status').eq('troupe_id',tid).order('show_date',{ascending:false});
+  var res=await Promise.all([
+    sbClient.from('shows').select('id,title,show_date,end_date,work_id,venue_id,ticket_type,performers_paid,performance_count,is_licensed,record_status').eq('troupe_id',tid).order('show_date',{ascending:false}),
+    sbClient.rpc('list_participation_requests',{p_troupe_id:tid,p_status:'확인 대기'})
+  ]);
+  var r=res[0];
+  _ts.pending=res[1].data||[];
   if(r.error){el.innerHTML='<div class="person-side-title">우리 공연 기록</div><div style="font-size:0.8rem;color:var(--muted)">불러오기 실패: '+escHtml(r.error.message)+'</div>';return;}
   _ts.rows=r.data||[];
   drawTroupeShows();
@@ -22,6 +29,16 @@ function drawTroupeShows(){
   var h='<div class="ts-head"><div class="person-side-title" style="margin:0">우리 공연 기록 <span class="dv-n">'+_ts.rows.length+'</span></div>'
     +'<button class="pf-btn pf-active" onclick="openTroupeShowForm(null)">+ 지난 공연 기록하기</button></div>'
     +'<div class="ts-help">우리 단체가 올린 공연을 남겨두면 단체 페이지가 포트폴리오가 되고, 함께한 사람들의 이력도 같이 쌓여요.</div>';
+  if(_ts.pending.length)h+='<div class="ts-pending"><div class="ts-pending-title">확인 기다리는 이력 <span class="dv-n">'+_ts.pending.length+'</span></div>'
+    +'<div class="ts-help" style="margin:0.2rem 0 0.4rem">배우·스태프가 우리 공연에 참여했다고 남긴 이력이에요. 맞으면 확인을 눌러주세요. 확인한 이력만 사람 페이지에 올라가요.</div>'
+    +_ts.pending.map(function(x){
+      return '<div class="ts-row"><div class="ts-main">'
+        +'<div class="ts-title">'+escHtml(x.person_name||'')+' <span class="ts-meta">'+escHtml(x.role_names||(x.role_type==='스텝'?'스태프':x.role_type)||'')+'</span></div>'
+        +'<div class="ts-meta">'+escHtml(x.show_title||'')+(x.show_date?' · '+String(x.show_date).replace(/-/g,'.'):'')+'</div>'
+        +(x.request_note?'<div class="ts-meta">메모: '+escHtml(x.request_note)+'</div>':'')
+        +'</div><div class="ts-side"><button class="pf-btn" onclick="reviewTroupeHistory(\''+x.id+'\',false)">아니에요</button>'
+        +'<button class="pf-btn pf-active" onclick="reviewTroupeHistory(\''+x.id+'\',true)">확인</button></div></div>';
+    }).join('')+'</div>';
   h+='<div id="ts-form"></div>';
   if(!_ts.rows.length){h+='<div class="ts-empty">아직 기록된 공연이 없어요. 가장 최근 공연 하나부터 남겨볼까요?</div>';}
   else h+='<div class="ts-list">'+_ts.rows.map(function(s){
@@ -105,4 +122,11 @@ async function saveTroupeShow(){
     await renderTroupeShows(_ts.tid);
     oriAlert('공연 기록을 저장했어요.'+note);
   }catch(e){msg.textContent='저장하지 못했어요: '+(e.message||e);btn.disabled=false;}
+}
+async function reviewTroupeHistory(id,ok){
+  if(!ok&&!await oriConfirm('이 사람이 이 공연에 참여하지 않았나요?\n"아니에요"를 누르면 요청한 사람에게 그렇게 표시돼요.'))return;
+  var r=await sbClient.rpc('review_participation',{p_id:id,p_ok:ok});
+  if(r.error){oriAlert('처리하지 못했어요: '+r.error.message);return;}
+  if(ok)await load();
+  await renderTroupeShows(_ts.tid);
 }

@@ -62,7 +62,7 @@ async function load(){
   var raw=await Promise.all([
     rest('shows','select=id,title,show_date,end_date,troupe_id,venue_id,work_id,poster_urls,audience_count,is_sold_out,has_rerun,is_licensed,ticket_type,performers_paid,performance_count,record_status&is_hidden=is.false'),
     rest('people','select=id,name,photo_urls,social_links'),
-    rest('participation_history','select=id,person_id,show_id,photo_urls'),
+    rest('participation_history','select=id,person_id,show_id,photo_urls&confirm_status=eq.'+encodeURIComponent('확인')),
     rest('participation_roles','select=participation_id,role_id'),
     rest('participation_staff_roles','select=participation_id,staff_role_id'),
     rest('roles','select=id,name,order_num,gender,work_id,tags,photo_urls'),

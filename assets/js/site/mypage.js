@@ -34,7 +34,7 @@ function switchMyPageTab(tab){
 function renderMyPageTabContent(){
   var el=$('mypage-tab-content');if(!el)return;
   var tab=window._myPageTab;
-  if(tab==='records')renderMyRecords(el);
+  if(tab==='records'){el.innerHTML='<div id="my-history"></div><div id="my-reviews"></div>';renderMyHistory($('my-history'));renderMyRecords($('my-reviews'));}
   else if(tab==='apply')renderMyApplications(el);
   else if(tab==='saved')renderMySaved(el);
   else if(tab==='info')renderMyPageInfo(el);

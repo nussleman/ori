@@ -1489,3 +1489,10 @@ body.mode-make .pd-to-browse{display:block}
 .ts-hint{font-size:0.72rem;color:var(--faint);margin-top:0.35rem;line-height:1.6}
 .ts-actions{display:flex;justify-content:flex-end;gap:0.5rem;margin-top:0.6rem}
 .ts-msg{font-size:0.76rem;color:var(--muted);margin-top:0.5rem;text-align:right}
+/* 내 이력 (my-history.js) · 단체 확인 기다리는 이력 (troupe-shows.js) */
+.mh-sec .ts-head .dv-h-row{margin:0}
+.mh-empty{font-size:0.85rem;color:var(--muted);padding:1rem 0;line-height:1.7}
+.mh-st-wait{border-color:var(--accent);color:var(--accent);border-style:dashed}
+.mh-st-no{color:var(--faint)}
+.ts-pending{border:1px dashed var(--accent);border-radius:10px;padding:0.9rem 1.1rem 0.3rem;margin-bottom:1.2rem}
+.ts-pending-title{font-size:0.9rem;color:var(--text)}

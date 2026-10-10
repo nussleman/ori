@@ -1,7 +1,7 @@
 /* 오리 어드민 — 할 일 홈, 요청 처리, 분류 대기열, 운영·설정 화면 */
-import { sb, S, byId, IX, nameOf, firstImg, update, insert, remove, esc, $, $$, fmtDate, fmtWhen, toast, confirmDlg, dialog } from './lib.js?v=20261010a';
-import { ENT, ENT_ORDER, isPublicShow } from './schema.js?v=20261010a';
-import { picker } from './records.js?v=20261010a';
+import { sb, S, byId, IX, nameOf, firstImg, update, insert, remove, esc, $, $$, fmtDate, fmtWhen, toast, confirmDlg, dialog } from './lib.js?v=20261010b';
+import { ENT, ENT_ORDER, isPublicShow } from './schema.js?v=20261010b';
+import { picker } from './records.js?v=20261010b';
 
 /* ══════════ 요청 건수 (사이드바 배지·홈) ══════════ */
 export const REQ = {
@@ -13,6 +13,8 @@ export const REQ = {
     tabs: [['pending', '대기'], ['done', '완료'], ['rejected', '반려'], ['all', '전체']] },
   reviews: { label: '후기 신고', load: st => { let q = sb.from('review_reports').select('id,reason,status,created_at,review:reviews(id,target_type,target_id,keywords,body,is_hidden)').order('created_at', { ascending: false }); if (st !== 'all') q = q.eq('status', st); return q; }, pending: 'pending',
     tabs: [['pending', '대기'], ['done', '처리함'], ['all', '전체']] },
+  history: { label: '이력 확인', load: st => sb.rpc('list_participation_requests', { p_troupe_id: null, p_status: st }), pending: '확인 대기',
+    tabs: [['확인 대기', '대기'], ['확인', '확인함'], ['거절', '아니라고 함'], ['all', '전체']] },
   inquiries: { label: '라이선스 문의', load: st => sb.rpc('list_license_inquiries', { p_status: st }), pending: 'new',
     tabs: [['new', '새 문의'], ['answered', '답변함'], ['closed', '종료'], ['all', '전체']] },
 };
@@ -67,7 +69,7 @@ export async function renderRequests(root, kind) {
   box.innerHTML = data.map(r => reqCard(kind, r)).join('');
   box.addEventListener('click', e => { const b = e.target.closest('[data-do]'); if (b) reqAct(root, kind, b.dataset.do, b.dataset.id); });
 }
-function stPill(s) { const m = { pending: '대기', new: '새 문의', approved: '승인됨', confirmed: '승인됨', done: '완료', answered: '답변함', rejected: '거절·반려', closed: '종료' }; return `<em class="pill st-${s}">${m[s] || s}</em>`; }
+function stPill(s) { const m = { '확인 대기': '대기', '확인': '확인함', '거절': '아니라고 함', pending: '대기', new: '새 문의', approved: '승인됨', confirmed: '승인됨', done: '완료', answered: '답변함', rejected: '거절·반려', closed: '종료' }; const cls = { '확인 대기': 'pending', '확인': 'confirmed', '거절': 'rejected' }[s] || s; return `<em class="pill st-${cls}">${m[s] || s}</em>`; }
 function reqCard(kind, r) {
   if (kind === 'claims') return `<div class="rq"><div class="rq-m"><div class="rq-t">${stPill(r.status)} <b>${esc(r.person_name)}</b> 님으로 계정 연결 요청</div>
     <div class="rq-s">${esc(r.requester_email || '')} · ${fmtWhen(r.created_at)}</div></div>
@@ -81,6 +83,10 @@ function reqCard(kind, r) {
       <div class="rq-b"><b>${esc(r.summary || '')}</b>${r.details ? `<div>${esc(r.details)}</div>` : ''}</div><div class="rq-s">${fmtWhen(r.created_at)}</div></div>
       <div class="rq-a">${t && r.target_id ? `<a class="btn primary sm" href="#/data/${t}/${r.target_id}?req=${r.id}">열어서 고치기</a>` : ''}${r.status === 'pending' ? `<button type="button" class="btn ghost sm" data-do="done" data-id="${r.id}">완료</button><button type="button" class="btn ghost sm" data-do="rejected" data-id="${r.id}">반려</button>` : ''}</div></div>`;
   }
+  if (kind === 'history') return `<div class="rq"><div class="rq-m"><div class="rq-t">${stPill(r.confirm_status)} <b>${esc(r.person_name)}</b> <span class="muted">· ${esc(r.role_names || (r.role_type === '스텝' ? '스태프' : r.role_type) || '')}</span></div>
+    <div class="rq-b"><b>${esc(r.show_title)}</b>${r.show_date ? ' · ' + fmtDate(r.show_date) : ''} · ${r.troupe_name ? esc(r.troupe_name) + ' <span class="muted">(단체가 확인할 수 있어요)</span>' : '<span class="muted">단체 없음</span>'}${r.request_note ? `<div>메모: ${esc(r.request_note)}</div>` : ''}</div>
+    <div class="rq-s">${esc(r.requester_nickname || '')} · ${fmtWhen(r.created_at)}</div></div>
+    <div class="rq-a"><a class="btn ghost sm" href="#/data/shows/${r.show_id}">공연 보기</a>${r.confirm_status === '확인 대기' ? `<button type="button" class="btn primary sm" data-do="ok" data-id="${r.id}">확인</button><button type="button" class="btn ghost sm" data-do="no" data-id="${r.id}">아니에요</button>` : ''}</div></div>`;
   if (kind === 'reviews') {
     const v = r.review || {}, t = TYPE_TABLE[v.target_type];
     return `<div class="rq"><div class="rq-m"><div class="rq-t">${stPill(r.status)} <span class="muted">${TYPE_LABEL[v.target_type] || ''} 후기 · </span><b>${esc(t ? nameOf(t, v.target_id) : '')}</b>${v.is_hidden ? ' <em class="pill pill-priv">숨김</em>' : ''}</div>
@@ -97,6 +103,7 @@ async function reqAct(root, kind, act, id) {
   let res;
   if (kind === 'claims') res = await sb.rpc(act === 'ok' ? 'approve_person_claim' : 'reject_person_claim', { claim_id: id });
   else if (kind === 'troupeclaims') res = await sb.rpc(act === 'ok' ? 'approve_troupe_claim' : 'reject_troupe_claim', { p_claim_id: id });
+  else if (kind === 'history') res = await sb.rpc('review_participation', { p_id: id, p_ok: act === 'ok' });
   else if (kind === 'reviews') {
     const { data: rep } = await sb.from('review_reports').select('review_id').eq('id', id).single();
     if (act !== 'keep') { const h = await sb.from('reviews').update({ is_hidden: act === 'hide' }).eq('id', rep.review_id); if (h.error) { toast(h.error.message, 'err'); return; } }

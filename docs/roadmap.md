@@ -16,8 +16,12 @@
   - 서버 함수 `troupe_save_show`, `troupe_add_cast`, `can_manage_troupe` — `supabase/migrations/20261010_troupe_show_entry.sql`
   - 필수: 공연명·첫 공연일. 작품·극장은 이름으로 찾고 없으면 생성. 출연진은 "구분: 이름, 이름" 줄 붙여넣기 (탭 허용). 구분이 작품 배역이면 배우, 스태프 역할이면 스태프. 동명 1명이면 연결, 아니면 새 사람
   - 단체가 남긴 기록과 프로젝트로 발행된 공연(`publish_project_as_show`)은 `record_status='단체 확인'`
-- ⬜ **다음 작업: 배우·스태프가 "내 이력" 직접 추가 → 단체가 확인** (아래 "다음 작업 메모")
-- ⬜ 수정 요청(edit_requests)을 운영자뿐 아니라 그 기록의 주인(단체)에게도 보이기
+- ✅ **배우·스태프가 "내 이력" 직접 추가 → 단체가 확인** — 마이페이지 "내 기록" 맨 위 "내 이력" (`assets/js/site/my-history.js`), 확인은 "우리 공연 기록" 위 "확인 기다리는 이력"
+  - `participation_history.confirm_status`(확인 대기/확인/거절, 기존 696건은 '확인'), `requested_by`·`request_note`·`reviewed_by`·`reviewed_at` — `supabase/migrations/20261010_participation_requests.sql`
+  - 서버 함수 `request_my_participation`(프로필 연결된 사람만, 대기 30건 한도, 중복 차단), `cancel_my_participation`(대기·거절만), `list_participation_requests`, `review_participation`(그 공연 단체 관리자 또는 사이트 관리자)
+  - 오리에 없는 공연은 공연명·날짜(·단체)로 새로 만든다 → `record_status='미확인'`, 라이선스 미상이라 사이트엔 안 나옴. 목록에 없는 배역·역할 이름은 메모로 남김
+  - 사이트 공개 화면(core.js `load()`)은 '확인'만 읽음. 단체 없는 공연은 어드민 "이력 확인" 요청함에서 처리
+- ⬜ **다음 작업: 수정 요청(edit_requests)을 운영자뿐 아니라 그 기록의 주인(단체)에게도 보이기**
 - ✅(기존) 프로젝트가 "공연 예정"이 되면 공연 기록 자동 발행 (`project.js` `updateProjectStatus`)
 
 ## 3. 작품 페이지 허브 + 공개 기준
@@ -49,16 +53,17 @@
 - [ ] 낙타 공연으로 "우리 공연 기록" 직접 써보고 피드백
 
 ## 알려진 위험·메모
+- 내 이력 요청으로 새로 만든 공연은 요청을 취소해도 공연 자체는 남음 (사이트엔 안 나오지만 어드민 "라이선스 미상 공연"에 쌓임 → 정리 대상)
+- 단체 관리자 본인이 자기 단체 공연에 이력을 추가하면 스스로 확인할 수 있음 (단체가 보증하는 것이라 허용)
 - 공연 테이블 RLS가 "로그인한 사람은 전부 조회"라, 로그인한 누구나 REST로 `shows.is_licensed`(내부용)를 읽을 수 있음. 비로그인 공개 전 보안 정리 때 컬럼 노출을 막을 것 (뷰/함수로 공개 필드만)
 - `app_settings.show_unlicensed_content`는 사이트가 쓰지 않음 (공개 기준은 core.js 하드코딩)
 
-## 다음 작업 메모: 내 이력 추가 → 단체 확인
-- 사람(people)과 계정 연결은 `person_claims`(관리자 승인) → `user_profiles.person_id`
-- 제안 흐름: 연결된 사람이 마이페이지 "내 기록"에서 "이력 추가" (공연 고르기 또는 새 공연 이름, 배역/역할) → `participation_history`에 확인 대기 상태로 들어감 → 그 공연 단체의 관리자가 "우리 공연 기록"에서 확인/거절. 단체 없는 공연은 사이트 관리자가 확인
-- 필요한 것: participation_history에 상태 칸(예: `confirm_status` 확인 대기/확인/거절, 기본값은 기존 데이터 보호를 위해 '확인'), 추가 함수(security definer, is_real_user 확인), 단체 관리자용 확인 목록, 사이트 공개 화면은 '확인'만 표시
+## 다음 작업 메모: 수정 요청을 기록의 주인에게도
+- 지금 `edit_requests`는 어드민 "수정 요청"에서만 보임. 대상이 공연이면 그 공연 단체의 관리자, 단체면 그 단체 관리자가 "내 단체 관리"에서 보고 처리할 수 있게
+- 내 이력 확인과 같은 모양(security definer 목록 함수 + `can_manage_troupe` 확인, 단체 화면에 "들어온 수정 요청" 칸)으로 만들면 됨
 
 ## 작업·테스트 방식 (이 세션에서 쓴 것)
 - DB 변경은 `apply_migration`, 같은 SQL을 `supabase/migrations/날짜_이름.sql`로 저장
 - 서버 함수 테스트: `execute_sql`에서 DO 블록으로 `set_config('request.jwt.claims', '{"sub":"<user id>","role":"authenticated"}', true)` + `set local role authenticated` 후 호출, 마지막에 `raise exception`으로 결과를 출력하면서 자동 롤백 (테스트 데이터가 남지 않음). 단체 관리자 테스트 계정: 낙타(troupe b89e0a0e…) 관리자 = 사이트 관리자이기도 함
 - 화면 테스트: 로그인 뒤 화면은 직접 못 눌러봄 → 스크래치 폴더에 가짜 데이터로 해당 JS만 띄워 Playwright 스크린샷
-- 캐시: JS/CSS를 바꾸면 `gongyon-db.html`의 `?v=` 값을 올림 (현재 20261010c)
+- 캐시: JS/CSS를 바꾸면 `gongyon-db.html`의 `?v=` 값을 올림 (사이트 현재 20261010d, 어드민 20261010b)
