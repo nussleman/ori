@@ -3,26 +3,28 @@
    수요 = 앞으로 올리고 싶다는 신호만: 올리고 싶어요 · 라이선스 문의 · 이 작품으로 준비 중인 프로젝트.
    과거 공연 횟수는 내부 참고로만 보이고 권리자용 내보내기·문장에는 넣지 않는다 (과거 무단 공연은 들추지 않는다).
    작품 권리는 "두 겹"으로 적는다: 원작의 문(권리자·대행사) / 번역의 문(한국어 대본 보유자) + 한국 독점 여부.
-   서버: demand_board / demand_detail, 표 work_rights (supabase/migrations/20261010_demand_board.sql) */
-import { sb, esc, $, fmtDate, toast } from './lib.js?v=20261010c';
+   서버: demand_board / demand_detail, 표 work_rights (supabase/migrations/20261010_demand_board.sql),
+         license_demand_stats — 정식 신청(시기·회차·유료) (20261010_license_demands.sql) */
+import { sb, esc, $, fmtDate, toast } from './lib.js?v=20261010d';
 
 const DM = { rows: [], view: 'demand', sort: 'demand_troupes', open: null };
 const CAT_ST = ['미접촉', '접촉중', '인터뷰완료', '협의중', '계약완료', '거절', '보류'];
 const SCRIPT_T = ['', '제작사', '번역자', '오리', '없음'];
 const EXCL = ['', '있음', '없음', '끝남', '모름'];
-const SORTS = [['demand_troupes', '원하는 단체 많은 순'], ['demand_people', '원하는 사람 많은 순'], ['inquiry_count', '문의 많은 순'], ['project_count', '준비 중 프로젝트 많은 순'], ['past_show_count', '지난 공연 많은 순 (내부)']];
+const SORTS = [['demand_troupes', '원하는 단체 많은 순'], ['request_count', '정식 신청 많은 순'], ['demand_people', '원하는 사람 많은 순'], ['inquiry_count', '문의 많은 순'], ['project_count', '준비 중 프로젝트 많은 순'], ['past_show_count', '지난 공연 많은 순 (내부)']];
 const VIEWS = [['demand', '수요 있는 작품'], ['first', '첫 딜 후보'], ['all', '전체']];
 const PSTAT = { planning: '기획 중', upcoming: '공연 예정', running: '공연 중', completed: '끝남', new: '새 문의', answered: '답변함', closed: '종료' };
 
 export async function renderDemand(root) {
   root.dataset.view = 'demand';
   root.innerHTML = '<div class="page"><p class="muted">불러오는 중…</p></div>';
-  const { data, error } = await sb.rpc('demand_board');
+  const [{ data, error }, { data: req }] = await Promise.all([sb.rpc('demand_board'), sb.rpc('license_demand_stats')]);
   if (error) { root.innerHTML = `<div class="page"><p class="err">불러오지 못했어요: ${esc(error.message)}</p></div>`; return; }
-  DM.rows = data || [];
+  const rq = new Map((req || []).map(x => [x.work_id, x]));
+  DM.rows = (data || []).map(r => ({ ...r, request_count: 0, request_paid: 0, request_period: null, ...(rq.get(r.work_id) || {}) }));
   draw(root);
 }
-const hasDemand = r => r.demand_people > 0 || r.project_count > 0;
+const hasDemand = r => r.demand_people > 0 || r.project_count > 0 || r.request_count > 0;
 function visible() {
   const rows = DM.rows.filter(r => DM.view === 'all' ? true : DM.view === 'first' ? r.first_deal : hasDemand(r));
   return rows.sort((a, b) => (b[DM.sort] || 0) - (a[DM.sort] || 0) || (b.demand_people - a.demand_people) || (a.title || '').localeCompare(b.title || '', 'ko'));
@@ -39,16 +41,17 @@ function draw(root) {
         <button type="button" class="btn ghost xs" data-csv>권리자용 CSV</button></div>
       <div class="tabs">${VIEWS.map(v => `<button type="button" class="tab${DM.view === v[0] ? ' on' : ''}" data-dmtab="${v[0]}">${v[1]}</button>`).join('')}</div>
     </header>
-    ${rows.length ? `<table class="grid dm"><thead><tr><th>작품</th><th>권리</th><th title="수요 신호를 남긴 사람이 속한 단체 + 프로젝트 단체">원하는 단체</th><th>사람</th><th>올리고 싶어요</th><th>문의</th><th>준비 중</th><th class="dm-int">지난 공연 (내부)</th><th>한국 독점</th><th>접촉 상태</th></tr></thead><tbody>
+    ${rows.length ? `<table class="grid dm"><thead><tr><th>작품</th><th>권리</th><th title="수요 신호를 남긴 사람이 속한 단체 + 프로젝트 단체">원하는 단체</th><th>사람</th><th title="시기·회차·조건을 남긴 신청">정식 신청</th><th>올리고 싶어요</th><th>문의</th><th>준비 중</th><th class="dm-int">지난 공연 (내부)</th><th>한국 독점</th><th>접촉 상태</th></tr></thead><tbody>
       ${rows.map(r => `<tr data-w="${r.work_id}" class="dm-row${DM.open === r.work_id ? ' on' : ''}">
         <td><b>${esc(r.title)}</b>${r.first_deal ? ' <em class="pill st-confirmed">첫 딜 후보</em>' : ''} <span class="muted">${esc(r.genre || '')}</span></td>
         <td>${esc(r.rights_type || '미분류')}${r.amateur_license_status && r.amateur_license_status !== '확인불가' ? ` <span class="muted">· 아마추어 ${esc(r.amateur_license_status)}</span>` : ''}</td>
-        <td><b>${r.demand_troupes || ''}</b></td><td>${r.demand_people || ''}</td><td>${r.wish_count || ''}</td>
+        <td><b>${r.demand_troupes || ''}</b></td><td>${r.demand_people || ''}</td>
+        <td>${r.request_count ? `<b>${r.request_count}</b>${r.request_paid ? ` <span class="muted">유료 ${r.request_paid}</span>` : ''}${r.request_period ? `<div class="muted">${esc(r.request_period)}~</div>` : ''}` : ''}</td><td>${r.wish_count || ''}</td>
         <td>${r.inquiry_count || ''}${r.inquiry_new ? ` <em class="pill st-pending">새 ${r.inquiry_new}</em>` : ''}</td><td>${r.project_count || ''}</td>
         <td class="dm-int">${r.past_show_count ? `${r.past_show_count}회 · ${r.past_troupe_count}곳${r.last_year ? ' · ' + r.last_year : ''}` : ''}</td>
         <td>${esc(r.ko_exclusive || '')}</td>
         <td><select class="inp xs" data-cat="${r.work_id}">${CAT_ST.map(s => `<option${r.catalog_status === s ? ' selected' : ''}>${s}</option>`).join('')}</select></td></tr>
-        ${DM.open === r.work_id ? `<tr class="dm-detail"><td colspan="10"><div id="dm-detail"><p class="muted">불러오는 중…</p></div></td></tr>` : ''}`).join('')}
+        ${DM.open === r.work_id ? `<tr class="dm-detail"><td colspan="11"><div id="dm-detail"><p class="muted">불러오는 중…</p></div></td></tr>` : ''}`).join('')}
     </tbody></table>` : `<div class="empty big">${DM.view === 'first' ? '첫 딜 후보가 아직 없어요. 수요가 있는 작품의 "한국 독점"을 채우면 여기 모여요.' : '아직 수요 신호가 없어요.'}</div>`}
   </div>`;
   root.onclick = e => {
@@ -73,7 +76,7 @@ async function saveRights(wid, patch) {
 /* 권리자에게 보여줄 한 문장: 앞으로의 수요만 */
 function pitch(r) {
   const parts = [r.demand_troupes ? `단체 ${r.demand_troupes}곳` : '', r.demand_people ? `${r.demand_people}명` : ''].filter(Boolean).join(' · ');
-  const extra = [r.inquiry_count ? `라이선스 문의 ${r.inquiry_count}건` : '', r.project_count ? `이 작품으로 준비 중인 프로젝트 ${r.project_count}개` : ''].filter(Boolean).join(', ');
+  const extra = [r.request_count ? `정식 공연 신청 ${r.request_count}건${r.request_paid ? `(유료 예정 ${r.request_paid})` : ''}${r.request_period ? `, 빠르면 ${r.request_period}` : ''}` : '', r.inquiry_count ? `라이선스 문의 ${r.inquiry_count}건` : '', r.project_count ? `이 작품으로 준비 중인 프로젝트 ${r.project_count}개` : ''].filter(Boolean).join(', ');
   return `〈${r.title}〉 정식 공연을 원하는 곳: ${parts || '아직 없음'}${extra ? ` (${extra})` : ''}. — 오리, ${fmtDate(new Date().toISOString())} 기준`;
 }
 async function drawDetail(root, r) {
@@ -108,10 +111,10 @@ async function drawDetail(root, r) {
 }
 /* 권리자용 CSV: 앞으로의 수요 숫자만 (사람 이름·과거 공연은 넣지 않는다) */
 function exportCsv(rows) {
-  const head = ['작품', '원하는 단체 수', '원하는 사람 수', '올리고 싶어요', '라이선스 문의', '준비 중인 프로젝트', '기준일'];
+  const head = ['작품', '원하는 단체 수', '원하는 사람 수', '정식 신청', '유료 예정', '가장 이른 희망 시기', '올리고 싶어요', '라이선스 문의', '준비 중인 프로젝트', '기준일'];
   const day = fmtDate(new Date().toISOString());
   const q = v => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`;
-  const csv = '﻿' + [head, ...rows.filter(hasDemand).map(r => [r.title, r.demand_troupes, r.demand_people, r.wish_count, r.inquiry_count, r.project_count, day])].map(l => l.map(q).join(',')).join('\n');
+  const csv = '﻿' + [head, ...rows.filter(hasDemand).map(r => [r.title, r.demand_troupes, r.demand_people, r.request_count, r.request_paid, r.request_period, r.wish_count, r.inquiry_count, r.project_count, day])].map(l => l.map(q).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
   a.download = `오리_작품수요_${day}.csv`; a.click();

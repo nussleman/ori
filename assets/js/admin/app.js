@@ -4,11 +4,11 @@
      #/data/<테이블>[/<id>][?f=필터&req=요청id]   레코드 작업대 (shows·works·roles·people·troupes·venues)
      #/requests/<claims|troupeclaims|edits|history|reviews|inquiries>
      #/queue/license · #/queue/rights · #/demand · #/health · #/users · #/admins · #/lists */
-import { sb, S, loadAll, esc, $, $$, toast } from './lib.js?v=20261010c';
-import { ENT, ENT_ORDER } from './schema.js?v=20261010c';
-import { showRecords, listKeys, openSearch } from './records.js?v=20261010c';
-import { renderDemand } from './demand.js?v=20261010c';
-import { REQ, COUNTS, loadCounts, renderInbox, renderRequests, renderLicense, licenseKeys, renderRights, rightsKeys, renderHealth, renderUsers, renderAdmins, renderLists } from './pages.js?v=20261010c';
+import { sb, S, loadAll, esc, $, $$, toast } from './lib.js?v=20261010d';
+import { ENT, ENT_ORDER } from './schema.js?v=20261010d';
+import { showRecords, listKeys, openSearch } from './records.js?v=20261010d';
+import { renderDemand } from './demand.js?v=20261010d';
+import { REQ, COUNTS, loadCounts, renderInbox, renderRequests, renderLicense, licenseKeys, renderRights, rightsKeys, renderHealth, renderUsers, renderAdmins, renderLists } from './pages.js?v=20261010d';
 
 const main = document.getElementById('main');
 
