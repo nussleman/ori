@@ -51,6 +51,10 @@ async function rest(table, query){
   if(!r.ok)throw new Error(table+' 로드 실패: '+r.status);
   return await r.json();
 }
+/* Supabase는 저장이 실패해도 오류를 던지지 않고 {error}로 돌려준다. 결과를 확인하지 않는 저장은
+   이걸로 감싸서 실패하면 진짜 오류가 되게 한다 → 주변 try/catch의 "저장 실패" 안내가 실제로 뜬다.
+   (사용성 1단계 "믿고 쓸 수 있다": 실패를 성공처럼 보이지 않는다) */
+async function sbOk(q){var r=await q;if(r&&r.error)throw r.error;return r;}
 function photoField(urls){return(urls&&urls.length)?urls.map(function(u){return{url:u};}):null;}
 function groupBy(rows,key){
   var m={};
@@ -325,13 +329,13 @@ async function submitLicenseInquiry(){
   var message=$('license-inquiry-message').value.trim();
   if(!message){$('license-inquiry-msg').textContent='문의 내용을 적어주세요.';return;}
   try{
-    await sbClient.from('license_inquiries').insert({
+    await sbOk(sbClient.from('license_inquiries').insert({
       show_id:_licenseInquiryCtx?_licenseInquiryCtx.showId:null,
       work_id:_licenseInquiryCtx?_licenseInquiryCtx.workId:null,
       user_id:CURRENT_USER.id,
       message:message,
       contact:$('license-inquiry-contact').value.trim()||null
-    });
+    }));
     $('license-inquiry-msg').textContent='보냈어요! 확인 후 안내드릴게요.';
     setTimeout(closeLicenseInquiry,1200);
   }catch(e){$('license-inquiry-msg').textContent='전송 실패: '+e.message;}

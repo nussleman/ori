@@ -175,14 +175,16 @@ async function toggleFavorite(btn){
   btn.disabled=true;
   try{
     if(isOn){
-      await sbClient.from('favorites').delete().eq('user_id',CURRENT_USER.id).eq('target_type',type).eq('target_id',id).eq('list_type',listType);
+      await sbOk(sbClient.from('favorites').delete().eq('user_id',CURRENT_USER.id).eq('target_type',type).eq('target_id',id).eq('list_type',listType));
       FAVORITES_SET.delete(key);
       FAVORITES_LIST=FAVORITES_LIST.filter(function(f){return !(f.target_type===type&&f.target_id===id&&f.list_type===listType);});
     }else{
-      await sbClient.from('favorites').insert({user_id:CURRENT_USER.id,target_type:type,target_id:id,list_type:listType});
+      await sbOk(sbClient.from('favorites').insert({user_id:CURRENT_USER.id,target_type:type,target_id:id,list_type:listType}));
       FAVORITES_SET.add(key);
       FAVORITES_LIST.push({target_type:type,target_id:id,list_type:listType});
     }
+  }catch(e){
+    oriAlert((listType==='wishlist'?'"해보고 싶어요"':'즐겨찾기')+'를 저장하지 못했어요. 잠시 뒤 다시 눌러주세요.\n('+(e.message||e)+')');
   }finally{
     btn.disabled=false;refreshFavoriteButtons();
     if(location.hash==='#mypage')renderMyPage();
@@ -279,7 +281,7 @@ function connectFilterList(q){
 }
 async function connectSelectPerson(pid){
   try{
-    await sbClient.from('person_claims').insert({user_id:CURRENT_USER.id,person_id:pid});
+    await sbOk(sbClient.from('person_claims').insert({user_id:CURRENT_USER.id,person_id:pid}));
     closeConnectPrompt();
     oriAlert(nm(pid)+'님으로 연결 요청을 보냈어요. 관리자가 확인하면 승인돼요.');
   }catch(e){oriAlert('요청 중 문제가 생겼어요. 이미 요청했을 수도 있어요.');}

@@ -42,7 +42,7 @@ async function startProjectFromWork(wid){
     var r=await sbClient.rpc('create_new_project');if(r.error)throw r.error;
     var pid=r.data;
     var u=await sbClient.from('projects').update({title:nm(wid),work_id:wid}).eq('id',pid);if(u.error)throw u.error;
-    await sbClient.rpc('populate_work_roles',{p_project_id:pid,p_work_id:wid});
+    await sbOk(sbClient.rpc('populate_work_roles',{p_project_id:pid,p_work_id:wid}));
     await loadMyProjectsCache();
     goProject(pid);
   }catch(e){oriAlert('프로젝트를 시작하지 못했어요: '+e.message);}

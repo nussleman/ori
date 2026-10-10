@@ -27,12 +27,12 @@ function refreshProjectLists(){
 async function renameProject(pid){
   var t= await oriPrompt('새 프로젝트 이름을 입력하세요');
   if(!t)return;
-  try{await sbClient.from('projects').update({title:t}).eq('id',pid);refreshProjectLists();}
+  try{await sbOk(sbClient.from('projects').update({title:t}).eq('id',pid));refreshProjectLists();}
   catch(e){oriAlert('수정 실패: '+e.message);}
 }
 async function deleteProject(pid){
   if(!await oriConfirm('이 프로젝트를 삭제할까요? 되돌릴 수 없어요.'))return;
-  try{await sbClient.from('projects').delete().eq('id',pid);refreshProjectLists();}
+  try{await sbOk(sbClient.from('projects').delete().eq('id',pid));refreshProjectLists();}
   catch(e){oriAlert('삭제 실패: '+e.message);}
 }
 var _startingProject=false;
@@ -136,7 +136,7 @@ async function updateProjectStatus(pid,status){
       renderProjectTabContent();return;
     }
     try{
-      await sbClient.from('projects').update({status:status}).eq('id',pid);
+      await sbOk(sbClient.from('projects').update({status:status}).eq('id',pid));
       var r=await sbClient.rpc('publish_project_as_show',{p_project_id:pid});
       if(r.error)throw r.error;
       ctx.pr.status=status;ctx.pr.published_show_id=r.data;
@@ -146,7 +146,7 @@ async function updateProjectStatus(pid,status){
     }catch(e){oriAlert('공연 데이터 생성 중 문제가 생겼어요: '+e.message);}
     return;
   }
-  try{await sbClient.from('projects').update({status:status}).eq('id',pid);ctx.pr.status=status;renderProjectTabContent();}
+  try{await sbOk(sbClient.from('projects').update({status:status}).eq('id',pid));ctx.pr.status=status;renderProjectTabContent();}
   catch(e){oriAlert('상태 변경 실패: '+e.message);}
 }
 var PROJECT_STATUS_CHIP_CLASS={planning:'',upcoming:'status-chip-upcoming',running:'status-chip-running',completed:'status-chip-completed',cancelled:'status-chip-cancelled'};
@@ -174,7 +174,7 @@ function overviewFieldCard(label,value,wizardStep,ctaLabel,canEdit,linkTo){
     +'</div>';
 }
 async function toggleProjectPublic(pid,on){
-  try{await sbClient.from('projects').update({is_public:on}).eq('id',pid);window._projectCtx.pr.is_public=on;renderProjectTabContent();}
+  try{await sbOk(sbClient.from('projects').update({is_public:on}).eq('id',pid));window._projectCtx.pr.is_public=on;renderProjectTabContent();}
   catch(e){oriAlert('변경 실패: '+e.message);}
 }
 async function loadOverviewAdminList(pid){
@@ -195,7 +195,7 @@ async function loadOverviewAdminList(pid){
   }catch(e){el.innerHTML='<span style="color:var(--muted)">불러오기 실패</span>';}
 }
 async function toggleBudgetVisible(pid,on){
-  try{await sbClient.from('projects').update({budget_visible_to_members:on}).eq('id',pid);window._projectCtx.pr.budget_visible_to_members=on;}
+  try{await sbOk(sbClient.from('projects').update({budget_visible_to_members:on}).eq('id',pid));window._projectCtx.pr.budget_visible_to_members=on;}
   catch(e){oriAlert('변경 실패: '+e.message);}
 }
 function staffCategoryOf(name){
@@ -278,7 +278,7 @@ function renderProjectPromoTab(el){
 }
 async function savePromoNote(pid){
   try{
-    await sbClient.from('projects').update({promo_note:$('promo-note').value.trim()||null}).eq('id',pid);
+    await sbOk(sbClient.from('projects').update({promo_note:$('promo-note').value.trim()||null}).eq('id',pid));
     window._projectCtx.pr.promo_note=$('promo-note').value.trim();
     $('promo-note-msg').textContent='저장됐어요.';
   }catch(e){$('promo-note-msg').textContent='저장 실패: '+e.message;}
@@ -290,7 +290,7 @@ async function addPromoLink(pid){
   if(!/^https?:\/\//i.test(url))url='https://'+url;
   var links=(window._projectCtx.pr.promo_links||[]).concat([url]);
   try{
-    await sbClient.from('projects').update({promo_links:links}).eq('id',pid);
+    await sbOk(sbClient.from('projects').update({promo_links:links}).eq('id',pid));
     window._projectCtx.pr.promo_links=links;
     renderProjectPromoTab($('project-tab-content'));
   }catch(e){oriAlert('추가 실패: '+e.message);}
@@ -299,7 +299,7 @@ async function removePromoLink(pid,idx){
   var links=(window._projectCtx.pr.promo_links||[]).slice();
   links.splice(idx,1);
   try{
-    await sbClient.from('projects').update({promo_links:links}).eq('id',pid);
+    await sbOk(sbClient.from('projects').update({promo_links:links}).eq('id',pid));
     window._projectCtx.pr.promo_links=links;
     renderProjectPromoTab($('project-tab-content'));
   }catch(e){oriAlert('삭제 실패: '+e.message);}
@@ -342,7 +342,7 @@ function renderVenueFilterResults(){
 }
 async function addVenueCandidateFromFilter(vid){
   var pid=window._projectCtx.pid;
-  try{await sbClient.from('project_venue_candidates').insert({project_id:pid,venue_id:vid,status:'considering'});}catch(e){}
+  try{await sbOk(sbClient.from('project_venue_candidates').insert({project_id:pid,venue_id:vid,status:'considering'}));}catch(e){}
   loadVenueCandidatesList(pid);
 }
 var VENUE_CAND_STATUS_LABEL={considering:'후보',reviewing:'고려중',selected:'최종 선택'};
@@ -370,14 +370,14 @@ async function loadVenueCandidatesList(pid){
 }
 async function setVenueCandStatus(candId,pid,venueId,status){
   try{
-    if(status==='selected')await sbClient.rpc('select_project_venue',{p_project_id:pid,p_venue_id:venueId});
-    else await sbClient.from('project_venue_candidates').update({status:status}).eq('id',candId);
+    if(status==='selected')await sbOk(sbClient.rpc('select_project_venue',{p_project_id:pid,p_venue_id:venueId}));
+    else await sbOk(sbClient.from('project_venue_candidates').update({status:status}).eq('id',candId));
     window._projectCtx.pr.venue_id=status==='selected'?venueId:window._projectCtx.pr.venue_id;
     loadVenueCandidatesList(pid);
   }catch(e){oriAlert('변경 실패: '+e.message);}
 }
 async function removeVenueCandidate(candId,pid){
-  try{await sbClient.from('project_venue_candidates').delete().eq('id',candId);loadVenueCandidatesList(pid);}
+  try{await sbOk(sbClient.from('project_venue_candidates').delete().eq('id',candId));loadVenueCandidatesList(pid);}
   catch(e){oriAlert('삭제 실패: '+e.message);}
 }
 window._teamSubTab=window._teamSubTab||'people';
@@ -515,7 +515,7 @@ async function inviteFilterList(posId,q,kind,refId){
 async function sendPositionInvite(posId,personId){
   var msg= await oriPrompt('간단한 메시지를 남겨주세요 (선택)')||'';
   try{
-    await sbClient.rpc('invite_person_to_position',{p_position_id:posId,p_person_id:personId,p_message:msg});
+    await sbOk(sbClient.rpc('invite_person_to_position',{p_position_id:posId,p_person_id:personId,p_message:msg}));
     oriAlert('참여 요청을 보냈어요.');
   }catch(e){oriAlert('요청을 보낼 수 없어요: '+e.message);}
   loadProjectMembersDetail(window._projectCtx.pid);
@@ -526,9 +526,9 @@ async function recruitProjectSlot(pid,kind,refId,label){
     if(kind==='role'){row.position_type='actor';row.role_id=refId;}
     else if(kind==='staff'){row.position_type='staff';row.staff_role_id=refId;}
     else{row.position_type='other';}
-    await sbClient.from('project_positions').insert(row).select();
+    await sbOk(sbClient.from('project_positions').insert(row).select());
   }catch(e){/* 이미 있으면 무시 */}
-  try{await sbClient.from('projects').update({is_recruiting:true}).eq('id',pid);window._projectCtx.pr.is_recruiting=true;}catch(e){}
+  try{await sbOk(sbClient.from('projects').update({is_recruiting:true}).eq('id',pid));window._projectCtx.pr.is_recruiting=true;}catch(e){}
   loadProjectMembersDetail(pid);
 }
 /* 예산 화면은 project-budget.js */

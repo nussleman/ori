@@ -189,7 +189,7 @@ async function saveMyTroupe(tid){
     recruiting_info:$('mt-recruiting').value.trim()||null
   };
   try{
-    await sbClient.from('troupes').update(payload).eq('id',tid);
+    await sbOk(sbClient.from('troupes').update(payload).eq('id',tid));
     $('mt-save-msg').textContent='저장됐어요.';
   }catch(e){$('mt-save-msg').textContent='저장 실패: '+e.message;}
 }
@@ -205,7 +205,7 @@ async function uploadTroupePhoto(input,tid){
     var troupe=DB.troupes.find(function(t){return t.id===tid;});
     var existing=(fld(troupe,'사진')||[]).map(function(p){return p.url;});
     existing.push(pub.data.publicUrl);
-    await sbClient.from('troupes').update({photo_urls:existing}).eq('id',tid);
+    await sbOk(sbClient.from('troupes').update({photo_urls:existing}).eq('id',tid));
     await load();
     goMyTroupe(tid);
   }catch(e){if(msgEl)msgEl.textContent='업로드 실패: '+e.message;}
@@ -215,7 +215,7 @@ async function removeTroupePhoto(tid,url){
   try{
     var troupe=DB.troupes.find(function(t){return t.id===tid;});
     var existing=(fld(troupe,'사진')||[]).map(function(p){return p.url;}).filter(function(u){return u!==url;});
-    await sbClient.from('troupes').update({photo_urls:existing}).eq('id',tid);
+    await sbOk(sbClient.from('troupes').update({photo_urls:existing}).eq('id',tid));
     await load();
     goMyTroupe(tid);
   }catch(e){oriAlert('삭제 실패: '+e.message);}
@@ -225,7 +225,7 @@ async function setPrimaryTroupePhoto(tid,url){
     var troupe=DB.troupes.find(function(t){return t.id===tid;});
     var existing=(fld(troupe,'사진')||[]).map(function(p){return p.url;});
     var reordered=[url].concat(existing.filter(function(u){return u!==url;}));
-    await sbClient.from('troupes').update({photo_urls:reordered}).eq('id',tid);
+    await sbOk(sbClient.from('troupes').update({photo_urls:reordered}).eq('id',tid));
     await load();
     goMyTroupe(tid);
   }catch(e){oriAlert('설정 실패: '+e.message);}
@@ -251,7 +251,7 @@ async function saveProfileInfo(){
   var avatarEmoji=_pickedAvatarEmoji!==null?_pickedAvatarEmoji:CURRENT_USER.avatarEmoji;
   var preferredRoles=Array.prototype.slice.call(document.querySelectorAll('.myinfo-role-opt.on')).map(function(b){return b.dataset.role;});
   try{
-    await sbClient.from('user_profiles').update({nickname:nickname||null,intro:intro||null,contact:contact||null,avatar_emoji:avatarEmoji||null,preferred_roles:preferredRoles.length?preferredRoles:null}).eq('id',CURRENT_USER.id);
+    await sbOk(sbClient.from('user_profiles').update({nickname:nickname||null,intro:intro||null,contact:contact||null,avatar_emoji:avatarEmoji||null,preferred_roles:preferredRoles.length?preferredRoles:null}).eq('id',CURRENT_USER.id));
     CURRENT_USER.nickname=nickname;CURRENT_USER.intro=intro;CURRENT_USER.contact=contact;CURRENT_USER.avatarEmoji=avatarEmoji;CURRENT_USER.preferredRoles=preferredRoles;
     renderProfileFab();
     window._infoEditMode=false;
