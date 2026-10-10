@@ -138,10 +138,10 @@ function renderProjectPeople(el){
   var badges={requests:ctx.pendingRequests||0};
   el.innerHTML=subTabsHtml(subs,sub,'openPeopleSub',badges)+'<div id="people-sub-body"></div>';
   var body=$('people-sub-body');
-  if(sub==='actor'){body.innerHTML='<div id="actor-tab-body">불러오는 중…</div>';loadProjectPositionsData(ctx.pid,renderActorTabBody);}
-  else if(sub==='crew'){body.innerHTML='<div id="crew-tab-body">불러오는 중…</div>';loadProjectPositionsData(ctx.pid,renderCrewTabBody);}
-  else if(sub==='team'){window._teamSubTab='people';body.innerHTML='<div id="team-subtab-body">불러오는 중…</div>';loadProjectPositionsData(ctx.pid,renderTeamSubTabBody);}
-  else if(sub==='requests'){body.innerHTML='<div id="join-requests-list">불러오는 중…</div>';loadJoinRequests(ctx.pid);}
+  if(sub==='actor'){body.innerHTML='<div id="actor-tab-body"><div class="hf-loading">불러오는 중…</div></div>';loadProjectPositionsData(ctx.pid,renderActorTabBody);}
+  else if(sub==='crew'){body.innerHTML='<div id="crew-tab-body"><div class="hf-loading">불러오는 중…</div></div>';loadProjectPositionsData(ctx.pid,renderCrewTabBody);}
+  else if(sub==='team'){window._teamSubTab='people';body.innerHTML='<div id="team-subtab-body"><div class="hf-loading">불러오는 중…</div></div>';loadProjectPositionsData(ctx.pid,renderTeamSubTabBody);}
+  else if(sub==='requests'){body.innerHTML='<div id="join-requests-list"><div class="hf-loading">불러오는 중…</div></div>';loadJoinRequests(ctx.pid);}
 }
 
 /* ── 준비: 극장 후보 · 소품 큐시트(project-props.js) · 홍보 ── */

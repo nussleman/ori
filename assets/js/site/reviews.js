@@ -76,6 +76,7 @@ async function saveReview(type,id){
   if(r.error){oriAlert('남기지 못했어요: '+r.error.message);return;}
   closeReviewForm();
   loadReviews(type,id);
+  oriAlert(type==='show'?'관극 기록을 남겼어요.':'후기를 남겼어요.',{action:{label:'내 기록 보기',fn:function(){goMyPageTab('records');}}});
 }
 async function deleteReview(type,id,rid){
   if(!await oriConfirm('이 기록을 지울까요?'))return;

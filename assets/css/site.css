@@ -1551,3 +1551,11 @@ body.mode-make .pd-to-browse{display:block}
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;scroll-behavior:auto!important}
 }
+
+/* 불러오는 동안: 글자 대신 자리 모양 (사용성 3단계). 글자는 화면 읽기 프로그램용으로 남긴다 */
+@keyframes ori-shimmer{from{background-position:100% 0}to{background-position:-100% 0}}
+.hf-loading{font-size:0;line-height:0;color:transparent;padding:0;margin:0.6rem 0;height:58px;width:100%;max-width:520px;border-radius:6px;
+  background:linear-gradient(90deg,var(--bg2) 30%,var(--bg3) 50%,var(--bg2) 70%) 0 0/200% 100%;animation:ori-shimmer 1.3s linear infinite;
+  -webkit-mask:linear-gradient(#000 0 14px,transparent 14px 22px,#000 22px 36px,transparent 36px 44px) 0 0/100% 100% no-repeat,linear-gradient(90deg,#000 62%,transparent 62%) 0 44px/100% 14px no-repeat;
+  mask:linear-gradient(#000 0 14px,transparent 14px 22px,#000 22px 36px,transparent 36px 44px) 0 0/100% 100% no-repeat,linear-gradient(90deg,#000 62%,transparent 62%) 0 44px/100% 14px no-repeat}
+.result-empty .hf-loading,.wizard-result-empty .hf-loading{margin:0.6rem auto}

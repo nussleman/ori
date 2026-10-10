@@ -56,7 +56,12 @@ async function rest(table, query){
 /* Supabase는 저장이 실패해도 오류를 던지지 않고 {error}로 돌려준다. 결과를 확인하지 않는 저장은
    이걸로 감싸서 실패하면 진짜 오류가 되게 한다 → 주변 try/catch의 "저장 실패" 안내가 실제로 뜬다.
    (사용성 1단계 "믿고 쓸 수 있다": 실패를 성공처럼 보이지 않는다) */
-async function sbOk(q){var r=await q;if(r&&r.error)throw r.error;return r;}
+/* 저장하는 동안 방금 누른 버튼을 잠근다 (연타로 두 번 저장되지 않게) */
+async function sbOk(q){
+  var done=busyBtn();
+  try{var r=await q;if(r&&r.error)throw r.error;return r;}
+  finally{done();}
+}
 /* 불러오기 실패 안내 + 다시 시도: 지금 화면을 처음부터 다시 그린다 (사용성 1단계) */
 function loadFailHtml(what){
   return '<div class="load-fail"><span>'+escHtml('불러오지 못했어요'+(what?' ('+what+')':'')+'. 인터넷 연결을 확인하고 다시 시도해 주세요.')+'</span><button type="button" class="pf-btn" onclick="retryCurrentView()">다시 시도</button></div>';
@@ -64,7 +69,7 @@ function loadFailHtml(what){
 /* 저장 중 버튼 잠그기 (사용성 1단계: 연타로 두 번 저장되지 않게). 방금 누른 버튼을 잠그고, 돌려받은 함수로 푼다 */
 function busyBtn(){
   var b=document.activeElement;
-  if(!b||b.tagName!=='BUTTON')return function(){};
+  if(!b||b.tagName!=='BUTTON'||b.disabled)return function(){};
   b.disabled=true;b.classList.add('is-busy');
   return function(){b.disabled=false;b.classList.remove('is-busy');};
 }
