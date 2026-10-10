@@ -1497,3 +1497,16 @@ body.mode-make .pd-to-browse{display:block}
 .ts-pending{border:1px dashed var(--accent);border-radius:10px;padding:0.9rem 1.1rem 0.3rem;margin-bottom:1.2rem}
 .ts-pending-title{font-size:0.9rem;color:var(--text)}
 .ts-detail{white-space:pre-wrap;color:var(--text);opacity:0.85}
+/* 작품 페이지 허브 (works.js renderWorkHub) */
+.wh-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0.6rem}
+@media(max-width:640px){.wh-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.dv-peek .wh-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+.wh-tile{border:1px solid var(--line);border-radius:10px;padding:0.8rem 0.9rem}
+.wh-tile b{display:block;font-size:1.25rem;font-weight:600;color:var(--text)}
+.wh-tile span{display:block;font-size:0.74rem;color:var(--muted);margin-top:0.25rem;line-height:1.5}
+.wh-rights{display:grid;grid-template-columns:5rem 1fr;gap:0.5rem;font-size:0.85rem;color:var(--text);padding:0.9rem 0 0;line-height:1.6}
+.wh-label{color:var(--muted);font-size:0.78rem;padding-top:0.1rem}
+.wh-strong{color:var(--accent)}
+.wh-sub{font-size:0.78rem;color:var(--muted)}
+.wh-venues{display:flex;flex-wrap:wrap;gap:0.35rem}
+.wh-acts{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1.1rem}
