@@ -50,6 +50,15 @@ function renderOpportunities(){
   else el.innerHTML=rows.map(oppCardHtml).join('');
   renderOppProjects();
 }
+/* 단체의 지난 공연(공개 공연): 모집 공고를 볼 때 "이 단체는 어떤 공연을 해왔나"를 같이 보여준다 */
+function troupePastShows(tid){
+  if(!tid)return [];
+  return sortShows(DB.shows.filter(function(s){return ids(fld(s,'극단')).indexOf(tid)>-1;}));
+}
+function troupeTrackLine(tid){
+  var ps=troupePastShows(tid);if(!ps.length)return '';
+  return '<div class="opp-track">지난 공연 '+ps.length+'편 · 최근 〈'+escHtml(fld(ps[0],'공연명')||'')+'〉</div>';
+}
 function oppCardHtml(r){
   var dd=r.target_start_date?dashDaysUntil(r.target_start_date):null;
   var when=r.target_start_date?String(r.target_start_date).slice(5).replace('-','.')+' 공연'+(dd!=null&&dd>=0?' · D-'+dd:''):'공연 날짜 미정';
@@ -64,6 +73,7 @@ function oppCardHtml(r){
     +'<div class="opp-title">'+escHtml(r.position_label||'자리')+'</div>'
     +'<div class="opp-proj">'+escHtml(r.project_title||'새 프로젝트')+'</div>'
     +(meta?'<div class="opp-meta">'+meta+'</div>':'')
+    +troupeTrackLine(r.troupe_id)
     +'<div class="opp-foot"><span class="opp-when">'+escHtml(when)+'</span>'+btn+'</div></div>';
 }
 function renderOppProjects(){
