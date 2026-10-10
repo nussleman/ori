@@ -173,8 +173,10 @@ function goMyTroupe(tid,push){
     +'<button class="person-gallery-more-btn" style="margin-top:0.6rem" onclick="document.getElementById(\'mt-photo-upload\').click()">+ 사진 추가</button>'
     +'<div id="mt-photo-upload-msg" style="font-size:0.7rem;color:var(--muted);margin-top:0.4rem;text-align:center"></div></div>';
   h+='</div>';
+  h+='<div class="myinfo-card myinfo-card-wide ts-card" id="troupe-shows"></div>';
   mn(h);
   injectBackBtn('← 마이페이지',function(){goMyPage();});
+  renderTroupeShows(tid);
 }
 async function saveMyTroupe(tid){
   var region=$('mt-region').value.trim();

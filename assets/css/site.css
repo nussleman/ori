@@ -1461,3 +1461,31 @@ body.mode-make .pd-to-browse{display:block}
 .bg-legend i{display:inline-block;width:12px;height:6px;border-radius:2px}
 .bg-legend i.p{background:rgba(255,255,255,0.18)}.bg-legend i.a{background:#7fc88a}.bg-legend i.r{width:2px;height:11px;background:var(--accent)}
 @media(max-width:700px){.pp-tr-warn{order:6}}
+
+/* ══ 단체 공연 기록 (troupe-shows.js) ══ */
+.ts-card{margin-top:1.2rem}
+.ts-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.ts-help{font-size:0.78rem;color:var(--muted);margin:0.5rem 0 1rem;line-height:1.6}
+.ts-empty{font-size:0.85rem;color:var(--muted);padding:1.2rem 0;text-align:center}
+.ts-list{display:flex;flex-direction:column}
+.ts-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:0.8rem 0;border-top:1px solid var(--line)}
+.ts-main{min-width:0}
+.ts-title{font-size:0.92rem;color:var(--text)}
+.ts-meta{font-size:0.75rem;color:var(--muted);margin-top:0.2rem}
+.ts-flag{display:inline-block;margin-left:0.4rem;padding:0.05rem 0.45rem;border-radius:999px;border:1px solid var(--accent);color:var(--accent);font-size:0.68rem}
+.ts-side{display:flex;align-items:center;gap:0.6rem;flex-shrink:0}
+.ts-status{font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.ts-st-ok{border-color:var(--accent);color:var(--accent)}
+.ts-form{border:1px solid var(--accent);border-radius:10px;padding:1.1rem 1.2rem;margin-bottom:1.2rem}
+.ts-form-title{font-size:0.95rem;color:var(--text);margin-bottom:0.8rem}
+.ts-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 1rem}
+.ts-wide{grid-column:1/-1}
+@media(max-width:640px){.ts-grid{grid-template-columns:1fr}.ts-row{flex-direction:column;align-items:flex-start}}
+.ts-seg{display:flex;flex-wrap:wrap;gap:0.35rem}
+.ts-seg-opt{position:relative;padding:0.35rem 0.75rem;border:1px solid var(--line);border-radius:6px;font-size:0.8rem;color:var(--muted);cursor:pointer}
+.ts-seg-opt input{position:absolute;opacity:0;pointer-events:none}
+.ts-seg-opt.on{border-color:var(--accent);color:var(--accent)}
+.ts-private{font-size:0.7rem;color:var(--faint);margin-left:0.3rem}
+.ts-hint{font-size:0.72rem;color:var(--faint);margin-top:0.35rem;line-height:1.6}
+.ts-actions{display:flex;justify-content:flex-end;gap:0.5rem;margin-top:0.6rem}
+.ts-msg{font-size:0.76rem;color:var(--muted);margin-top:0.5rem;text-align:right}
