@@ -3,8 +3,10 @@
    필수는 공연명·날짜 두 칸뿐, 나머지는 아는 만큼. 출연진은 시트에서 붙여넣기.
    배우·스태프가 직접 추가한 이력도 여기서 확인한다 (my-history.js가 요청하는 쪽).
    서버: troupe_save_show / troupe_add_cast (supabase/migrations/20261010_troupe_show_entry.sql),
-         list_participation_requests / review_participation (20261010_participation_requests.sql) */
-var _ts={tid:null,rows:[],editing:null,pending:[]};
+         list_participation_requests / review_participation (20261010_participation_requests.sql),
+         list_troupe_edit_requests / resolve_troupe_edit_request (20261010_troupe_edit_requests.sql) */
+var _ts={tid:null,rows:[],editing:null,pending:[],edits:[]};
+var TS_REQ_KIND={edit:'고쳐주세요',create:'추가해주세요',delete:'지워주세요'};
 var TS_LIC=[['','모름'],['창작','우리 창작'],['완료','허락받음'],['미확보','아직']];
 
 async function renderTroupeShows(tid){
@@ -13,10 +15,12 @@ async function renderTroupeShows(tid){
   el.innerHTML='<div class="person-side-title">우리 공연 기록</div><div style="font-size:0.8rem;color:var(--muted)">불러오는 중…</div>';
   var res=await Promise.all([
     sbClient.from('shows').select('id,title,show_date,end_date,work_id,venue_id,ticket_type,performers_paid,performance_count,is_licensed,record_status').eq('troupe_id',tid).order('show_date',{ascending:false}),
-    sbClient.rpc('list_participation_requests',{p_troupe_id:tid,p_status:'확인 대기'})
+    sbClient.rpc('list_participation_requests',{p_troupe_id:tid,p_status:'확인 대기'}),
+    sbClient.rpc('list_troupe_edit_requests',{p_troupe_id:tid,p_status:'pending'})
   ]);
   var r=res[0];
   _ts.pending=res[1].data||[];
+  _ts.edits=res[2].data||[];
   if(r.error){el.innerHTML='<div class="person-side-title">우리 공연 기록</div><div style="font-size:0.8rem;color:var(--muted)">불러오기 실패: '+escHtml(r.error.message)+'</div>';return;}
   _ts.rows=r.data||[];
   drawTroupeShows();
@@ -29,6 +33,19 @@ function drawTroupeShows(){
   var h='<div class="ts-head"><div class="person-side-title" style="margin:0">우리 공연 기록 <span class="dv-n">'+_ts.rows.length+'</span></div>'
     +'<button class="pf-btn pf-active" onclick="openTroupeShowForm(null)">+ 지난 공연 기록하기</button></div>'
     +'<div class="ts-help">우리 단체가 올린 공연을 남겨두면 단체 페이지가 포트폴리오가 되고, 함께한 사람들의 이력도 같이 쌓여요.</div>';
+  if(_ts.edits.length)h+='<div class="ts-pending"><div class="ts-pending-title">들어온 수정 요청 <span class="dv-n">'+_ts.edits.length+'</span></div>'
+    +'<div class="ts-help" style="margin:0.2rem 0 0.4rem">우리 공연이나 단체 정보가 틀렸다고 알려준 내용이에요. 고친 뒤 "반영했어요"를 눌러주세요. 운영팀도 같은 요청을 보고 있어요.</div>'
+    +_ts.edits.map(function(x){
+      var isShow=x.target_type==='show'&&_ts.rows.some(function(s){return s.id===x.target_id;});
+      return '<div class="ts-row"><div class="ts-main">'
+        +'<div class="ts-title">'+escHtml(x.summary||'')+'</div>'
+        +'<div class="ts-meta">'+(x.target_type==='troupe'?'단체 정보':'공연 · '+escHtml(x.target_name||''))+' · '+(TS_REQ_KIND[x.request_type]||'')+(x.requester_nickname?' · '+escHtml(x.requester_nickname):'')+' · '+String(x.created_at||'').slice(0,10).replace(/-/g,'.')+'</div>'
+        +(x.details?'<div class="ts-meta ts-detail">'+escHtml(x.details)+'</div>':'')
+        +'</div><div class="ts-side">'
+        +(isShow?'<button class="pf-btn" onclick="openTroupeShowForm(\''+x.target_id+'\')">공연 고치기</button>':(x.target_type==='troupe'?'<button class="pf-btn" onclick="window.scrollTo({top:0,behavior:\'smooth\'})">정보 고치기</button>':''))
+        +'<button class="pf-btn" onclick="resolveTroupeEdit(\''+x.id+'\',\'rejected\')">반영 안 함</button>'
+        +'<button class="pf-btn pf-active" onclick="resolveTroupeEdit(\''+x.id+'\',\'done\')">반영했어요</button></div></div>';
+    }).join('')+'</div>';
   if(_ts.pending.length)h+='<div class="ts-pending"><div class="ts-pending-title">확인 기다리는 이력 <span class="dv-n">'+_ts.pending.length+'</span></div>'
     +'<div class="ts-help" style="margin:0.2rem 0 0.4rem">배우·스태프가 우리 공연에 참여했다고 남긴 이력이에요. 맞으면 확인을 눌러주세요. 확인한 이력만 사람 페이지에 올라가요.</div>'
     +_ts.pending.map(function(x){
@@ -128,5 +145,11 @@ async function reviewTroupeHistory(id,ok){
   var r=await sbClient.rpc('review_participation',{p_id:id,p_ok:ok});
   if(r.error){oriAlert('처리하지 못했어요: '+r.error.message);return;}
   if(ok)await load();
+  await renderTroupeShows(_ts.tid);
+}
+async function resolveTroupeEdit(id,st){
+  if(st==='rejected'&&!await oriConfirm('이 요청은 반영하지 않을까요?\n요청한 사람에게 반려로 표시돼요.'))return;
+  var r=await sbClient.rpc('resolve_troupe_edit_request',{p_id:id,p_status:st});
+  if(r.error){oriAlert('처리하지 못했어요: '+r.error.message);return;}
   await renderTroupeShows(_ts.tid);
 }

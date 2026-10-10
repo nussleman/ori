@@ -67,8 +67,9 @@ async function submitEditRequest(){
     details:$('edit-details').value.trim()||null
   };
   try{
-    await sbClient.from('edit_requests').insert(row);
-    $('edit-modal-msg').textContent='보냈어요! 확인 후 반영할게요.';
+    var r=await sbClient.from('edit_requests').insert(row);
+    if(r.error)throw r.error;
+    $('edit-modal-msg').textContent=(targetType==='show'||targetType==='troupe')?'보냈어요! 그 단체와 운영팀이 확인 후 반영할게요.':'보냈어요! 확인 후 반영할게요.';
     setTimeout(closeEditModal,1200);
   }catch(e){
     $('edit-modal-msg').textContent='전송 중 문제가 생겼어요: '+e.message;
