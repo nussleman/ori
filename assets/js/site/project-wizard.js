@@ -14,7 +14,7 @@ async function closeWizard(){
   if(_wizardIsCreation&&!_wizardCompleted){
     if(!await oriConfirm('여기까지 만든 프로젝트를 취소할까요? 지금까지 입력한 내용은 사라져요.'))return;
     $('wizard-overlay').classList.remove('open');
-    try{await sbClient.from('projects').delete().eq('id',_wizardPid);}catch(e){}
+    try{await sbOk(sbClient.from('projects').delete().eq('id',_wizardPid));}catch(e){}
     loadMyProjectsCache();
     goMake();
     return;
@@ -86,7 +86,7 @@ function wizardNameStepHtml(){
 async function wizardSubmitName(){
   var name=($('wizard-name-input').value||'').trim();
   if(!name){oriAlert('이름을 적어주세요.');return;}
-  try{await sbClient.from('projects').update({title:name}).eq('id',_wizardPid);}catch(e){oriAlert('저장 실패: '+e.message);return;}
+  try{await sbOk(sbClient.from('projects').update({title:name}).eq('id',_wizardPid));}catch(e){oriAlert('저장 실패: '+e.message);return;}
   wizardNext();
 }
 function wizardVisibilityStepHtml(){
@@ -98,7 +98,7 @@ function wizardVisibilityStepHtml(){
     +'</div>';
 }
 async function wizardSubmitVisibility(val){
-  try{await sbClient.from('projects').update({is_public:val}).eq('id',_wizardPid);}catch(e){oriAlert('저장 실패: '+e.message);return;}
+  try{await sbOk(sbClient.from('projects').update({is_public:val}).eq('id',_wizardPid));}catch(e){oriAlert('저장 실패: '+e.message);return;}
   wizardNext();
 }
 function wizardLicenseStepHtml(){
@@ -111,7 +111,7 @@ function wizardLicenseStepHtml(){
     +'<button class="wizard-skip-btn" onclick="wizardSkip()">아직 안 정해졌어요, 나중에 할게요</button>';
 }
 async function wizardSubmitLicense(val){
-  try{await sbClient.from('projects').update({is_licensed:val}).eq('id',_wizardPid);}
+  try{await sbOk(sbClient.from('projects').update({is_licensed:val}).eq('id',_wizardPid));}
   catch(e){oriAlert('저장 실패: '+e.message);return;}
   if(val==='미확보'){
     oriAlert('안내: 라이선스를 확보하지 않은 채로 공연이 진행되어 발생하는 저작권 문제에 대해 오리는 책임지지 않아요. 공연 전 반드시 라이선스를 확보해주세요.');
@@ -146,7 +146,7 @@ async function wizardSubmitRole(choice,personId,name){
     if(!personId){oriAlert('검색해서 담당자를 선택해주세요.');return;}
     row.position_label='관리 지원 (담당자: '+name+')';
   }
-  try{await sbClient.from('project_positions').insert(row);}catch(e){oriAlert('저장 실패: '+e.message);return;}
+  try{await sbOk(sbClient.from('project_positions').insert(row));}catch(e){oriAlert('저장 실패: '+e.message);return;}
   wizardNext();
 }
 function wizardFilterList(q){
@@ -164,16 +164,16 @@ async function wizardSelect(id){
   var field=step+'_id';
   var patch={};patch[field]=id;
   try{
-    await sbClient.from('projects').update(patch).eq('id',_wizardPid);
-    if(step==='work')await sbClient.rpc('populate_work_roles',{p_project_id:_wizardPid,p_work_id:id});
-    if(step==='venue')await sbClient.rpc('select_project_venue',{p_project_id:_wizardPid,p_venue_id:id});
+    await sbOk(sbClient.from('projects').update(patch).eq('id',_wizardPid));
+    if(step==='work')await sbOk(sbClient.rpc('populate_work_roles',{p_project_id:_wizardPid,p_work_id:id}));
+    if(step==='venue')await sbOk(sbClient.rpc('select_project_venue',{p_project_id:_wizardPid,p_venue_id:id}));
   }catch(e){oriAlert('저장 실패: '+e.message);}
   wizardNext();
 }
 async function wizardSkip(){
   var step=_wizardSteps[_wizardStepIdx];
   if(step==='date'||step==='license'||step==='members'){wizardNext();return;}
-  try{await sbClient.from('project_positions').insert({project_id:_wizardPid,position_type:'other',position_label:WIZARD_STEP_LABEL[step]+' 미정',status:'open'});}catch(e){}
+  try{await sbOk(sbClient.from('project_positions').insert({project_id:_wizardPid,position_type:'other',position_label:WIZARD_STEP_LABEL[step]+' 미정',status:'open'}));}catch(e){}
   wizardNext();
 }
 var _wizardSelectedMembers=[];
@@ -216,7 +216,7 @@ async function wizardSubmitMembers(){
   if(!_wizardSelectedMembers.length){wizardNext();return;}
   try{
     var rows=_wizardSelectedMembers.map(function(id){return {project_id:_wizardPid,position_type:'other',position_label:nm(id),status:'open'};});
-    await sbClient.from('project_positions').insert(rows);
+    await sbOk(sbClient.from('project_positions').insert(rows));
   }catch(e){oriAlert('저장 실패: '+e.message);return;}
   wizardNext();
 }
@@ -229,7 +229,7 @@ function wizardDateStepHtml(){
 async function wizardSaveDate(){
   var start=$('wizard-date-start').value,end=$('wizard-date-end').value;
   if(!start){wizardNext();return;}
-  try{await sbClient.from('projects').update({target_start_date:start,target_end_date:end||null}).eq('id',_wizardPid);}catch(e){oriAlert('저장 실패: '+e.message);}
+  try{await sbOk(sbClient.from('projects').update({target_start_date:start,target_end_date:end||null}).eq('id',_wizardPid));}catch(e){oriAlert('저장 실패: '+e.message);}
   wizardNext();
 }
 
@@ -255,7 +255,7 @@ async function submitAddPosition(pid){
   }
   if(!row.position_label)row.position_label=type==='actor'?'배우':'스태프';
   try{
-    await sbClient.from('project_positions').insert(row);
+    await sbOk(sbClient.from('project_positions').insert(row));
     goProject(pid);
   }catch(e){oriAlert('추가 중 문제가 생겼어요: '+e.message);}
 }
@@ -265,14 +265,14 @@ async function editProjectTitle(pid){
   var t= await oriPrompt('프로젝트 제목을 입력하세요',current);
   if(!t||!t.trim())return;
   try{
-    await sbClient.from('projects').update({title:t.trim()}).eq('id',pid);
+    await sbOk(sbClient.from('projects').update({title:t.trim()}).eq('id',pid));
     loadMyProjectsCache();
     goProject(pid);
   }catch(e){oriAlert('수정 실패: '+e.message);}
 }
 async function toggleRecruiting(pid,on){
   try{
-    await sbClient.from('projects').update({is_recruiting:on}).eq('id',pid);
+    await sbOk(sbClient.from('projects').update({is_recruiting:on}).eq('id',pid));
     if(window._projectCtx&&window._projectCtx.pid===pid){window._projectCtx.pr.is_recruiting=on;if(window._projectTab==='home')renderProjectTabContent();}
   }
   catch(e){oriAlert('변경 중 문제가 생겼어요: '+e.message);}
@@ -292,10 +292,10 @@ async function loadJoinRequests(pid){
   }catch(e){el.innerHTML='<div style="font-size:0.8rem;color:var(--muted)">불러오기 실패</div>';}
 }
 async function approveJoinReq(reqId,pid){
-  try{await sbClient.rpc('approve_join_request',{request_id:reqId});loadJoinRequests(pid);}
+  try{await sbOk(sbClient.rpc('approve_join_request',{request_id:reqId}));loadJoinRequests(pid);}
   catch(e){oriAlert('승인 실패: '+e.message);}
 }
 async function rejectJoinReq(reqId,pid){
-  try{await sbClient.rpc('reject_join_request',{request_id:reqId});loadJoinRequests(pid);}
+  try{await sbOk(sbClient.rpc('reject_join_request',{request_id:reqId}));loadJoinRequests(pid);}
   catch(e){oriAlert('거절 실패: '+e.message);}
 }
