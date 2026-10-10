@@ -286,3 +286,22 @@ table.rel tr.gap td { color: var(--ink3); }
   .ed-wrap { padding: 20px 20px 80px; }
   .prop { grid-template-columns: 96px 1fr; }
 }
+/* 수요 보드 (demand.js) */
+.dm-sort { width: auto; margin-left: auto; }
+table.dm .dm-row { cursor: pointer; }
+table.dm .dm-row:hover td, table.dm .dm-row.on td { background: var(--panel2); }
+table.dm .dm-int { color: var(--ink3); }
+.dm-detail > td { background: var(--panel2); padding: 14px 16px !important; }
+.dm-d { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media (max-width: 900px) { .dm-d { grid-template-columns: 1fr; } }
+.dm-col h4 { margin: 0 0 8px; font-size: 13px; }
+.dm-col h4 small { color: var(--ink3); font-weight: 400; margin-left: 4px; }
+.dm-col h4 + * { margin-bottom: 14px; }
+.dm-sig { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.dm-pitch { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 12px; font-size: 13px; line-height: 1.6; margin-bottom: 8px; }
+.dm-form { display: grid; grid-template-columns: 72px 1fr; gap: 8px 10px; align-items: start; margin-bottom: 10px; font-size: 13px; }
+.dm-form label { color: var(--ink3); padding-top: 5px; }
+.dm-form > div { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.dm-form > div .inp.xs { flex: 1 1 160px; }
+.dm-form > div select.inp.xs { flex: 0 0 auto; width: auto; }
+table.dm th { white-space: nowrap; }

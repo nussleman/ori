@@ -3,11 +3,12 @@
      #/inbox                         할 일
      #/data/<테이블>[/<id>][?f=필터&req=요청id]   레코드 작업대 (shows·works·roles·people·troupes·venues)
      #/requests/<claims|troupeclaims|edits|history|reviews|inquiries>
-     #/queue/license · #/queue/rights · #/health · #/users · #/admins · #/lists */
-import { sb, S, loadAll, esc, $, $$, toast } from './lib.js?v=20261010b';
-import { ENT, ENT_ORDER } from './schema.js?v=20261010b';
-import { showRecords, listKeys, openSearch } from './records.js?v=20261010b';
-import { REQ, COUNTS, loadCounts, renderInbox, renderRequests, renderLicense, licenseKeys, renderRights, rightsKeys, renderHealth, renderUsers, renderAdmins, renderLists } from './pages.js?v=20261010b';
+     #/queue/license · #/queue/rights · #/demand · #/health · #/users · #/admins · #/lists */
+import { sb, S, loadAll, esc, $, $$, toast } from './lib.js?v=20261010c';
+import { ENT, ENT_ORDER } from './schema.js?v=20261010c';
+import { showRecords, listKeys, openSearch } from './records.js?v=20261010c';
+import { renderDemand } from './demand.js?v=20261010c';
+import { REQ, COUNTS, loadCounts, renderInbox, renderRequests, renderLicense, licenseKeys, renderRights, rightsKeys, renderHealth, renderUsers, renderAdmins, renderLists } from './pages.js?v=20261010c';
 
 const main = document.getElementById('main');
 
@@ -52,6 +53,7 @@ function renderSide() {
     <div class="side-lbl">분류·점검</div>
     <a href="#/queue/license" data-r="queue/license">공개 분류 ${unlic ? `<b class="n soft">${unlic}</b>` : ''}</a>
     <a href="#/queue/rights" data-r="queue/rights">권리 분류 ${unrights ? `<b class="n soft">${unrights}</b>` : ''}</a>
+    <a href="#/demand" data-r="demand">수요 보드</a>
     <a href="#/health" data-r="health">데이터 현황</a>
     <div class="side-lbl">설정</div>
     <a href="#/lists" data-r="lists">선택지 관리</a>
@@ -77,6 +79,7 @@ function route() {
   else if (seg[0] === 'requests' && REQ[seg[1]]) renderRequests(main, seg[1]);
   else if (path === 'queue/license') renderLicense(main);
   else if (path === 'queue/rights') renderRights(main);
+  else if (path === 'demand') renderDemand(main);
   else if (path === 'health') renderHealth(main);
   else if (path === 'users') renderUsers(main);
   else if (path === 'admins') renderAdmins(main);

@@ -44,4 +44,6 @@
 ## 지금 오리에 있는 것과의 연결 (Claude 메모)
 - 1번 기록: 공연 조건(`ticket_type`·`performers_paid`), 단체 공연 기록, 프로젝트 → 공연 발행
 - 2번 수요: 작품 "올리고 싶어요"(favorites wishlist), 라이선스 문의(license_inquiries), 작품별 공연 집계(`work_stage_stats`)
-- 아직 없는 것: 원작/번역 "두 겹" 권리를 따로 적는 칸 (지금 works에는 권리 유형·권리자 하나뿐), 권리자에게 보여줄 수요 자료, 공연권+대본+자료 묶음 신청
+- 3번 설득: 어드민 수요 보드 — 작품별 원하는 단체·사람 수, 권리자에게 보여줄 문장, 권리자용 CSV(앞으로의 수요 숫자만)
+- 권리 두 겹: `work_rights`의 원작(orig_holder·holder_contact) / 번역(ko_script_holder·_type·_contact) / 한국 독점(ko_exclusive) → "첫 딜 후보" 자동 표시
+- 아직 없는 것: 시기·규모가 담긴 수요 신청, 공연권+대본+자료 묶음 신청
