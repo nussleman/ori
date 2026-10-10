@@ -1,7 +1,22 @@
 # 오리 작업 메모 (Claude용)
 
-- 구조와 코드 규칙은 README.md를 따른다.
-- Supabase 프로젝트: `lezwarruqgccnecrmpga` ("오리 DB", ap-northeast-1). 같은 조직의 다른 프로젝트와 헷갈리지 않는다.
-- 스키마 변경은 `apply_migration`, 조회는 `execute_sql`. 변경 전에 `list_tables`로 현재 구조를 확인한다.
-- `main`에 푸시하면 바로 GitHub Pages로 배포된다. 태준님 방침: 작업이 끝나면 묻지 말고 테스트 후 `main`에 바로 커밋·푸시한다.
-- 화면을 바꾸면 프론트와 DB 상태를 같이 확인한다 (UI가 말하는 것과 실제 데이터가 어긋나지 않게).
+## 먼저 읽을 것
+- 방향: `docs/direction.md` — 2026-10-10 피벗. 모든 기능 판단의 기준
+- 진행 상황·다음 작업·태준님 할 일: `docs/roadmap.md` — 작업을 끝낼 때마다 여기 상태(✅/⬜/⏸)를 갱신한다
+- 구조와 코드 규칙: `README.md`
+
+## 태준님과 일하는 방식
+- 응답은 항상 한국어. 태준님은 개발자가 아니라서 **설명할 때 비유를 많이** 쓴다
+- 중간에 멈춰 확인받지 말고 진행하고, 끝나면 테스트 후 `main`에 바로 커밋·푸시한다 (`main` 푸시 = GitHub Pages 즉시 배포)
+- 선택지를 늘어놓기보다 하나로 좁혀서 제안한다
+- 태준님이 해야 하는데 넘어간 일은 `docs/roadmap.md`의 "태준님 할 일"에 남기고, 관련 작업에 닿으면 먼저 꺼낸다
+- 승인 창에서 태준님이 취소한 작업은 다시 시도하지 않고 할 일 목록에 남긴다
+
+## Supabase
+- 프로젝트: `lezwarruqgccnecrmpga` ("오리 DB", ap-northeast-1). 같은 조직의 `koala_haedal`(rjxmrpifrhybucexuvli)과 헷갈리지 않는다
+- 스키마 변경은 `apply_migration` + 같은 SQL을 `supabase/migrations/`에 저장, 조회는 `execute_sql`. 변경 전에 `list_tables`로 현재 구조를 확인한다
+- 무료 플랜이라 오래 안 쓰면 자동 정지된다 (INACTIVE면 태준님이 대시보드에서 복구)
+
+## 확인 원칙
+- 화면을 바꾸면 프론트와 DB 상태를 같이 확인한다 (UI가 말하는 것과 실제 데이터가 어긋나지 않게)
+- 로그인 뒤 화면은 직접 클릭할 수 없으니, 가짜 데이터로 해당 화면만 띄워 스크린샷으로 확인하고, 서버 함수는 롤백되는 DO 블록으로 시험한다 (방법은 `docs/roadmap.md` 맨 아래)
