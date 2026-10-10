@@ -159,6 +159,10 @@ function renderPublicProjectView(pr){
   h+='<div class="person-side-card"><div class="person-side-title">단체</div><div style="font-size:0.85rem">'+(pr.troupe_id?('<span class="link" data-action="troupe" data-id="'+pr.troupe_id+'">'+escHtml(nm(pr.troupe_id))+'</span>'):'<span style="color:var(--muted)">미정</span>')+'</div></div>';
   h+='<div class="person-side-card"><div class="person-side-title">극장</div><div style="font-size:0.85rem">'+(pr.venue_id?('<span class="link" data-action="venue" data-id="'+pr.venue_id+'">'+escHtml(nm(pr.venue_id))+'</span>'):'<span style="color:var(--muted)">미정</span>')+'</div></div>';
   h+='</div>';
+  var past=troupePastShows(pr.troupe_id);
+  if(past.length)h+='<section class="dv-sec">'+dvSection(escHtml(nm(pr.troupe_id))+'의 지난 공연',past.length)
+    +'<div class="dv-list dv-list-film">'+past.slice(0,6).map(function(s){return dvShowFilm(s);}).join('')+'</div>'
+    +(past.length>6?'<button type="button" class="dv-all" data-action="troupe" data-id="'+pr.troupe_id+'">단체 페이지에서 모두 보기 ›</button>':'')+'</section>';
   h+='<div style="text-align:center;margin-top:1.5rem;font-size:0.8rem;color:var(--muted)">이 프로젝트의 구성원만 자세한 내용(팀·예산·참여요청)을 볼 수 있어요.</div>';
   mn(h);
 }

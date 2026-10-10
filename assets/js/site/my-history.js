@@ -1,7 +1,8 @@
 /* 오리 사이트 — 마이페이지 "내 기록"의 내 이력: 배우·스태프가 참여한 공연을 직접 추가하고, 그 공연의 단체가 확인한다
    기록마다 주인이 있다: 이력의 주인은 본인, 사실 확인은 공연의 주인(단체). 단체 없는 공연은 사이트 관리자가 확인.
    확인 전 이력은 나에게만 보이고 사이트 공개 화면엔 안 나온다 (core.js load()가 '확인'만 읽음).
-   서버: request_my_participation / cancel_my_participation (supabase/migrations/20261010_participation_requests.sql) */
+   서버: request_my_participation / cancel_my_participation (supabase/migrations/20261010_participation_requests.sql),
+         sync_my_project_history (20261010_project_history_sync.sql) */
 var _mh={rows:[],shows:null,showByLabel:{}};
 var MH_ST={'확인 대기':['wait','단체 확인 기다리는 중'],'거절':['no','단체가 아니라고 했어요']};
 
@@ -13,6 +14,9 @@ async function renderMyHistory(el){
     return;
   }
   el.innerHTML='<section class="dv-sec mh-sec"><div class="hf-loading">불러오는 중…</div></section>';
+  // 프로젝트로 합류한 공연인데 이력이 빠진 것(공연 발행 뒤 합류, 합류 뒤 프로필 연결)을 먼저 채운다
+  var sy=await sbClient.rpc('sync_my_project_history');
+  if(sy.data>0)load();
   var r=await sbClient.from('participation_history')
     .select('id,role_type,confirm_status,request_note,requested_by,show:shows(id,title,show_date,troupe_id),participation_roles(role:roles(name)),participation_staff_roles(staff:staff_roles(name))')
     .eq('person_id',CURRENT_USER.personId);

@@ -1510,3 +1510,4 @@ body.mode-make .pd-to-browse{display:block}
 .wh-sub{font-size:0.78rem;color:var(--muted)}
 .wh-venues{display:flex;flex-wrap:wrap;gap:0.35rem}
 .wh-acts{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1.1rem}
+.opp-track{font-size:0.74rem;color:var(--muted);margin-top:0.35rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

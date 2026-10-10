@@ -190,7 +190,7 @@ function showPerson(pid,push){
       {title:'사진',tab:photoBody?'사진':'',body:photoBody}
     ],
     empty:'아직 참여 이력이 없어요.',
-    links:[dvEditBtn('person',pid)],
+    links:[dvTextLink('이력 링크 복사','copyPersonLink(\''+pid+'\')'),dvEditBtn('person',pid)],
     after:function(){personHistRender();renderClaimWidget(pid);renderPersonIntro(pid);}
   });
 }
@@ -293,4 +293,11 @@ async function setPrimaryPhoto(url){
     if(r.error)throw r.error;
     renderMyPageInfo($('mypage-tab-content'));
   }catch(e){oriAlert('설정 실패: '+e.message);}
+}
+/* 사람 이력 공유: 이 사람 페이지 주소를 복사한다 (지원서·프로필에 붙이기 용). 지금은 오리 로그인한 사람만 열 수 있음 */
+function copyPersonLink(pid){
+  var url=location.origin+location.pathname+'#person-'+pid;
+  var done=function(){oriAlert('이력 링크를 복사했어요.\n지원서나 프로필에 붙여넣어 보세요. (지금은 오리에 로그인한 사람만 열 수 있어요)');};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(url).then(done).catch(function(){oriPrompt('아래 링크를 복사하세요:',url);});
+  else oriPrompt('아래 링크를 복사하세요:',url);
 }
