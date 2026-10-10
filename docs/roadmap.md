@@ -21,10 +21,12 @@
   - 서버 함수 `request_my_participation`(프로필 연결된 사람만, 대기 30건 한도, 중복 차단), `cancel_my_participation`(대기·거절만), `list_participation_requests`, `review_participation`(그 공연 단체 관리자 또는 사이트 관리자)
   - 오리에 없는 공연은 공연명·날짜(·단체)로 새로 만든다 → `record_status='미확인'`, 라이선스 미상이라 사이트엔 안 나옴. 목록에 없는 배역·역할 이름은 메모로 남김
   - 사이트 공개 화면(core.js `load()`)은 '확인'만 읽음. 단체 없는 공연은 어드민 "이력 확인" 요청함에서 처리
-- ⬜ **다음 작업: 수정 요청(edit_requests)을 운영자뿐 아니라 그 기록의 주인(단체)에게도 보이기**
+- ✅ **수정 요청을 기록의 주인(단체)에게도** — 내 단체 관리 "우리 공연 기록" 위 "들어온 수정 요청" (우리 공연·단체 정보 대상). "공연 고치기"로 바로 수정, "반영했어요/반영 안 함"으로 닫음. 운영팀 어드민 "수정 요청"은 그대로 전부 봄
+  - 서버 함수 `edit_request_troupe`, `list_troupe_edit_requests`, `resolve_troupe_edit_request` — `supabase/migrations/20261010_troupe_edit_requests.sql`
+  - 요청 보낼 때 저장 실패를 놓치던 문제(edit-request.js가 오류를 확인 안 함)도 고침
 - ✅(기존) 프로젝트가 "공연 예정"이 되면 공연 기록 자동 발행 (`project.js` `updateProjectStatus`)
 
-## 3. 작품 페이지 허브 + 공개 기준
+## 3. 작품 페이지 허브 + 공개 기준 — ⬜ 다음 작업 (아래 "다음 작업 메모")
 - 권리 정보, 공개된 공연 기록, **미확보 공연은 "단체 N곳이 이 작품을 올렸어요" 집계로만**
 - "이 작품 올리고 싶어요"(favorites의 wishlist = 수요 데이터), 라이선스 문의(license_inquiries)
 - 배역 수·해본 극장·비용 감, "이 작품으로 프로젝트 시작하기"
@@ -58,9 +60,9 @@
 - 공연 테이블 RLS가 "로그인한 사람은 전부 조회"라, 로그인한 누구나 REST로 `shows.is_licensed`(내부용)를 읽을 수 있음. 비로그인 공개 전 보안 정리 때 컬럼 노출을 막을 것 (뷰/함수로 공개 필드만)
 - `app_settings.show_unlicensed_content`는 사이트가 쓰지 않음 (공개 기준은 core.js 하드코딩)
 
-## 다음 작업 메모: 수정 요청을 기록의 주인에게도
-- 지금 `edit_requests`는 어드민 "수정 요청"에서만 보임. 대상이 공연이면 그 공연 단체의 관리자, 단체면 그 단체 관리자가 "내 단체 관리"에서 보고 처리할 수 있게
-- 내 이력 확인과 같은 모양(security definer 목록 함수 + `can_manage_troupe` 확인, 단체 화면에 "들어온 수정 요청" 칸)으로 만들면 됨
+## 다음 작업 메모: 3단계 작품 페이지 허브
+- 먼저 1단계에 남은 "라이선스와 공개 여부 분리": 지금은 core.js `load()`가 `is_licensed in (창작, 완료)`인 공연만 읽어 미확보 공연은 집계조차 못 함 → 작품별 공연 수 집계를 서버 함수(security definer, 숫자만 반환)로 따로 받기
+- 작품 페이지(works.js)에: 권리 정보, 공개된 공연 기록, "단체 N곳이 이 작품을 올렸어요" 집계, "이 작품 올리고 싶어요"(favorites wishlist) 수, 라이선스 문의 버튼, 배역 수·해본 극장·비용 감, "이 작품으로 프로젝트 시작하기"
 
 ## 작업·테스트 방식 (이 세션에서 쓴 것)
 - DB 변경은 `apply_migration`, 같은 SQL을 `supabase/migrations/날짜_이름.sql`로 저장
