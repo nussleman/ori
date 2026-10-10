@@ -73,7 +73,7 @@ async function loadScheduleList(){
     };
     el.innerHTML='<section class="dv-sec">'+dvSection('다가오는 일정',upcoming.length)+(upcoming.length?byMonth(upcoming):'<div class="dv-empty">예정된 일정이 없어요.</div>')+'</section>'
       +(past.length?'<details class="dv-sec ev-past"><summary>'+dvSection('지난 일정',past.length)+'</summary>'+byMonth(past)+'</details>':'');
-  }catch(e){el.innerHTML='<div class="dv-empty">일정을 불러오지 못했어요: '+escHtml(e.message)+'</div>';}
+  }catch(e){el.innerHTML=loadFailHtml('일정');}
 }
 
 async function addProjectEvent(){
@@ -128,7 +128,7 @@ async function loadHomeScheduleBits(){
           +(ctx.isAdmin?' · <span class="link" onclick="deleteProjectNotice(\''+n.id+'\')">지우기</span>':'')+'</div></div>';
       }).join(''):'<div class="ph-empty-line">아직 공지가 없어요.</div>';
     }
-  }catch(e){var n2=$('ph-notices');if(n2)n2.innerHTML='<div class="ph-empty-line">공지를 불러오지 못했어요.</div>';}
+  }catch(e){var n2=$('ph-notices');if(n2)n2.innerHTML=loadFailHtml('공지');}
   try{
     var evs=await fetchProjectEvents(ctx.pid);
     var now=new Date();
@@ -149,7 +149,7 @@ async function loadHomeScheduleBits(){
       mq.innerHTML='<span class="pj-mq-d">'+d2.big+'</span>'+(d2.small?'<span class="pj-mq-s">'+d2.small+'</span>':'');
     }
     ctx.eventCount=evs.length;
-  }catch(e){var e2=$('ph-events');if(e2)e2.innerHTML='<div class="ph-empty-line">일정을 불러오지 못했어요.</div>';}
+  }catch(e){var e2=$('ph-events');if(e2)e2.innerHTML=loadFailHtml('일정');}
 }
 async function addProjectNotice(){
   var ctx=window._projectCtx,body=$('nt-body').value.trim();

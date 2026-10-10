@@ -105,7 +105,7 @@ function renderTroupeIndex(){
 
   var listH='';
   if(!filtered.length){
-    listH='<div class="result-empty"><div class="result-empty-icon">🏢</div>해당하는 단체가 없어요.</div>';
+    listH='<div class="result-empty"><div class="result-empty-icon">🏢</div>해당하는 단체가 없어요.'+fbEmptyReset('troupes')+'</div>';
   } else {
     listH='<div class="result-grid">';
     filtered.forEach(function(t){

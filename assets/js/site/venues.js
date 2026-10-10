@@ -68,7 +68,7 @@ function renderVenueIndex(){
   var resultH='';
   var listH='';
   if(!filtered.length){
-    listH='<div class="result-empty"><div class="result-empty-icon">📍</div>해당하는 극장이 없어요.</div>';
+    listH='<div class="result-empty"><div class="result-empty-icon">📍</div>해당하는 극장이 없어요.'+fbEmptyReset('venues')+'</div>';
   } else {
     listH='<div class="result-grid">';
     filtered.forEach(function(v){

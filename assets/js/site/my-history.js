@@ -20,7 +20,7 @@ async function renderMyHistory(el){
   var r=await sbClient.from('participation_history')
     .select('id,role_type,confirm_status,request_note,requested_by,show:shows(id,title,show_date,troupe_id),participation_roles(role:roles(name)),participation_staff_roles(staff:staff_roles(name))')
     .eq('person_id',CURRENT_USER.personId);
-  if(r.error){el.innerHTML='<section class="dv-sec mh-sec">'+dvSection('내 이력',0)+'<div class="mh-empty">불러오지 못했어요: '+escHtml(r.error.message)+'</div></section>';return;}
+  if(r.error){el.innerHTML='<section class="dv-sec mh-sec">'+dvSection('내 이력',0)+loadFailHtml('내 이력')+'</section>';return;}
   _mh.rows=(r.data||[]).filter(function(x){return x.show;}).sort(function(a,b){return String(b.show.show_date||'').localeCompare(String(a.show.show_date||''));});
   drawMyHistory(el);
 }
@@ -36,7 +36,7 @@ function drawMyHistory(el){
     +'<button class="pf-btn pf-active" onclick="openMyHistoryForm()">+ 이력 추가</button></div>'
     +'<div class="ts-help">참여한 공연을 직접 남겨두면 그 공연의 단체가 확인한 뒤 내 사람 페이지에 올라가요.'+(wait?' 지금 '+wait+'건이 확인을 기다리고 있어요.':'')+'</div>'
     +'<div id="mh-form"></div>';
-  if(!_mh.rows.length)h+='<div class="mh-empty">아직 이력이 없어요. 가장 최근에 참여한 공연 하나부터 남겨볼까요?</div>';
+  if(!_mh.rows.length)h+='<div class="mh-empty">아직 이력이 없어요. 가장 최근에 참여한 공연 하나부터 남겨볼까요?<div style="margin-top:0.6rem"><button type="button" class="pf-btn pf-active" onclick="openMyHistoryForm()">+ 첫 이력 남기기</button></div></div>';
   else h+='<div class="ts-list">'+_mh.rows.map(function(x){
     var st=MH_ST[x.confirm_status];
     var mine=x.requested_by===CURRENT_USER.id&&st;

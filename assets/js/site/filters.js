@@ -123,6 +123,8 @@ function fbPick(bar,key,idx){
   fbEmit(bar,key,(key!=='__sort'&&spec.value===v)?'':v);  // 이미 고른 값을 다시 누르면 해제
 }
 function fbClearKey(bar,key){fbEmit(bar,key,[]);fbCloseAll();}
+/* 결과가 없을 때 빠져나갈 길 (사용성 2단계) */
+function fbEmptyReset(bar){return '<div style="margin-top:0.8rem"><button type="button" class="pf-btn" onclick="fbReset(\''+bar+'\')">필터 지우기</button></div>';}
 function fbReset(bar){var b=FB[bar];if(!b)return;fbCloseAll();b.opts.onReset();}
 function fbView(bar,v){var b=FB[bar];if(b&&b.opts.view)b.opts.view.onChange(v);}
 function fbSearch(inp){

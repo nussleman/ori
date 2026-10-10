@@ -63,7 +63,7 @@ function renderRoleIndex(){
   var resultH='';
 
   var listH='';
-  if(!filtered.length){listH='<div class="result-empty"><div class="result-empty-icon">🎬</div>해당하는 배역이 없어요.</div>';}
+  if(!filtered.length){listH='<div class="result-empty"><div class="result-empty-icon">🎬</div>해당하는 배역이 없어요.'+fbEmptyReset('roles')+'</div>';}
   else if(_roleIndexView==='grid'){
     listH='<div class="result-grid">';
     filtered.forEach(function(r){

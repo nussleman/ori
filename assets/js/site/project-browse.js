@@ -92,14 +92,14 @@ async function requestJoinPosition(projectId,positionId){
   if(r.error){oriAlert(r.error.code==='23505'?'이미 지원한 자리예요.':'지원하지 못했어요: '+r.error.message);return;}
   var row=_opp.rows.find(function(x){return x.position_id===positionId;});if(row)row.my_status='pending';
   if(location.hash==='#projects')renderOpportunities();else if($('home-opps'))loadHomeOpps();
-  oriAlert('지원했어요! 프로젝트에서 확인하면 마이페이지 "지원 현황"에서 결과를 볼 수 있어요.');
+  oriAlert('지원했어요! 프로젝트에서 답하면 마이페이지 "지원 현황"에서 볼 수 있어요.',{action:{label:'지원 현황 보기',fn:function(){goMyPageTab('apply');}}});
 }
 
 /* 마이페이지 "지원 현황" */
 async function renderMyApplications(el){
   el.innerHTML='<div class="hf-loading">불러오는 중…</div>';
   var r=await sbClient.rpc('my_join_requests');
-  if(r.error){el.innerHTML='<div class="result-empty">불러오지 못했어요.</div>';return;}
+  if(r.error){el.innerHTML=loadFailHtml('지원 현황');return;}
   var rows=r.data||[];
   if(!rows.length){el.innerHTML='<div class="result-empty"><div class="result-empty-icon">📮</div><div style="font-size:0.95rem;margin-bottom:0.4rem">아직 지원한 자리가 없어요</div><div style="font-size:0.8rem;color:var(--muted);margin-bottom:1rem">기회에서 함께할 공연을 찾아보세요.</div><button class="pf-btn pf-active" onclick="goProjectBrowse()">기회 보기</button></div>';return;}
   var label={pending:'답 기다리는 중',approved:'합류했어요',rejected:'이번엔 함께하지 못해요'};

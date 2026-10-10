@@ -21,7 +21,7 @@ async function renderTroupeShows(tid){
   var r=res[0];
   _ts.pending=res[1].data||[];
   _ts.edits=res[2].data||[];
-  if(r.error){el.innerHTML='<div class="person-side-title">우리 공연 기록</div><div style="font-size:0.8rem;color:var(--muted)">불러오기 실패: '+escHtml(r.error.message)+'</div>';return;}
+  if(r.error){el.innerHTML='<div class="person-side-title">우리 공연 기록</div>'+loadFailHtml('우리 공연 기록');return;}
   _ts.rows=r.data||[];
   drawTroupeShows();
 }
@@ -57,7 +57,7 @@ function drawTroupeShows(){
         +'<button class="pf-btn pf-active" onclick="reviewTroupeHistory(\''+x.id+'\',true)">확인</button></div></div>';
     }).join('')+'</div>';
   h+='<div id="ts-form"></div>';
-  if(!_ts.rows.length){h+='<div class="ts-empty">아직 기록된 공연이 없어요. 가장 최근 공연 하나부터 남겨볼까요?</div>';}
+  if(!_ts.rows.length){h+='<div class="ts-empty">아직 기록된 공연이 없어요. 가장 최근 공연 하나부터 남겨볼까요?<div style="margin-top:0.6rem"><button type="button" class="pf-btn pf-active" onclick="openTroupeShowForm(null)">+ 첫 공연 기록하기</button></div></div>';}
   else h+='<div class="ts-list">'+_ts.rows.map(function(s){
     var cond=tsCondText(s);
     var need=!s.ticket_type||s.performers_paid==null;
@@ -137,7 +137,7 @@ async function saveTroupeShow(){
     }
     await load();
     await renderTroupeShows(_ts.tid);
-    oriAlert('공연 기록을 저장했어요.'+note);
+    oriAlert('공연 기록을 저장했어요.'+note,{action:{label:'단체 페이지 보기',fn:function(){showTroupe(_ts.tid);}}});
   }catch(e){msg.textContent='저장하지 못했어요: '+(e.message||e);btn.disabled=false;}
 }
 async function reviewTroupeHistory(id,ok){

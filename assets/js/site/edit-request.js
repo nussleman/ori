@@ -66,6 +66,7 @@ async function submitEditRequest(){
     summary:summary,
     details:$('edit-details').value.trim()||null
   };
+  var done=busyBtn();
   try{
     var r=await sbClient.from('edit_requests').insert(row);
     if(r.error)throw r.error;
@@ -74,4 +75,5 @@ async function submitEditRequest(){
   }catch(e){
     $('edit-modal-msg').textContent='전송 중 문제가 생겼어요: '+e.message;
   }
+  finally{done();}
 }
