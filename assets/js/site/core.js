@@ -292,7 +292,7 @@ function injectBackBtn(label,fn){
 var MAKE_MODE_VIEWS=['make','project'];
 function setNav(v,projectId){
   if(PEEK.rendering)return; // 패널 미리보기는 현재 메뉴 상태를 바꾸지 않는다
-  closePeek();
+  closePeek(true);
   var make=MAKE_MODE_VIEWS.indexOf(v)>-1;
   document.body.classList.toggle('mode-make',make);
   document.body.classList.toggle('is-home',v==='home');
@@ -345,14 +345,25 @@ function oriModalAlert(message){
     $('ori-modal-overlay').classList.add('open');
   });
 }
-function oriConfirm(message){
+/* 확인 창 (사용성 1단계): 버튼이 "확인/취소"가 아니라 할 일을 말한다.
+   "신청을 취소할까요?"에 [취소][확인]이 뜨면 어느 쪽이 취소인지 헷갈리기 때문.
+   지우기·취소·탈퇴처럼 되돌릴 수 없는 일은 빨간 버튼 + "되돌릴 수 없어요". opts {ok, cancel, danger}로 직접 정할 수도 있다 */
+var ORI_CONFIRM_VERB=[[/탈퇴/,'탈퇴하기'],[/(지울|삭제할)까요/,'지우기'],[/취소할까요/,'취소하기'],[/신고하시겠어요/,'신고하기'],[/않을까요|않았나요/,'네, 맞아요']];
+function oriConfirm(message,opts){
+  opts=opts||{};
+  var ok=opts.ok,danger=opts.danger;
+  if(!ok)ORI_CONFIRM_VERB.some(function(v){if(v[0].test(message)){ok=v[1];if(danger==null)danger=v[1]==='탈퇴하기'||v[1]==='지우기'||v[1]==='취소하기';return true;}});
+  var cancel=opts.cancel||(ok?'그대로 두기':'아니요');
+  ok=ok||'네';
+  if(danger&&!/되돌릴 수 없/.test(message))message+='\n되돌릴 수 없어요.';
   return new Promise(function(resolve){
     _oriModalResolve=resolve;
     $('ori-modal-message').textContent=message;
     $('ori-modal-input-field').style.display='none';
     $('ori-modal-actions').style.flexDirection='row';
-    $('ori-modal-actions').innerHTML='<button class="pf-btn" style="flex:1" onclick="_oriModalClose(false)">취소</button><button class="pf-btn pf-active" style="flex:1" onclick="_oriModalClose(true)">확인</button>';
+    $('ori-modal-actions').innerHTML='<button class="pf-btn" style="flex:1" onclick="_oriModalClose(false)">'+escHtml(cancel)+'</button><button class="pf-btn pf-active'+(danger?' pf-danger':'')+'" style="flex:1" onclick="_oriModalClose(true)">'+escHtml(ok)+'</button>';
     $('ori-modal-overlay').classList.add('open');
+    setTimeout(function(){var b=$('ori-modal-actions').querySelector('button');if(b)b.focus();},30);
   });
 }
 function oriPrompt(message,defaultValue){

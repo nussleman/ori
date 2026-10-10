@@ -26,7 +26,13 @@ function routeFromHash(hash){
   if(m=h.match(/^#mytroupe-(.+)$/)){goMyTroupe(m[1],false);return;}
   goHome(false);
 }
-window.addEventListener('popstate',function(){routeFromHash(location.hash);});
+window.addEventListener('popstate',function(e){
+  if(_peekSkipPop){_peekSkipPop=false;return;}           // ✕·Esc로 패널을 닫으며 되돌린 기록
+  if(PEEK.open){closePeek(true);return;}                  // 뒤로가기는 패널부터 닫는다 (본문은 그대로)
+  routeFromHash(location.hash);
+  var p=e.state&&e.state.peek;                             // 패널을 열어둔 채 떠났던 화면이면 패널도 다시
+  if(p&&!isMobile())openPeekRestore(p.action,p.id);
+});
 
 (async function(){
   await initAuth();

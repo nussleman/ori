@@ -27,7 +27,7 @@ async function pickMyProject(title){
   await loadMyProjectsCache();
   var list=myActiveProjects();
   if(!list.length){
-    if(await oriConfirm('진행 중인 프로젝트가 없어요. 새 프로젝트를 시작할까요?'))startNewProject();
+    if(await oriConfirm('진행 중인 프로젝트가 없어요. 새 프로젝트를 시작할까요?',{ok:'새 프로젝트 시작',cancel:'나중에'}))startNewProject();
     return null;
   }
   if(list.length===1)return list[0].id;
@@ -37,7 +37,7 @@ async function pickMyProject(title){
 /* 작품 → 이 작품으로 공연 만들기 */
 async function startProjectFromWork(wid){
   if(!CURRENT_USER){loginWithGoogle();return;}
-  if(!await oriConfirm('"'+nm(wid)+'"(으)로 새 프로젝트를 시작할까요?\n작품의 배역이 자리로 자동으로 만들어져요.'))return;
+  if(!await oriConfirm('"'+nm(wid)+'"(으)로 새 프로젝트를 시작할까요?\n작품의 배역이 자리로 자동으로 만들어져요.',{ok:'프로젝트 시작',cancel:'나중에'}))return;
   try{
     var r=await sbClient.rpc('create_new_project');if(r.error)throw r.error;
     var pid=r.data;
@@ -57,7 +57,7 @@ async function addVenueToMyProject(vid){
     if(ex.data&&ex.data.length){oriAlert('이미 후보에 담겨 있어요.');return;}
     var r=await sbClient.from('project_venue_candidates').insert({project_id:pid,venue_id:vid,status:'considering'});if(r.error)throw r.error;
     var p=(MY_PROJECTS_CACHE||[]).find(function(x){return x.id===pid;});
-    if(await oriConfirm('"'+(p?p.title:'내 프로젝트')+'"의 극장 후보에 담았어요.\n후보 목록을 볼까요?')){window._prepSub='venue';window._projectTabNext='prep';goProject(pid);}
+    if(await oriConfirm('"'+(p?p.title:'내 프로젝트')+'"의 극장 후보에 담았어요.\n후보 목록을 볼까요?',{ok:'후보 목록 보기',cancel:'계속 둘러보기'})){window._prepSub='venue';window._projectTabNext='prep';goProject(pid);}
   }catch(e){oriAlert('담지 못했어요: '+e.message);}
 }
 
@@ -79,7 +79,7 @@ async function invitePersonToMyProject(personId){
     oriAlert(nm(personId)+'님에게 참여 요청을 보냈어요.');
   }catch(e){
     if(/연결되지 않은/.test(e.message||'')){
-      if(await oriConfirm(nm(personId)+'님은 아직 오리에 가입하지 않았어요.\n가입 안내 메시지를 복사할까요?'))inviteThisPerson(personId);
+      if(await oriConfirm(nm(personId)+'님은 아직 오리에 가입하지 않았어요.\n가입 안내 메시지를 복사할까요?',{ok:'안내 메시지 복사'}))inviteThisPerson(personId);
     }else oriAlert('초대하지 못했어요: '+e.message);
   }
 }

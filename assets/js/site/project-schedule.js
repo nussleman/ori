@@ -126,7 +126,7 @@ async function loadHomeScheduleBits(){
           +'<div class="nt-body">'+escHtml(n.body)+'</div>'
           +'<div class="nt-meta">'+(n.author_name?escHtml(n.author_name)+' · ':'')+new Date(n.created_at).toLocaleDateString('ko-KR',{month:'long',day:'numeric'})
           +(ctx.isAdmin?' · <span class="link" onclick="deleteProjectNotice(\''+n.id+'\')">지우기</span>':'')+'</div></div>';
-      }).join(''):'<div class="ph-empty-line">아직 공지가 없어요.</div>';
+      }).join(''):'<div class="ph-empty-line">아직 공지가 없어요.'+(ctx.isAdmin?' 연습 장소·준비물처럼 모두가 알아야 할 것을 남겨보세요.':' 관리자가 공지를 올리면 여기에 보여요.')+'</div>';
     }
   }catch(e){var n2=$('ph-notices');if(n2)n2.innerHTML=loadFailHtml('공지');}
   try{

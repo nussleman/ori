@@ -17,6 +17,12 @@ async function loadMyProjectsCache(){
   }catch(e){MY_PROJECTS_CACHE=[];}
   if(typeof renderMakeNav==='function')renderMakeNav();
 }
+/* 내가 관리자인 단체 (단체 페이지에서 "우리 단체 관리"를 주 버튼으로 보여주려고 로그인 때 한 번 읽어둔다) */
+var MY_TROUPE_ADMIN=new Set();
+async function loadMyTroupesCache(){
+  try{var r=await sbClient.rpc('list_my_troupes');MY_TROUPE_ADMIN=new Set((r.data||[]).filter(function(t){return t.member_role==='admin';}).map(function(t){return t.troupe_id;}));}
+  catch(e){MY_TROUPE_ADMIN=new Set();}
+}
 var OATH_PHRASE='나는 천하의 멍텅구리지만 우리들의 정직하고 행복한 공연 생활에 진심으로 임할 것을 엄숙히 선언합니다.';
 
 function loginWithGoogle(){
@@ -132,6 +138,7 @@ async function handleAuthSession(session){
     CURRENT_USER={id:session.user.id,email:session.user.email};
     await loadUserProfile();
     await loadFavorites();
+    await loadMyTroupesCache();
     loadMyProjectsCache();
     renderProfileFab();
     refreshFavoriteButtons();
@@ -141,7 +148,7 @@ async function handleAuthSession(session){
       await enterSite();
     }
   }else{
-    CURRENT_USER=null;FAVORITES_LIST=[];FAVORITES_SET=new Set();MY_PROJECTS_CACHE=[];
+    CURRENT_USER=null;FAVORITES_LIST=[];FAVORITES_SET=new Set();MY_PROJECTS_CACHE=[];MY_TROUPE_ADMIN=new Set();
     _entered=false;
     renderProfileFab();
     showAuthGate();
@@ -258,7 +265,7 @@ async function renderTroupeClaimWidget(tid){
 }
 async function requestTroupeLink(tid){
   if(!CURRENT_USER){loginWithGoogle();return;}
-  if(!await oriConfirm('이 단체의 관리자로 연결을 요청할까요?\n관리자가 확인 후 승인하면 단체 정보를 수정할 수 있어요.'))return;
+  if(!await oriConfirm('이 단체의 관리자로 연결을 요청할까요?\n관리자가 확인 후 승인하면 단체 정보를 수정할 수 있어요.',{ok:'연결 요청하기'}))return;
   try{
     var r=await sbClient.rpc('request_troupe_link',{p_troupe_id:tid});
     if(r.error)throw r.error;

@@ -132,7 +132,7 @@ function renderProjectTabContent(){
 async function updateProjectStatus(pid,status){
   var ctx=window._projectCtx;
   if(status==='upcoming'&&!ctx.pr.published_show_id){
-    if(!await oriConfirm('상태를 "공연 예정"으로 바꾸면, 지금까지 채운 정보(작품·단체·극장·날짜·구성원)로 공연 데이터가 자동으로 만들어져요.\n계속할까요?')){
+    if(!await oriConfirm('상태를 "공연 예정"으로 바꾸면, 지금까지 채운 정보(작품·단체·극장·날짜·구성원)로 공연 데이터가 자동으로 만들어져요.\n계속할까요?',{ok:'공연 예정으로 바꾸기'})){
       renderProjectTabContent();return;
     }
     try{

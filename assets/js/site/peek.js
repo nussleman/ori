@@ -36,6 +36,9 @@ function openPeek(action,id,fromPanel){
   if(!fromPanel)PEEK.stack=[];
   if(!top||top.action!==action||top.id!==id||!fromPanel)PEEK.stack.push({action:action,id:id});
   renderPeek(action,id);
+  // 뒤로가기가 패널부터 닫도록 (사용성 2단계): 패널을 열 때 같은 주소로 기록을 하나 쌓고, 바꿀 땐 덮어쓴다
+  var st={peek:{action:action,id:id}};
+  if(!PEEK.open)history.pushState(st,'',location.hash||location.pathname);else history.replaceState(st,'',location.hash||location.pathname);
   if(!PEEK.open){
     PEEK.open=true;
     $('peek').classList.add('open');$('peek').setAttribute('aria-hidden','false');
@@ -50,8 +53,12 @@ function peekBack(){
   renderPeek(prev.action,prev.id);
 }
 
-function closePeek(){
+/* viaHistory: 뒤로가기나 다른 화면으로 이동하면서 닫힐 때는 기록을 건드리지 않는다.
+   ✕·Esc로 닫을 때는 패널을 열며 쌓은 기록을 하나 되돌린다 (그 되돌림은 popstate에서 무시) */
+var _peekSkipPop=false;
+function closePeek(viaHistory){
   if(!PEEK.open)return;
+  if(!viaHistory&&history.state&&history.state.peek){_peekSkipPop=true;history.back();}
   PEEK.open=false;PEEK.stack=[];
   $('peek').classList.remove('open');$('peek').setAttribute('aria-hidden','true');
   document.body.classList.remove('peek-open');
@@ -61,7 +68,7 @@ function closePeek(){
 /* 패널에 띄운 항목을 전용 페이지로 */
 function expandPeek(){
   var cur=PEEK.stack[PEEK.stack.length-1];if(!cur)return;
-  closePeek();openDetail(cur.action,cur.id);
+  closePeek(true);openDetail(cur.action,cur.id);
 }
 
 /* 본문에서 지금 패널에 떠 있는 카드를 표시 */
@@ -86,7 +93,7 @@ function handleCardClick(e,inPanel){
   var action=el.dataset.action,id=el.dataset.id;
   clearTimeout(_peekClickTimer);
   if(isMobile()){openDetail(action,id);return;}
-  if(e.detail>=2){closePeek();openDetail(action,id);return;}
+  if(e.detail>=2){closePeek(true);openDetail(action,id);return;}
   _peekClickTimer=setTimeout(function(){openPeek(action,id,inPanel);},DOUBLE_CLICK_MS);
 }
 
@@ -99,3 +106,9 @@ document.addEventListener('DOMContentLoaded',function(){
     peek.addEventListener(type,function(){_domScope=body;setTimeout(function(){_domScope=null;},0);},true);
   });
 });
+/* 뒤로가기로 돌아온 화면에 그때 열려 있던 패널을 다시 연다 (기록을 새로 쌓지 않음) */
+function openPeekRestore(action,id){
+  if(!PEEK_LABEL[action]||!id)return;
+  PEEK.stack=[{action:action,id:id}];renderPeek(action,id);
+  PEEK.open=true;$('peek').classList.add('open');$('peek').setAttribute('aria-hidden','false');document.body.classList.add('peek-open');
+}
