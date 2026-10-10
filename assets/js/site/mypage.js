@@ -42,7 +42,7 @@ function renderMyPageTabContent(){
   else if(tab==='troupes')renderMyPageTroupes(el);
 }
 function renderMyPageTroupes(el){
-  el.innerHTML='<div class="sec"><div class="sec-label">내 단체</div><div id="mypage-troupes-list">불러오는 중…</div></div>';
+  el.innerHTML='<div class="sec"><div class="sec-label">내 단체</div><div id="mypage-troupes-list"><div class="hf-loading">불러오는 중…</div></div></div>';
   loadMyPageTroupesList();
 }
 async function loadMyPageTroupesList(){

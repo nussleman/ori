@@ -175,7 +175,8 @@ function showPerson(pid,push){
     favs:[dvFavIcon('person',pid)],
     sub:escHtml(blurb),
     chips:dvLinkChips(fld(person,'홍보링크')),
-    primary:(isMe||!isProducer())?'':dvActBtn('내 프로젝트에 초대','invitePersonToMyProject(\''+pid+'\')','✉',true),
+    // 화면마다 주 버튼 하나 (사용성 2단계): 내 페이지면 이력 추가, 만드는 사람이 남을 보면 초대
+    primary:isMe?dvActBtn('내 이력 추가','goMyPageTab(\'records\')','＋',true):(isProducer()?dvActBtn('내 프로젝트에 초대','invitePersonToMyProject(\''+pid+'\')','✉',true):''),
     widget:'<span id="claim-widget"></span>',
     intro:'<div id="person-intro-line"></div>',
     info:[['공연',showIds.length?showIds.length+'편':''],['배우',actors.length?actors.length+'회':''],['스텝',staff.length?staff.length+'회':''],['창작',creationWorkIds.length?creationWorkIds.length+'작품':''],['단체',troupeRanked.length?troupeRanked.length+'곳':''],['활동',span]],

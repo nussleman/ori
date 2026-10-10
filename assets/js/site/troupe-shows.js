@@ -12,7 +12,7 @@ var TS_LIC=[['','모름'],['창작','우리 창작'],['완료','허락받음'],[
 async function renderTroupeShows(tid){
   _ts.tid=tid;_ts.editing=null;
   var el=$('troupe-shows');if(!el)return;
-  el.innerHTML='<div class="person-side-title">우리 공연 기록</div><div style="font-size:0.8rem;color:var(--muted)">불러오는 중…</div>';
+  el.innerHTML='<div class="person-side-title">우리 공연 기록</div><div style="font-size:0.8rem;color:var(--muted)"><div class="hf-loading">불러오는 중…</div></div>';
   var res=await Promise.all([
     sbClient.from('shows').select('id,title,show_date,end_date,work_id,venue_id,ticket_type,performers_paid,performance_count,is_licensed,record_status').eq('troupe_id',tid).order('show_date',{ascending:false}),
     sbClient.rpc('list_participation_requests',{p_troupe_id:tid,p_status:'확인 대기'}),

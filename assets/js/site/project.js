@@ -50,7 +50,7 @@ async function startNewProject(){
 async function goProject(pid,push){
   if(push!==false)history.pushState({view:'project',id:pid},'','#project-'+pid);
   setNav('project',pid);sb('');_sbContext='';mobShowDetail();
-  mn('<div class="tab-index"><div class="result-empty">불러오는 중…</div></div>');
+  mn('<div class="tab-index"><div class="result-empty"><div class="hf-loading">불러오는 중…</div></div></div>');
   try{
     var pr=await sbClient.from('projects').select('*').eq('id',pid).single();
     if(pr.error)throw pr.error;
@@ -314,7 +314,7 @@ function renderProjectVenueTab(el){
     +'<input type="text" id="venue-filter-keyword" class="wizard-search" style="width:auto;flex:1;min-width:140px;margin-bottom:0" placeholder="극장명 검색..." oninput="renderVenueFilterResults()">'
     +'</div>'
     +'<div id="venue-filter-results" class="project-card-grid"></div></div>'
-    +'<div class="sec" style="margin-top:2rem"><div class="sec-label">후보로 담은 극장</div><div id="venue-candidates-list">불러오는 중…</div></div>';
+    +'<div class="sec" style="margin-top:2rem"><div class="sec-label">후보로 담은 극장</div><div id="venue-candidates-list"><div class="hf-loading">불러오는 중…</div></div></div>';
   renderVenueFilterResults();
   loadVenueCandidatesList(pid);
 }
@@ -498,7 +498,7 @@ function getRecommendedPeople(kind,refId){
 async function inviteFilterList(posId,q,kind,refId){
   var el=$('invite-results-'+posId);if(!el)return;
   q=(q||'').trim();
-  el.innerHTML='<div class="wizard-result-empty">불러오는 중…</div>';
+  el.innerHTML='<div class="wizard-result-empty"><div class="hf-loading">불러오는 중…</div></div>';
   var personIds=q?DB.people.filter(function(p){var n=fld(p,'이름');return n&&n.indexOf(q)>-1;}).slice(0,8).map(function(p){return p.id;}):getRecommendedPeople(kind,refId);
   if(!personIds.length){el.innerHTML='<div class="wizard-result-empty">'+(q?'일치하는 사람이 없어요':'추천할 사람이 없어요. 검색해보세요.')+'</div>';return;}
   var results=await Promise.all(personIds.map(function(p2){
