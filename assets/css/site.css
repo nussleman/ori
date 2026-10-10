@@ -1511,3 +1511,11 @@ body.mode-make .pd-to-browse{display:block}
 .wh-venues{display:flex;flex-wrap:wrap;gap:0.35rem}
 .wh-acts{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1.1rem}
 .opp-track{font-size:0.74rem;color:var(--muted);margin-top:0.35rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* 정식 공연 신청 (works.js renderDemandBox) */
+.wh-demand{margin-top:1.1rem}
+.wd-cta,.wd-done{display:flex;align-items:center;justify-content:space-between;gap:1rem;border:1px dashed var(--accent);border-radius:10px;padding:0.9rem 1.1rem;font-size:0.85rem;color:var(--text);line-height:1.6}
+.wd-done{border-style:solid;border-color:var(--line)}
+.wd-btns{display:flex;gap:0.4rem;flex-shrink:0}
+.wd-cta .pf-btn{flex-shrink:0}
+@media(max-width:640px){.wd-cta,.wd-done{flex-direction:column;align-items:flex-start}}
+.wd-form select{width:100%}

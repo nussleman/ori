@@ -160,7 +160,7 @@ async function renderWorkHub(wid,roles,shows){
   var h='<div class="wh-tiles">';
   h+=st.show_count?tile(st.show_count+'번','단체 '+(st.troupe_count||0)+'곳이 올렸어요'+(st.first_year?'<br>'+st.first_year+(st.last_year!==st.first_year?'–'+st.last_year:'')+'년':''))
     :tile('0번','오리에 기록된 공연이 아직 없어요');
-  h+=tile((st.wish_count||0)+'명','올리고 싶어해요');
+  h+=tile((st.wish_count||0)+'명','올리고 싶어해요'+(hub.requests?'<br>정식 신청 '+hub.requests+'곳':''));
   var g={};roles.forEach(function(r){var x=fld(r,'성별');if(x)g[x]=(g[x]||0)+1;});
   var gTxt=Object.keys(g).map(function(k){return k+' '+g[k];}).join(' · ');
   h+=roles.length?tile(roles.length+'명','등장인물'+(gTxt?'<br>'+escHtml(gTxt):'')):tile('—','등장인물 정보가 아직 없어요');
@@ -185,6 +185,64 @@ async function renderWorkHub(wid,roles,shows){
       return '<span class="role-tag-chip link" data-action="venue" data-id="'+v+'">'+escHtml(nm(v))+(seat?' · '+seat+'석':'')+'</span>';
     }).join('')+'</div></div>';
   }
+  h+='<div id="wh-demand-'+wid+'" class="wh-demand"></div>';
   h+='<div class="wh-acts">'+dvActBtn('라이선스 문의','openLicenseInquiry(\'\',\''+wid+'\')','✉️')+'</div>';
   el.innerHTML=h;
+  renderDemandBox(wid);
+}
+
+/* ── 정식으로 올리고 싶어요 (수요 신청) ──
+   시기·회차·조건을 남기면 오리가 같은 작품 신청을 묶어 권리자에게 대신 묻는다. 계약이 아니다.
+   티켓 유료·출연료는 라이선스가 필요한지 가르는 기준(저작권법 29조)이라 꼭 묻는다. 서버: save_license_demand / withdraw_license_demand */
+var _wd={};
+function demandPeriods(){
+  var y=new Date().getFullYear(),h=new Date().getMonth()<6?0:1,out=[];
+  for(var i=0;i<5;i++){var k=h+i;out.push((y+Math.floor(k/2))+' '+(k%2?'하반기':'상반기'));}
+  return out.concat(['미정']);
+}
+async function renderDemandBox(wid){
+  var box=$('wh-demand-'+wid);if(!box||!CURRENT_USER)return;
+  var r=await sbClient.from('license_demands').select('*').eq('work_id',wid).eq('user_id',CURRENT_USER.id).maybeSingle();
+  _wd[wid]=r.data||null;
+  var d=_wd[wid];
+  if(d){
+    var sum=[d.period,d.performance_count?d.performance_count+'회':'',d.ticket_type?'티켓 '+d.ticket_type:'',d.performers_paid?'출연료 '+d.performers_paid:''].filter(Boolean).join(' · ');
+    box.innerHTML='<div class="wd-done"><div><b>정식 공연 신청을 남겼어요</b><div class="wh-sub">'+escHtml(sum||'조건 미정')+(d.troupe_id?' · '+escHtml(nm(d.troupe_id)):'')+'</div>'
+      +'<div class="wh-sub">같은 작품 신청이 모이면 오리가 권리자에게 물어봐요. 언제든 고치거나 취소할 수 있어요.</div></div>'
+      +'<div class="wd-btns"><button type="button" class="pf-btn" onclick="openDemandForm(\''+wid+'\')">고치기</button><button type="button" class="pf-btn" onclick="withdrawDemand(\''+wid+'\')">취소</button></div></div>';
+  }else{
+    box.innerHTML='<div class="wd-cta"><div><b>이 작품, 정식으로 올리고 싶나요?</b><div class="wh-sub">언제·몇 회쯤인지 남겨주세요. 같은 작품을 원하는 단체들의 신청을 묶어 오리가 권리자에게 대신 물어봐요. 신청이 계약은 아니에요.</div></div>'
+      +'<button type="button" class="pf-btn pf-active" onclick="openDemandForm(\''+wid+'\')">정식으로 올리고 싶어요</button></div>';
+  }
+}
+async function openDemandForm(wid){
+  if(!CURRENT_USER){loginWithGoogle();return;}
+  var box=$('wh-demand-'+wid);if(!box)return;
+  var d=_wd[wid]||{};
+  var tr=await sbClient.rpc('list_my_troupes');var troupes=tr.data||[];
+  var opt=function(v,l,cur){return '<option value="'+escHtml(v)+'"'+(String(cur||'')===String(v)?' selected':'')+'>'+escHtml(l)+'</option>';};
+  box.innerHTML='<div class="ts-form wd-form"><div class="ts-form-title">〈'+escHtml(nm(wid))+'〉 정식 공연 신청</div><div class="ts-grid">'
+    +'<div class="edit-modal-field"><label>누구로</label><select id="wd-troupe">'+opt('','개인으로',d.troupe_id)+troupes.map(function(t){return opt(t.troupe_id,t.troupe_name,d.troupe_id);}).join('')+'</select></div>'
+    +'<div class="edit-modal-field"><label>희망 시기</label><select id="wd-period">'+demandPeriods().map(function(p){return opt(p,p,d.period||demandPeriods()[1]);}).join('')+'</select></div>'
+    +'<div class="edit-modal-field"><label>예상 회차</label><input type="number" min="1" id="wd-count" value="'+(d.performance_count||'')+'" placeholder="몇 번 올릴 예정인가요"></div>'
+    +'<div class="edit-modal-field"><label>티켓</label>'+tsSeg('wd-ticket',[['유료','유료'],['무료','무료'],['미정','미정']],d.ticket_type||'미정')+'</div>'
+    +'<div class="edit-modal-field"><label>출연료</label>'+tsSeg('wd-paid',[['지급','지급'],['없음','없음'],['미정','미정']],d.performers_paid||'미정')+'</div>'
+    +'<div class="edit-modal-field ts-wide"><label>한마디 (선택)</label><input type="text" id="wd-note" value="'+escHtml(d.note||'').replace(/"/g,'&quot;')+'" placeholder="예: 대학 동아리 정기공연, 소극장 80석"></div>'
+    +'</div><div class="ts-hint">티켓을 팔거나 출연료를 주면 라이선스가 꼭 필요해요. 둘 다 아니어도 번역·각색 대본은 허락이 따로 필요해요.</div>'
+    +'<div class="ts-actions"><button class="pf-btn" onclick="renderDemandBox(\''+wid+'\')">닫기</button><button class="pf-btn pf-active" id="wd-save" onclick="saveDemand(\''+wid+'\')">신청 남기기</button></div>'
+    +'<div id="wd-msg" class="ts-msg"></div></div>';
+}
+async function saveDemand(wid){
+  var btn=$('wd-save'),msg=$('wd-msg');btn.disabled=true;msg.textContent='남기는 중…';
+  var r=await sbClient.rpc('save_license_demand',{p_work_id:wid,p:{troupe_id:$('wd-troupe').value,period:$('wd-period').value,performance_count:$('wd-count').value,
+    ticket_type:tsSegVal('wd-ticket'),performers_paid:tsSegVal('wd-paid'),note:$('wd-note').value}});
+  if(r.error){msg.textContent='남기지 못했어요: '+r.error.message;btn.disabled=false;return;}
+  await renderDemandBox(wid);
+  oriAlert('신청을 남겼어요. 같은 작품 신청이 모이면 오리가 권리자에게 물어볼게요.');
+}
+async function withdrawDemand(wid){
+  if(!await oriConfirm('이 작품 정식 공연 신청을 취소할까요?'))return;
+  var r=await sbClient.rpc('withdraw_license_demand',{p_work_id:wid});
+  if(r.error){oriAlert('취소하지 못했어요: '+r.error.message);return;}
+  renderDemandBox(wid);
 }
