@@ -4,10 +4,10 @@
      #/data/<테이블>[/<id>][?f=필터&req=요청id]   레코드 작업대 (shows·works·roles·people·troupes·venues)
      #/requests/<claims|troupeclaims|edits|inquiries>
      #/queue/license · #/queue/rights · #/health · #/users · #/admins · #/lists */
-import { sb, S, loadAll, esc, $, $$, toast } from './lib.js?v=20260928t';
-import { ENT, ENT_ORDER } from './schema.js?v=20260928t';
-import { showRecords, listKeys, openSearch } from './records.js?v=20260928t';
-import { REQ, COUNTS, loadCounts, renderInbox, renderRequests, renderLicense, licenseKeys, renderRights, rightsKeys, renderHealth, renderUsers, renderAdmins, renderLists } from './pages.js?v=20260928t';
+import { sb, S, loadAll, esc, $, $$, toast } from './lib.js?v=20261010a';
+import { ENT, ENT_ORDER } from './schema.js?v=20261010a';
+import { showRecords, listKeys, openSearch } from './records.js?v=20261010a';
+import { REQ, COUNTS, loadCounts, renderInbox, renderRequests, renderLicense, licenseKeys, renderRights, rightsKeys, renderHealth, renderUsers, renderAdmins, renderLists } from './pages.js?v=20261010a';
 
 const main = document.getElementById('main');
 

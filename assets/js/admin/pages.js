@@ -1,7 +1,7 @@
 /* 오리 어드민 — 할 일 홈, 요청 처리, 분류 대기열, 운영·설정 화면 */
-import { sb, S, byId, IX, nameOf, firstImg, update, insert, remove, esc, $, $$, fmtDate, fmtWhen, toast, confirmDlg, dialog } from './lib.js?v=20260928t';
-import { ENT, ENT_ORDER, isPublicShow } from './schema.js?v=20260928t';
-import { picker } from './records.js?v=20260928t';
+import { sb, S, byId, IX, nameOf, firstImg, update, insert, remove, esc, $, $$, fmtDate, fmtWhen, toast, confirmDlg, dialog } from './lib.js?v=20261010a';
+import { ENT, ENT_ORDER, isPublicShow } from './schema.js?v=20261010a';
+import { picker } from './records.js?v=20261010a';
 
 /* ══════════ 요청 건수 (사이드바 배지·홈) ══════════ */
 export const REQ = {

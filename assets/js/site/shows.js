@@ -123,6 +123,9 @@ function showShow(sid,push){
   var licLabel=lic==='창작'?'창작 (라이선스 불필요)':(lic==='완료'?'라이선스 확보':(lic==='미확보'?'라이선스 미확보':''));
   var audience=fld(show,'관객수');
   var result=[fld(show,'매진여부')?'매진':'',fld(show,'재공연여부')?'재공연':''].filter(Boolean).join(' · ');
+  var paid=fld(show,'출연료'),cnt=fld(show,'회차');
+  var cond=[fld(show,'티켓')?fld(show,'티켓')+' 공연':'',cnt?cnt+'회':'',paid===true?'출연료 지급':(paid===false?'출연료 없음':'')].filter(Boolean).join(' · ');
+  var rec=fld(show,'기록확인');var recLabel=rec&&rec!=='미확인'?rec+'됨':'';
 
   var sortedActors=actors.slice().sort(function(a,b){var ra=ids(fld(a,'배역'))[0]||'',rb=ids(fld(b,'배역'))[0]||'';var oa=ROLE_ORDER[ra],ob=ROLE_ORDER[rb];if(oa==null&&ob==null)return 0;if(oa==null)return 1;if(ob==null)return -1;return oa-ob;});
   // 배역별로 묶는다 (더블캐스팅이면 한 줄에 여러 이름)
@@ -173,7 +176,7 @@ function showShow(sid,push){
     primary:reviewBtn('show',sid),
     after:function(){loadReviews('show',sid);},
     sub:[dateLabel?dateLabel.replace(/-/g,'.'):'',vid&&nm(vid)?escHtml(nm(vid)):''].filter(Boolean).join(' · '),
-    info:[['작품',dvLink('work',wid,nm(wid))],['단체',dvLink('troupe',trid,nm(trid))],['극장',dvLink('venue',vid,nm(vid))],['기간',dateLabel?dateLabel.replace(/-/g,'.'):''],['라이선스',licLabel],['관객',audience!=null?audience+'명':''],['결과',result]],
+    info:[['작품',dvLink('work',wid,nm(wid))],['단체',dvLink('troupe',trid,nm(trid))],['극장',dvLink('venue',vid,nm(vid))],['기간',dateLabel?dateLabel.replace(/-/g,'.'):''],['라이선스',licLabel],['조건',cond],['관객',audience!=null?audience+'명':''],['결과',result],['기록',recLabel]],
     sections:[
       {title:'출연진',tab:'출연진',items:castItems,layout:'roles',peek:true,peekMax:8,homeMax:6},
       {title:'제작진',tab:'출연진',items:staffItems,layout:'credits',peek:true,peekMax:6,homeMax:4},

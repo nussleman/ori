@@ -60,7 +60,7 @@ function groupBy(rows,key){
 
 async function load(){
   var raw=await Promise.all([
-    rest('shows','select=id,title,show_date,end_date,troupe_id,venue_id,work_id,poster_urls,audience_count,is_sold_out,has_rerun,is_licensed&is_hidden=is.false'),
+    rest('shows','select=id,title,show_date,end_date,troupe_id,venue_id,work_id,poster_urls,audience_count,is_sold_out,has_rerun,is_licensed,ticket_type,performers_paid,performance_count,record_status&is_hidden=is.false'),
     rest('people','select=id,name,photo_urls,social_links'),
     rest('participation_history','select=id,person_id,show_id,photo_urls'),
     rest('participation_roles','select=participation_id,role_id'),
@@ -102,7 +102,7 @@ async function load(){
     '극단':s.troupe_id?[s.troupe_id]:[],'극장':s.venue_id?[s.venue_id]:[],
     '작품':s.work_id?[s.work_id]:[],
     '포스터':photoField(s.poster_urls),
-    '관객수':s.audience_count,'매진여부':s.is_sold_out,'재공연여부':s.has_rerun,
+    '관객수':s.audience_count,'매진여부':s.is_sold_out,'재공연여부':s.has_rerun,'티켓':s.ticket_type,'출연료':s.performers_paid,'회차':s.performance_count,'기록확인':s.record_status,
     '라이선스상태':s.is_licensed
   }};});
   // 공개 기준: 라이선스가 해결된 공연만 다룬다 — 창작(자체 창작) 또는 완료(라이선스 확보).

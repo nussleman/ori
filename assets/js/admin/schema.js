@@ -3,7 +3,7 @@
      text · textarea · number · date · bool(—/예/아니오) · seg(몇 개 중 하나) · select · suggest(자유입력+추천)
      fk:<테이블>(검색해서 고르기, 없으면 새로 만들기) · tags:<옵션분류>(여러 개) · links(이름+주소 목록)
    checks: 목록 필터 겸 "채울 것" 경고. [키, 라벨, 행 → 문제면 true] */
-import { S, IX, nameOf } from './lib.js?v=20260928t';
+import { S, IX, nameOf } from './lib.js?v=20261010a';
 
 const BOOL = [['', '—'], [true, '예'], [false, '아니오']];
 const isPublicShow = s => (s.is_licensed === '창작' || s.is_licensed === '완료') && !s.is_hidden;
@@ -16,7 +16,11 @@ export const ENT = {
       ['title', '공연명', 'text'],
       ['work_id', '작품', 'fk:works'], ['troupe_id', '단체', 'fk:troupes'], ['venue_id', '극장', 'fk:venues'],
       ['show_date', '시작일', 'date'], ['end_date', '종료일', 'date'],
-      ['is_licensed', '라이선스', 'seg', [['', '미상'], ['창작', '창작'], ['완료', '완료'], ['미확보', '미확보']]],
+      ['ticket_type', '티켓', 'seg', [['', '모름'], ['유료', '유료'], ['무료', '무료']]],
+      ['performers_paid', '출연료 지급', 'bool'],
+      ['performance_count', '회차', 'number'],
+      ['is_licensed', '라이선스 (내부용)', 'seg', [['', '미상'], ['창작', '창작'], ['완료', '완료'], ['미확보', '미확보']]],
+      ['record_status', '기록 확인', 'seg', [['미확인', '미확인'], ['단체 확인', '단체 확인'], ['권리 확인', '권리 확인']]],
       ['is_hidden', '사이트 노출', 'seg', [[false, '보임'], [true, '숨김']]],
       ['audience_count', '관객 수', 'number'], ['is_sold_out', '매진', 'bool'], ['has_rerun', '재공연', 'bool'],
     ],
@@ -25,6 +29,7 @@ export const ENT = {
     sort: [['date', '최근 공연순', (a, b) => String(b.show_date || '').localeCompare(String(a.show_date || ''))], ['name', '이름순', null]],
     checks: [
       ['nolicense', '라이선스 미상', s => !s.is_licensed],
+      ['nocond', '조건 미기록', s => !s.ticket_type || s.performers_paid == null],
       ['nowork', '작품 미연결', s => !s.work_id],
       ['nodate', '날짜 없음', s => !s.show_date],
       ['nocast', '출연진 없음', s => !castCount(s.id)],
