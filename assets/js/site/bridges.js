@@ -38,6 +38,7 @@ async function pickMyProject(title){
 async function startProjectFromWork(wid){
   if(!CURRENT_USER){loginWithGoogle();return;}
   if(!await oriConfirm('"'+nm(wid)+'"(으)로 새 프로젝트를 시작할까요?\n작품의 배역이 자리로 자동으로 만들어져요.',{ok:'프로젝트 시작',cancel:'나중에'}))return;
+  await ensureMakerEntry();
   try{
     var r=await sbClient.rpc('create_new_project');if(r.error)throw r.error;
     var pid=r.data;
@@ -45,6 +46,7 @@ async function startProjectFromWork(wid){
     await sbOk(sbClient.rpc('populate_work_roles',{p_project_id:pid,p_work_id:wid}));
     await loadMyProjectsCache();
     goProject(pid);
+    afterMakerEntry();
   }catch(e){oriAlert('프로젝트를 시작하지 못했어요: '+e.message);}
 }
 

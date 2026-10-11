@@ -143,7 +143,7 @@ async function handleAuthSession(session){
     renderProfileFab();
     refreshFavoriteButtons();
     if(!_entered){
-      if(!hasDeclaredThisSession())await playOathRitual();
+      // 선언 의식은 로그인 때가 아니라 처음 만들기에 들어설 때 (ensureMakerEntry)
       _entered=true;
       await enterSite();
     }
@@ -160,8 +160,16 @@ async function enterSite(){
   if(back&&(!location.hash||location.hash==='#home'))history.replaceState(null,'',back);
   try{await load();routeFromHash(location.hash);}
   catch(e){$('mn').innerHTML='<div class="tab-index">'+loadFailHtml('오리 데이터')+'</div>';}
-  maybeShowConnectPrompt();
 }
+/* 처음 만들기에 들어설 때 한 번 (4단계): 프로젝트 시작·만들기 모드·지원하기 앞에서.
+   둘러보는 사람은 의식 없이 바로 들어오고, 공연을 만들기로 한 순간에 선언한다. */
+async function ensureMakerEntry(){
+  if(!CURRENT_USER)return false;
+  if(!hasDeclaredThisSession())await playOathRitual();
+  return true;
+}
+/* 만들기를 시작한 뒤: 아직 내 사람 기록과 연결 안 됐으면 한 번 권한다 (이력이 쌓이려면 필요) */
+function afterMakerEntry(){setTimeout(maybeShowConnectPrompt,600);}
 async function initAuth(){
   var got=await sbClient.auth.getSession();
   await handleAuthSession(got.data.session);
