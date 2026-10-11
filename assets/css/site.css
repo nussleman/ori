@@ -1560,3 +1560,11 @@ body.mode-make .pd-to-browse{display:block}
   mask:linear-gradient(#000 0 14px,transparent 14px 22px,#000 22px 36px,transparent 36px 44px) 0 0/100% 100% no-repeat,linear-gradient(90deg,#000 62%,transparent 62%) 0 44px/100% 14px no-repeat}
 .result-empty .hf-loading,.wizard-result-empty .hf-loading{margin:0.6rem auto}
 .pf-btn.pf-danger{background:#c94f4f;border-color:#c94f4f;color:#fff}
+/* 첫 화면: 만드는 사람에게 거는 한 문장 + 두 갈래 (home.js) */
+.home-hero-pitch{margin-top:1.4rem;font-size:1.02rem;line-height:1.75;color:var(--text);opacity:0.88}
+.home-hero-cta{display:flex;gap:0.6rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.3rem}
+.home-hero-cta .pf-btn{padding:0.6rem 1.2rem;font-size:0.9rem}
+.home-sec-sub{font-size:0.8rem;color:var(--muted);margin:-0.4rem 0 0.9rem}
+.home-works{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0.2rem 1.2rem}
+.home-works .dv-row{cursor:pointer}
+@media(max-width:640px){.home-hero-pitch{font-size:0.92rem}}

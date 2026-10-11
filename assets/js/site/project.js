@@ -37,13 +37,16 @@ async function deleteProject(pid){
 }
 var _startingProject=false;
 async function startNewProject(){
-  if(!CURRENT_USER||_startingProject)return;
+  if(!CURRENT_USER){loginWithGoogle();return;}
+  if(_startingProject)return;
+  await ensureMakerEntry();
   _startingProject=true;
   try{
     var r=await sbClient.rpc('create_new_project');
     if(r.error)throw r.error;
     loadMyProjectsCache();
     goProject(r.data);
+    afterMakerEntry();
   }catch(e){oriAlert('프로젝트를 시작하는 중 문제가 생겼어요: '+e.message);}
   finally{_startingProject=false;}
 }

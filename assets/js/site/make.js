@@ -10,7 +10,7 @@ function modeSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
 function modeGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function isProducer(){return !!((MY_PROJECTS_CACHE&&MY_PROJECTS_CACHE.length)||modeGet('ori-producer')==='1');}
 function savedModeIsMake(){return modeGet('ori-mode')==='make';}
-function enterMakeMode(){modeSet('ori-mode','make');modeSet('ori-producer','1');goMake();}
+async function enterMakeMode(){await ensureMakerEntry();modeSet('ori-mode','make');modeSet('ori-producer','1');goMake();afterMakerEntry();}
 function leaveMakeMode(){modeSet('ori-mode','browse');goHome();}
 function goMake(push){
   modeSet('ori-mode','make');modeSet('ori-producer','1');

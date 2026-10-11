@@ -86,6 +86,7 @@ function renderOppProjects(){
 }
 async function requestJoinPosition(projectId,positionId){
   if(!CURRENT_USER){loginWithGoogle();return;}
+  await ensureMakerEntry();
   var msg=await oriPrompt('지원 메시지 (선택)\n간단한 소개나 경험, 가능한 연습 요일을 적어주면 좋아요.','');
   if(msg===null)return;
   var r=await sbClient.from('project_join_requests').insert({project_id:projectId,position_id:positionId,user_id:CURRENT_USER.id,message:msg||null});
