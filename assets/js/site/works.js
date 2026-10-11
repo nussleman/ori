@@ -1,18 +1,21 @@
 /* 오리 사이트 — 작품 목록·상세
    작품 페이지는 허브: 이 작품을 올리려는 사람이 볼 것(올라간 횟수·단체 수 집계, 올리고 싶은 사람 수, 권리 정보,
    등장인물, 해본 극장, 비용 감)과 할 일(라이선스 문의, 프로젝트 시작)을 한곳에.
-   미확보 공연은 개별로 보이지 않고 숫자로만 — 서버 work_stage_stats / work_hub (supabase/migrations/20261010_work_hub.sql) */
-var WORK_STATS=null; // {work_id: {show_count, troupe_count, first_year, last_year, wish_count}}
+   미확보 공연은 개별로 보이지 않고 숫자로만, 그 숫자도 단체가 특정될 만큼 작으면(공개 안 된 공연이 섞이고 3곳 미만) "몇몇"으로
+   — 서버 work_public_stats (supabase/migrations/20261011_work_public_stats.sql) / work_hub (20261010_work_hub.sql) */
+var WORK_STATS=null; // {work_id: {show_count, troupe_count, few, first_year, last_year, wish_count}}
 async function loadWorkStats(force){
   if(WORK_STATS&&!force)return WORK_STATS;
-  var r=await sbClient.rpc('work_stage_stats');
+  var r=await sbClient.rpc('work_public_stats');
   WORK_STATS={};
   (r.data||[]).forEach(function(x){WORK_STATS[x.work_id]=x;});
   return WORK_STATS;
 }
 function workStageLabel(wid){
   var st=WORK_STATS&&WORK_STATS[wid];
-  if(!st||!st.show_count)return '';
+  if(!st)return '';
+  if(st.few)return '몇몇 단체가 올림';
+  if(!st.show_count)return '';
   return st.show_count+'번 올라감'+(st.troupe_count?' · 단체 '+st.troupe_count+'곳':'');
 }
 /* ══ 작품 인덱스 ══ */
@@ -158,7 +161,8 @@ async function renderWorkHub(wid,roles,shows){
   var st=(WORK_STATS&&WORK_STATS[wid])||{},hub=res[1].data||{};
   var tile=function(big,small){return '<div class="wh-tile"><b>'+big+'</b><span>'+small+'</span></div>';};
   var h='<div class="wh-tiles">';
-  h+=st.show_count?tile(st.show_count+'번','단체 '+(st.troupe_count||0)+'곳이 올렸어요'+(st.first_year?'<br>'+st.first_year+(st.last_year!==st.first_year?'–'+st.last_year:'')+'년':''))
+  h+=st.few?tile('몇몇','단체 몇 곳이 올렸어요<br>정확한 수는 단체가 특정되지 않게 가려요')
+    :st.show_count?tile(st.show_count+'번','단체 '+(st.troupe_count||0)+'곳이 올렸어요'+(st.first_year?'<br>'+st.first_year+(st.last_year!==st.first_year?'–'+st.last_year:'')+'년':''))
     :tile('0번','오리에 기록된 공연이 아직 없어요');
   h+=tile((st.wish_count||0)+'명','올리고 싶어해요'+(hub.requests?'<br>정식 신청 '+hub.requests+'곳':''));
   var g={};roles.forEach(function(r){var x=fld(r,'성별');if(x)g[x]=(g[x]||0)+1;});
