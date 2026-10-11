@@ -1568,3 +1568,6 @@ body.mode-make .pd-to-browse{display:block}
 .home-works{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0.2rem 1.2rem}
 .home-works .dv-row{cursor:pointer}
 @media(max-width:640px){.home-hero-pitch{font-size:0.92rem}}
+/* 방금 추가한 항목 (core.js flashNew) */
+@keyframes ori-new{0%{background:rgba(212,175,106,0.22)}100%{background:transparent}}
+.is-new{animation:ori-new 1.6s var(--ease-out)}

@@ -61,7 +61,7 @@ function drawTroupeShows(){
   else h+='<div class="ts-list">'+_ts.rows.map(function(s){
     var cond=tsCondText(s);
     var need=!s.ticket_type||s.performers_paid==null;
-    return '<div class="ts-row">'
+    return '<div class="ts-row" data-sid="'+s.id+'">'
       +'<div class="ts-main"><div class="ts-title">'+escHtml(s.title||'(제목 없음)')+'</div>'
       +'<div class="ts-meta">'+[s.show_date?String(s.show_date).replace(/-/g,'.'):'',s.work_id?escHtml(nm(s.work_id)):'',s.venue_id?escHtml(nm(s.venue_id)):''].filter(Boolean).join(' · ')+'</div>'
       +'<div class="ts-meta">'+(cond?escHtml(cond):'')+(need?'<span class="ts-flag">조건 채우기</span>':'')+'</div></div>'
@@ -137,6 +137,7 @@ async function saveTroupeShow(){
     }
     await load();
     await renderTroupeShows(_ts.tid);
+    flashNew('.ts-row[data-sid="'+sid+'"]');
     oriAlert('공연 기록을 저장했어요.'+note,{action:{label:'단체 페이지 보기',fn:function(){showTroupe(_ts.tid);}}});
   }catch(e){msg.textContent='저장하지 못했어요: '+(e.message||e);btn.disabled=false;}
 }

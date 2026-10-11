@@ -40,7 +40,7 @@ function drawMyHistory(el){
   else h+='<div class="ts-list">'+_mh.rows.map(function(x){
     var st=MH_ST[x.confirm_status];
     var mine=x.requested_by===CURRENT_USER.id&&st;
-    return '<div class="ts-row"><div class="ts-main">'
+    return '<div class="ts-row" data-ph="'+x.id+'"><div class="ts-main">'
       +'<div class="ts-title">'+escHtml(x.show.title||'(제목 없음)')+'</div>'
       +'<div class="ts-meta">'+[x.show.show_date?String(x.show.show_date).replace(/-/g,'.'):'',x.show.troupe_id?escHtml(nm(x.show.troupe_id)):'',escHtml(mhRoleText(x))].filter(Boolean).join(' · ')+'</div>'
       +(x.request_note?'<div class="ts-meta">메모: '+escHtml(x.request_note)+'</div>':'')
@@ -124,6 +124,7 @@ async function saveMyHistory(){
   if(r.error){msg.textContent='추가하지 못했어요: '+r.error.message;btn.disabled=false;return;}
   if(!s)_mh.shows=null; // 새 공연이 생겼으니 다음에 다시 읽는다
   await renderMyHistory($('my-history'));
+  flashNew('.ts-row[data-ph="'+r.data+'"]');
   oriAlert(s&&s.troupe_id?'이력을 추가했어요. '+nm(s.troupe_id)+'에서 확인하면 내 사람 페이지에 올라가요.':'이력을 추가했어요. 확인되면 내 사람 페이지에 올라가요.');
 }
 async function cancelMyHistory(id){
