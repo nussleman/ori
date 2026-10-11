@@ -50,7 +50,8 @@ async function homeStart(){
 async function loadHomeWorks(){
   await loadWorkStats();
   var el=$('home-works');if(!el||!WORK_STATS)return;
-  var rows=DB.works.filter(function(w){var st=WORK_STATS[w.id];return st&&(st.show_count||st.wish_count);})
+  // "몇몇"(작은 숫자라 가린 것)은 순위에 넣지 않는다 — 순서로 숫자를 짐작할 수 있으니까
+  var rows=DB.works.filter(function(w){var st=WORK_STATS[w.id];return st&&!st.few&&(st.show_count||st.wish_count);})
     .sort(function(a,b){var x=WORK_STATS[a.id],y=WORK_STATS[b.id];return (y.troupe_count-x.troupe_count)||(y.show_count-x.show_count)||(y.wish_count-x.wish_count);}).slice(0,6);
   if(!rows.length){el.innerHTML='';return;}
   el.innerHTML='<div class="dv-h-row"><h2 class="dv-h">많이 올라간 작품</h2><button type="button" class="dv-all" onclick="goWorks()">작품 모두보기 ›</button></div>'
