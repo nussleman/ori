@@ -129,7 +129,7 @@ async function load(){
     '라이선스상태':s.is_licensed
   }};});
   // 공개 기준: 라이선스가 해결된 공연만 다룬다 — 창작(자체 창작) 또는 완료(라이선스 확보).
-  // 미확보·미상(아직 분류 안 됨)은 사이트 어디에도 나오지 않는다. 분류는 어드민 > 계정·설정 > 설정.
+  // 미확보·미상은 DB(can_see_show)가 관계자에게만 돌려주고, 관계자에게도 공개 화면엔 안 나오게 여기서 한 번 더 거른다.
   DB.shows=DB.shows.filter(function(s){var l=fld(s,'라이선스상태');return l==='창작'||l==='완료';});
   var visibleShowIds={};
   DB.shows.forEach(function(s){visibleShowIds[s.id]=true;});
