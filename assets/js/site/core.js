@@ -73,6 +73,12 @@ function busyBtn(){
   b.disabled=true;b.classList.add('is-busy');
   return function(){b.disabled=false;b.classList.remove('is-busy');};
 }
+/* 방금 추가·저장한 항목만 잠깐 밝게 (사용성 3단계: 새 항목이 어디에 들어갔는지 눈이 따라가게) */
+function flashNew(sel){
+  var el=document.querySelector(sel);if(!el)return;
+  el.classList.remove('is-new');void el.offsetWidth;el.classList.add('is-new');
+  if(el.scrollIntoView)el.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
 async function retryCurrentView(){try{await load();}catch(e){}routeFromHash(location.hash);}
 function photoField(urls){return(urls&&urls.length)?urls.map(function(u){return{url:u};}):null;}
 function groupBy(rows,key){
