@@ -31,7 +31,7 @@ function renderHome(){
     +nxRow('자주 무대에 오르는 단체','goTroupes()',troupes.map(function(t){return nxTextCard('troupe',t.id,fld(t,'극단명'),'공연 '+tCount[t.id]+'편',iurl(fld(t,'사진')));}))
     +nxRow('자주 쓰인 극장','goVenues()',venues.map(function(v){var seats=fld(v,'좌석수');return nxTextCard('venue',v.id,fld(v,'극장명'),'공연 '+vCount[v.id]+'편'+(seats?' · '+seats+'석':''),iurl(fld(v,'사진')));}))
     +'</div>');
-  renderHero();
+  renderHero();nxArrows();
   clearInterval(_nxHero.timer);
   if(_nxHero.list.length>1)_nxHero.timer=setInterval(function(){if(!$('nx-hero')){clearInterval(_nxHero.timer);return;}if(document.hidden)return;nxHeroGo(_nxHero.i+1);},8000);
   loadNxWorks();
@@ -64,9 +64,17 @@ function nxRow(title,more,cards,sub){
   var id='nxr'+Math.random().toString(36).slice(2,8);
   return '<section class="nx-row"><div class="nx-row-head"><h2>'+escHtml(title)+'</h2>'+(more?'<button type="button" class="nx-more" onclick="'+more+'">모두 보기 ›</button>':'')+'</div>'
     +(sub?'<p class="nx-row-sub">'+escHtml(sub)+'</p>':'')
-    +'<div class="nx-track-wrap"><button type="button" class="nx-arrow nx-prev" aria-label="앞으로" onclick="nxScroll(\''+id+'\',-1)">‹</button>'
+    +'<div class="nx-track-wrap"><button type="button" class="nx-arrow nx-prev" aria-label="앞으로" onclick="nxScroll(\''+id+'\',-1)"><span class="nx-arrow-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></span></button>'
     +'<div class="nx-track" id="'+id+'">'+cards.join('')+'</div>'
-    +'<button type="button" class="nx-arrow nx-next" aria-label="뒤로" onclick="nxScroll(\''+id+'\',1)">›</button></div></section>';
+    +'<button type="button" class="nx-arrow nx-next" aria-label="뒤로" onclick="nxScroll(\''+id+'\',1)"><span class="nx-arrow-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></span></button></div></section>';
+}
+/* 줄 양끝 화살표: 처음이면 왼쪽, 끝이면 오른쪽을 감춘다 */
+function nxArrows(){
+  document.querySelectorAll('.nx-track').forEach(function(t){
+    var w=t.parentNode;if(!w||w.dataset.arr)return;w.dataset.arr='1';
+    function upd(){w.classList.toggle('at-start',t.scrollLeft<4);w.classList.toggle('at-end',t.scrollLeft+t.clientWidth>=t.scrollWidth-4);}
+    t.addEventListener('scroll',upd,{passive:true});upd();
+  });
 }
 function nxScroll(id,dir){var t=$(id);if(t)t.scrollBy({left:dir*t.clientWidth*0.9,behavior:'smooth'});}
 function nxShowCard(s){
@@ -97,6 +105,7 @@ async function loadNxWorks(){
     var st=WORK_STATS[w.id];
     return nxTextCard('work',w.id,fld(w,'작품명'),[st.troupe_count?'단체 '+st.troupe_count+'곳':'',st.show_count?st.show_count+'번 올라감':'',st.wish_count?st.wish_count+'명이 올리고 싶어해요':''].filter(Boolean).join(' · '),iurl(fld(w,'사진')));
   }),'다음 공연 작품을 고를 때 참고해 보세요.');
+  nxArrows();
 }
 
 /* ══ 알림 (위 막대 종): 답을 기다리는 제안 + 최근 2주 안에 답이 온 내 지원 ══ */
