@@ -100,7 +100,7 @@ async function loadProjectHomeData(){
         var name=escHtml((m.person_id&&nm(m.person_id))||m.nickname||m.email||'');
         var u=m.person_id?PERSON_PHOTO[m.person_id]:'';
         return '<div class="dv-row"'+(m.person_id?' data-action="person" data-id="'+m.person_id+'"':'')+'>'
-          +(u?'<img class="dv-row-img" src="'+u+'" alt="">':'<div class="dv-row-img dv-card-ph">👤</div>')
+          +(u?'<img class="dv-row-img" src="'+u+'" alt="">':'<div class="dv-row-img dv-card-ph">'+ico('user')+'</div>')
           +'<div class="dv-row-main"><div class="dv-row-title">'+name+'</div><div class="dv-row-sub">'+escHtml(label)+'</div></div></div>';
       }).join('')+'</div>'
       +'<button type="button" class="dv-more" onclick="openPeopleSub(\'team\')">팀 전체 보기 →</button>';

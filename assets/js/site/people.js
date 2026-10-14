@@ -52,7 +52,7 @@ function renderPeopleIndex(){
 
   var listH='';
   if(!filtered.length){
-    listH='<div class="result-empty"><div class="result-empty-icon">👤</div>해당하는 사람이 없어요.'+fbEmptyReset('people')+'</div>';
+    listH='<div class="result-empty"><div class="result-empty-icon">'+ico('user')+'</div>해당하는 사람이 없어요.'+fbEmptyReset('people')+'</div>';
   } else if(_peopleIndexView==='grid'){
     listH='<div class="result-grid">';
     filtered.forEach(function(p){
@@ -72,7 +72,7 @@ function renderPeopleIndex(){
       var tagsH='<div class="result-card-tags">'+(actCnt?'<span class="result-card-tag" style="color:var(--actor);background:var(--actor-bg)">배우 '+actCnt+'</span>':'');
       staffRoleNames.forEach(function(rname){tagsH+='<span class="result-card-tag" style="color:var(--staff);background:var(--staff-bg)">'+rname+' '+staffRoleCntMap[rname]+'</span>';});
       tagsH+='</div>';
-      listH+='<div class="result-card" data-action="person" data-id="'+p.id+'">'+favBtnHtml('person',p.id)+(photo?'<img src="'+photo+'" alt="'+fld(p,'이름')+'" style="width:100%;aspect-ratio:2/3;object-fit:cover;display:block">':'<div class="result-card-ph">👤</div>')+'<div class="result-card-body"><div class="result-card-title">'+fld(p,'이름')+'</div>'+tagsH+'</div></div>';
+      listH+='<div class="result-card" data-action="person" data-id="'+p.id+'">'+favBtnHtml('person',p.id)+(photo?'<img src="'+photo+'" alt="'+fld(p,'이름')+'" style="width:100%;aspect-ratio:2/3;object-fit:cover;display:block">':'<div class="result-card-ph">'+ico('user')+'</div>')+'<div class="result-card-body"><div class="result-card-title">'+fld(p,'이름')+'</div>'+tagsH+'</div></div>';
     });
     listH+='</div>';
   } else {
@@ -94,7 +94,7 @@ function renderPeopleIndex(){
       var metaH=(actCnt?'<span class="rr-tag" style="color:var(--actor)">배우 '+actCnt+'</span>':'');
       staffRoleNames2.forEach(function(rname){metaH+='<span class="rr-tag" style="color:var(--staff)">'+rname+' '+staffRoleCntMap2[rname]+'</span>';});
       metaH+='<span class="rr-tag">총 '+hist.length+'회</span>';
-      listH+='<div class="result-row" data-action="person" data-id="'+p.id+'"><div class="rr-poster" style="border-radius:50%">'+(photo?'<img src="'+photo+'" style="border-radius:50%">':'👤')+'</div><div class="rr-main"><div class="rr-title">'+fld(p,'이름')+'</div><div class="rr-meta">'+metaH+'</div></div></div>';
+      listH+='<div class="result-row" data-action="person" data-id="'+p.id+'"><div class="rr-poster" style="border-radius:50%">'+(photo?'<img src="'+photo+'" style="border-radius:50%">':ico('user'))+'</div><div class="rr-main"><div class="rr-title">'+fld(p,'이름')+'</div><div class="rr-meta">'+metaH+'</div></div></div>';
     });
     listH+='</div>';
   }
@@ -169,14 +169,14 @@ function showPerson(pid,push){
   var isMe=CURRENT_USER&&CURRENT_USER.personId===pid;
   dvRender({
     type:'person',id:pid,back:{label:'사람 목록',go:'goPeople()'},hero:true,
-    thumb:{url:photos.length?photos[0].url:'',shape:'round',ph:'👤'},
+    thumb:{url:photos.length?photos[0].url:'',shape:'round',ph:ico('user')},
     kicker:'사람',
     title:fld(person,'이름'),
     favs:[dvFavIcon('person',pid)],
     sub:escHtml(blurb),
     chips:dvLinkChips(fld(person,'홍보링크')),
     // 화면마다 주 버튼 하나 (사용성 2단계): 내 페이지면 이력 추가, 만드는 사람이 남을 보면 초대
-    primary:isMe?dvActBtn('내 이력 추가','goMyPageTab(\'records\')','＋',true):(isProducer()?dvActBtn('내 프로젝트에 초대','invitePersonToMyProject(\''+pid+'\')','✉',true):''),
+    primary:isMe?dvActBtn('내 이력 추가','goMyPageTab(\'records\')','＋',true):(isProducer()?dvActBtn('내 프로젝트에 초대','invitePersonToMyProject(\''+pid+'\')',ico('mail'),true):''),
     widget:'<span id="claim-widget"></span>',
     intro:'<div id="person-intro-line"></div>',
     info:[['공연',showIds.length?showIds.length+'편':''],['배우',actors.length?actors.length+'회':''],['스텝',staff.length?staff.length+'회':''],['창작',creationWorkIds.length?creationWorkIds.length+'작품':''],['단체',troupeRanked.length?troupeRanked.length+'곳':''],['활동',span]],
@@ -202,7 +202,7 @@ function personHistFilm(e,mode){
   var extra=[roleTxt,staffTxt].filter(Boolean).map(escHtml).join(' · ');
   if(!s)return '';
   var h=dvShowFilm(s,extra);
-  if(mode==='role'&&e.rolePhoto)h=h.replace(/<(img|div) class="dv-film-img[^>]*>(🎭<\/div>)?/,'<img class="dv-film-img" src="'+e.rolePhoto+'" alt="">');
+  if(mode==='role'&&e.rolePhoto)h=h.replace(/<(img|div) class="dv-film-img[^>]*>('+ico('mask')+'<\/div>)?/,'<img class="dv-film-img" src="'+e.rolePhoto+'" alt="">');
   return h;
 }
 /* 사람 상세의 활동 이력: 역할·연도 필터 + 사진 방식(공연 포스터 / 배역 사진) */

@@ -39,7 +39,7 @@ async function loadReviews(type,id){
 }
 function reviewItemHtml(type,id,x){
   var when=x.watched_on?String(x.watched_on).replace(/-/g,'.')+' 관람':new Date(x.created_at).toLocaleDateString('ko-KR');
-  return '<div class="rv-item'+(x.is_mine?' mine':'')+'"><div class="rv-who"><span class="rv-av">'+escHtml(x.avatar_emoji||'🦆')+'</span><b>'+escHtml(x.nickname)+'</b><span class="rv-when">'+when+'</span>'
+  return '<div class="rv-item'+(x.is_mine?' mine':'')+'"><div class="rv-who"><span class="rv-av">'+escHtml(x.avatar_emoji||ico('duck'))+'</span><b>'+escHtml(x.nickname)+'</b><span class="rv-when">'+when+'</span>'
     +(x.is_mine?'<span class="rv-acts"><button type="button" onclick="openReviewForm(\''+type+'\',\''+id+'\')">고치기</button><button type="button" onclick="deleteReview(\''+type+'\',\''+id+'\',\''+x.id+'\')">지우기</button></span>'
       :'<span class="rv-acts"><button type="button" onclick="reportReview(\''+x.id+'\')">신고</button></span>')+'</div>'
     +((x.keywords||[]).length?'<div class="rv-kws">'+x.keywords.map(function(k){return '<span class="rv-kw">'+escHtml(k)+'</span>';}).join('')+'</div>':'')
@@ -101,7 +101,7 @@ async function renderMyRecords(el){
   var rows=r.data||[];
   var shows=rows.filter(function(x){return x.target_type==='show';}),others=rows.filter(function(x){return x.target_type!=='show';});
   if(!rows.length){
-    el.innerHTML='<div class="result-empty"><div class="result-empty-icon">🎟</div><div style="font-size:0.95rem;margin-bottom:0.4rem">아직 기록이 없어요</div><div style="font-size:0.8rem;color:var(--muted);margin-bottom:1rem">본 공연 페이지에서 "관극 기록 남기기"를 눌러보세요. 작품·극장·단체에도 좋았던 점을 남길 수 있어요.</div><button class="pf-btn pf-active" onclick="goShows()">공연 둘러보기</button></div>';
+    el.innerHTML='<div class="result-empty"><div class="result-empty-icon">'+ico('ticket')+'</div><div style="font-size:0.95rem;margin-bottom:0.4rem">아직 기록이 없어요</div><div style="font-size:0.8rem;color:var(--muted);margin-bottom:1rem">본 공연 페이지에서 "관극 기록 남기기"를 눌러보세요. 작품·극장·단체에도 좋았던 점을 남길 수 있어요.</div><button class="pf-btn pf-active" onclick="goShows()">공연 둘러보기</button></div>';
     return;
   }
   var years={};shows.forEach(function(x){var y=(x.watched_on||x.created_at||'').slice(0,4);years[y]=(years[y]||0)+1;});
@@ -112,7 +112,7 @@ async function renderMyRecords(el){
     return s?dvShowFilm(s,escHtml(extra)):'';
   }).join('')+'</div></section>';
   if(others.length)h+='<section class="dv-sec">'+dvSection('남긴 후기',others.length)+'<div class="rec-others">'+others.map(function(x){
-    return '<div class="dv-row" data-action="'+x.target_type+'" data-id="'+x.target_id+'"><div class="dv-row-img dv-card-ph">'+({work:'📖',venue:'📍',troupe:'🏢'}[x.target_type]||'')+'</div><div class="dv-row-main"><div class="dv-row-title">'+escHtml(nm(x.target_id)||'(사라진 항목)')+'</div><div class="dv-row-sub">'+REVIEW_NOUN[x.target_type]+' · '+escHtml((x.keywords||[]).join(', ')||x.body||'')+'</div></div></div>';
+    return '<div class="dv-row" data-action="'+x.target_type+'" data-id="'+x.target_id+'"><div class="dv-row-img dv-card-ph">'+({work:ico('book'),venue:ico('pin'),troupe:ico('building')}[x.target_type]||'')+'</div><div class="dv-row-main"><div class="dv-row-title">'+escHtml(nm(x.target_id)||'(사라진 항목)')+'</div><div class="dv-row-sub">'+REVIEW_NOUN[x.target_type]+' · '+escHtml((x.keywords||[]).join(', ')||x.body||'')+'</div></div></div>';
   }).join('')+'</div></section>';
   el.innerHTML=h;
 }

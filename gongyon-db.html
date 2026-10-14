@@ -13,7 +13,7 @@
 <meta name="twitter:description" content="프로와 아마추어를 가리지 않는 연극·뮤지컬 공연 기록. 사람·극장·작품으로 이어지는 이력을 찾아보고, 내 공연의 기획부터 라이선스·제작·운영까지 한 곳에서.">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Nanum+Myeongjo:wght@800&display=swap">
-<link rel="stylesheet" href="assets/css/site.css?v=20261014j">
+<link rel="stylesheet" href="assets/css/site.css?v=20261014m">
 </head>
 <body>
 
@@ -52,16 +52,24 @@
   <!-- 왼쪽 레일 (10/14, 유튜브식): 나에게 온 것·내 것. 접으면 아이콘만 (body.rail-mini) -->
   <nav class="left-nav rail" id="rail" aria-label="내 메뉴">
     <div class="rail-sec">
-      <button type="button" class="rail-item" id="rail-home" onclick="goHome()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span>홈</span></button>
-      <button type="button" class="rail-item" id="rail-offers" onclick="goOffers()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><span>받은 제안</span><b class="rail-badge" id="rail-offers-n" hidden></b></button>
-      <button type="button" class="rail-item" id="rail-apply" onclick="goMyPageTab('apply')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l16-8-6 16-3-7z"/></svg><span>내 지원 현황</span></button>
-      <button type="button" class="rail-item" id="rail-saved" onclick="goMyPageTab('saved')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg><span>저장한 것</span></button>
-      <button type="button" class="rail-item" id="rail-records" onclick="goMyPageTab('records')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span>내 페이지</span></button>
+      <button type="button" class="rail-item" id="rail-home" onclick="goHome()"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span>아카이브</span></button>
+      <button type="button" class="rail-item" id="rail-match" onclick="goProjectBrowse()"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10v4h4l9 5V5L7 10z"/><path d="M19 9a3 3 0 0 1 0 6"/></svg><span>기회</span></button>
     </div>
-    <div class="rail-sec rail-wide">
-      <button type="button" class="rail-head" onclick="goMake()">내 프로젝트 <span aria-hidden="true">›</span></button>
-      <div id="make-nav-projects"></div>
-      <button type="button" class="nav-new" onclick="startNewProject()">+ 새 프로젝트</button>
+    <div class="rail-sec">
+      <div class="rail-label">나</div>
+      <button type="button" class="rail-item" id="rail-offers" onclick="goOffers()"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><span>받은 제안</span></button>
+      <button type="button" class="rail-item" id="rail-apply" onclick="goMyPageTab('apply')"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l16-8-6 16-3-7z"/></svg><span>내 지원 현황</span></button>
+      <button type="button" class="rail-item" id="rail-saved" onclick="goMyPageTab('saved')"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg><span>저장한 것</span></button>
+      <button type="button" class="rail-item" id="rail-records" onclick="goMyPageTab('records')"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span>내 페이지</span></button>
+      <button type="button" class="rail-item rail-mini-only" id="rail-make" onclick="goMake()"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h18M3 20h18M5 4v16M19 4v16"/><path d="M5 4c2.5 3.5 4.5 4.5 7 4.5S16.5 7.5 19 4"/></svg><span>내 프로젝트</span></button>
+    </div>
+    <div class="rail-sec rail-wide" id="rail-projects">
+      <button type="button" class="rail-head" onclick="toggleRailProjects()" aria-expanded="true" id="rail-proj-toggle"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h18M3 20h18M5 4v16M19 4v16"/><path d="M5 4c2.5 3.5 4.5 4.5 7 4.5S16.5 7.5 19 4"/></svg><span>내 프로젝트</span><i class="rail-caret"><svg class="ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></i></button>
+      <div class="rail-proj-body">
+        <div id="make-nav-projects"></div>
+        <button type="button" class="nav-new" onclick="startNewProject()">+ 새 프로젝트</button>
+        <button type="button" class="nav-all" onclick="goMake()">모든 프로젝트 보기 ›</button>
+      </div>
     </div>
     <div class="sidebar-credit">오리는 team 오리가 만들고 있어요<br><a href="#terms" onclick="goTerms();return false;">이용약관</a> · <a href="#privacy" onclick="goPrivacy();return false;">개인정보처리방침</a></div>
   </nav>
@@ -71,11 +79,6 @@
       <div class="tb-left">
         <button type="button" class="tb-icon tb-burger" onclick="toggleRail()" aria-label="왼쪽 메뉴 접기·펴기"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
         <div class="top-bar-title" onclick="goHome()"><svg class="logo-mark"><use href="#duck-logo"></use></svg>오리</div>
-        <nav class="gnav" aria-label="주 메뉴">
-          <button type="button" id="gnav-archive" onclick="goHome()">아카이브</button>
-          <button type="button" id="gnav-match" onclick="goProjectBrowse()">기회</button>
-          <button type="button" id="gnav-mine" onclick="goMake()">내 프로젝트</button>
-        </nav>
       </div>
       <div class="global-search" id="gs-wrap">
         <input id="gs-input" type="text" placeholder="검색" autocomplete="off"
@@ -90,7 +93,7 @@
           <button type="button" class="tb-icon" id="bell-btn" onclick="toggleBell(event)" aria-label="알림"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 1 1 12 0c0 6 2 7 2 7H4s2-1 2-7"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><b class="bell-badge" id="bell-n" hidden></b></button>
           <div class="bell-dd" id="bell-dd"></div>
         </div>
-        <button class="profile-fab" id="profile-fab" onclick="handleProfileFabClick()" title="로그인">👤</button>
+        <button class="profile-fab" id="profile-fab" onclick="handleProfileFabClick()" title="로그인"><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></button>
       </div>
     </div>
     <!-- 아카이브 갈래: 유튜브식 칩 줄 (body.sec-archive 에서만) -->
@@ -121,11 +124,11 @@
 </div>
 
 <div class="profile-dropdown" id="profile-dropdown">
-  <button class="profile-dropdown-item" onclick="closeProfileDropdown();goMyPageTab('records')">🎟 내 기록</button>
-  <button class="profile-dropdown-item" onclick="closeProfileDropdown();goMyPageTab('apply')">📮 지원 현황</button>
-  <button class="profile-dropdown-item" onclick="closeProfileDropdown();goMyPageTab('saved')">🦆 저장한 것</button>
-  <button class="profile-dropdown-item" onclick="closeProfileDropdown();goMyPageTab('info')">👤 내 정보</button>
+  <div class="pd-who" id="pd-who"></div>
+  <button class="profile-dropdown-item" onclick="closeProfileDropdown();goMyPageTab('info')"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3.9a7 7 0 0 0-2.1-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2.1 1.2l-2.3-.9-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-.9a7 7 0 0 0 2.1 1.2L10 21h4l.5-2.6a7 7 0 0 0 2.1-1.2l2.3.9 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z"/></svg> 내 정보·계정 설정</button>
   <div class="profile-dropdown-divider"></div>
+  <button class="profile-dropdown-item" onclick="closeProfileDropdown();logout()"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/></svg> 로그아웃</button>
+</div>
   <button class="profile-dropdown-item" onclick="closeProfileDropdown();logout()">↩ 로그아웃</button>
 </div>
 
@@ -244,44 +247,44 @@
   </div>
 </div>
 
-<nav class="mobile-tab-bar" id="mob-nav" aria-label="내 메뉴">
-  <button class="mob-tab" id="mobt-home" onclick="goHome()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>홈</button>
-  <button class="mob-tab" id="mobt-offers" onclick="goOffers()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>받은 제안</button>
-  <button class="mob-tab" id="mobt-apply" onclick="goMyPageTab('apply')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l16-8-6 16-3-7z"/></svg>내 지원</button>
-  <button class="mob-tab" id="mobt-make" onclick="goMake()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h18v12H3z"/><path d="M8 20h8M12 16v4"/></svg>내 프로젝트</button>
-  <button class="mob-tab" id="mobt-records" onclick="goMyPageTab('records')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>내 페이지</button>
+<nav class="mobile-tab-bar" id="mob-nav" aria-label="메뉴">
+  <button class="mob-tab" id="mobt-home" onclick="goHome()"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>아카이브</button>
+  <button class="mob-tab" id="mobt-match" onclick="goProjectBrowse()"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10v4h4l9 5V5L7 10z"/><path d="M19 9a3 3 0 0 1 0 6"/></svg>기회</button>
+  <button class="mob-tab" id="mobt-make" onclick="goMake()"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h18M3 20h18M5 4v16M19 4v16"/><path d="M5 4c2.5 3.5 4.5 4.5 7 4.5S16.5 7.5 19 4"/></svg>내 프로젝트</button>
+  <button class="mob-tab" id="mobt-offers" onclick="goOffers()"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>받은 제안</button>
+  <button class="mob-tab" id="mobt-records" onclick="goMyPageTab('records')"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>내 페이지</button>
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/config.js?v=20261014j"></script>
-<script src="assets/js/site/core.js?v=20261014j"></script>
-<script src="assets/js/site/filters.js?v=20261014j"></script>
-<script src="assets/js/site/detail.js?v=20261014j"></script>
-<script src="assets/js/site/account.js?v=20261014j"></script>
-<script src="assets/js/site/edit-request.js?v=20261014j"></script>
-<script src="assets/js/site/mypage.js?v=20261014j"></script>
-<script src="assets/js/site/troupe-shows.js?v=20261014j"></script>
-<script src="assets/js/site/my-history.js?v=20261014j"></script>
-<script src="assets/js/site/project.js?v=20261014j"></script>
-<script src="assets/js/site/project-home.js?v=20261014j"></script>
-<script src="assets/js/site/project-dashboard.js?v=20261014j"></script>
-<script src="assets/js/site/project-budget.js?v=20261014j"></script>
-<script src="assets/js/site/project-props.js?v=20261014j"></script>
-<script src="assets/js/site/project-schedule.js?v=20261014j"></script>
-<script src="assets/js/site/project-wizard.js?v=20261014j"></script>
-<script src="assets/js/site/project-browse.js?v=20261014j"></script>
-<script src="assets/js/site/pages.js?v=20261014j"></script>
-<script src="assets/js/site/home.js?v=20261014j"></script>
-<script src="assets/js/site/shows.js?v=20261014j"></script>
-<script src="assets/js/site/works.js?v=20261014j"></script>
-<script src="assets/js/site/roles.js?v=20261014j"></script>
-<script src="assets/js/site/people.js?v=20261014j"></script>
-<script src="assets/js/site/troupes.js?v=20261014j"></script>
-<script src="assets/js/site/venues.js?v=20261014j"></script>
-<script src="assets/js/site/peek.js?v=20261014j"></script>
-<script src="assets/js/site/make.js?v=20261014j"></script>
-<script src="assets/js/site/bridges.js?v=20261014j"></script>
-<script src="assets/js/site/reviews.js?v=20261014j"></script>
-<script src="assets/js/site/router.js?v=20261014j"></script>
+<script src="assets/js/config.js?v=20261014m"></script>
+<script src="assets/js/site/core.js?v=20261014m"></script>
+<script src="assets/js/site/filters.js?v=20261014m"></script>
+<script src="assets/js/site/detail.js?v=20261014m"></script>
+<script src="assets/js/site/account.js?v=20261014m"></script>
+<script src="assets/js/site/edit-request.js?v=20261014m"></script>
+<script src="assets/js/site/mypage.js?v=20261014m"></script>
+<script src="assets/js/site/troupe-shows.js?v=20261014m"></script>
+<script src="assets/js/site/my-history.js?v=20261014m"></script>
+<script src="assets/js/site/project.js?v=20261014m"></script>
+<script src="assets/js/site/project-home.js?v=20261014m"></script>
+<script src="assets/js/site/project-dashboard.js?v=20261014m"></script>
+<script src="assets/js/site/project-budget.js?v=20261014m"></script>
+<script src="assets/js/site/project-props.js?v=20261014m"></script>
+<script src="assets/js/site/project-schedule.js?v=20261014m"></script>
+<script src="assets/js/site/project-wizard.js?v=20261014m"></script>
+<script src="assets/js/site/project-browse.js?v=20261014m"></script>
+<script src="assets/js/site/pages.js?v=20261014m"></script>
+<script src="assets/js/site/home.js?v=20261014m"></script>
+<script src="assets/js/site/shows.js?v=20261014m"></script>
+<script src="assets/js/site/works.js?v=20261014m"></script>
+<script src="assets/js/site/roles.js?v=20261014m"></script>
+<script src="assets/js/site/people.js?v=20261014m"></script>
+<script src="assets/js/site/troupes.js?v=20261014m"></script>
+<script src="assets/js/site/venues.js?v=20261014m"></script>
+<script src="assets/js/site/peek.js?v=20261014m"></script>
+<script src="assets/js/site/make.js?v=20261014m"></script>
+<script src="assets/js/site/bridges.js?v=20261014m"></script>
+<script src="assets/js/site/reviews.js?v=20261014m"></script>
+<script src="assets/js/site/router.js?v=20261014m"></script>
 </body>
 </html>

@@ -51,7 +51,7 @@ function dvNames(pids){return pids.map(function(p){return dvLink('person',p,nm(p
 function dvShowCard(s,sub){  // 포스터 카드 (관련 공연 등)
   var p=POSTER[s.id]||'';
   return '<div class="dv-card" data-action="show" data-id="'+s.id+'">'
-    +(p?'<img class="dv-card-img" src="'+p+'" alt="">':'<div class="dv-card-img dv-card-ph">🎭</div>')
+    +(p?'<img class="dv-card-img" src="'+p+'" alt="">':'<div class="dv-card-img dv-card-ph">'+ico('mask')+'</div>')
     +'<div class="dv-card-title">'+escHtml(fld(s,'공연명')||'')+'</div>'
     +(sub?'<div class="dv-card-sub">'+sub+'</div>':'')+'</div>';
 }
@@ -61,7 +61,7 @@ function dvShowFilm(s,extra,omit){  // 공연 한 줄 (작은 포스터 + 제목
   var dates=d?(d.replace(/-/g,'.')+(e&&e!==d?' ~ '+e.replace(/-/g,'.'):'')):'';
   var place=[omit==='venue'?'':ids(fld(s,'극장'))[0],omit==='troupe'?'':ids(fld(s,'극단'))[0]].map(function(x){return x&&nm(x);}).filter(Boolean).map(escHtml).join(' · ');
   return '<div class="dv-film" data-action="show" data-id="'+s.id+'">'
-    +(p?'<img class="dv-film-img" src="'+p+'" alt="">':'<div class="dv-film-img dv-card-ph">🎭</div>')
+    +(p?'<img class="dv-film-img" src="'+p+'" alt="">':'<div class="dv-film-img dv-card-ph">'+ico('mask')+'</div>')
     +'<div class="dv-film-main"><div class="dv-film-title">'+escHtml(fld(s,'공연명')||'')+'</div>'
     +(place?'<div class="dv-film-sub">'+place+'</div>':'')
     +(dates?'<div class="dv-film-sub">'+dates+'</div>':'')
@@ -70,7 +70,7 @@ function dvShowFilm(s,extra,omit){  // 공연 한 줄 (작은 포스터 + 제목
 function dvPersonCard(pid,line1,line2,photo){
   var u=photo||PERSON_PHOTO[pid]||'';
   return '<div class="dv-card dv-card-person" data-action="person" data-id="'+pid+'">'
-    +(u?'<img class="dv-card-img" src="'+u+'" alt="">':'<div class="dv-card-img dv-card-ph">👤</div>')
+    +(u?'<img class="dv-card-img" src="'+u+'" alt="">':'<div class="dv-card-img dv-card-ph">'+ico('user')+'</div>')
     +'<div class="dv-card-title">'+escHtml(nm(pid))+'</div>'
     +(line1?'<div class="dv-card-sub">'+line1+'</div>':'')
     +(line2?'<div class="dv-card-sub dv-card-sub2">'+line2+'</div>':'')+'</div>';
@@ -78,14 +78,14 @@ function dvPersonCard(pid,line1,line2,photo){
 function dvPersonRow(pid,sub){
   var u=PERSON_PHOTO[pid]||'';
   return '<div class="dv-row" data-action="person" data-id="'+pid+'">'
-    +(u?'<img class="dv-row-img" src="'+u+'" alt="">':'<div class="dv-row-img dv-card-ph">👤</div>')
+    +(u?'<img class="dv-row-img" src="'+u+'" alt="">':'<div class="dv-row-img dv-card-ph">'+ico('user')+'</div>')
     +'<div class="dv-row-main"><div class="dv-row-title">'+escHtml(nm(pid))+'</div>'+(sub?'<div class="dv-row-sub">'+sub+'</div>':'')+'</div></div>';
 }
 /* 배역 한 줄: 동그란 사진 + 배역명 + 맡은 배우들 (더블캐스팅을 한눈에) */
 function dvRoleRow(roleId,roleName,pids,photo){
   var u=photo||(pids[0]&&PERSON_PHOTO[pids[0]])||'';
   return '<div class="dv-role">'
-    +(u?'<img class="dv-role-img" src="'+u+'" alt="">':'<div class="dv-role-img dv-card-ph">🎭</div>')
+    +(u?'<img class="dv-role-img" src="'+u+'" alt="">':'<div class="dv-role-img dv-card-ph">'+ico('mask')+'</div>')
     +'<div class="dv-role-main"><div class="dv-role-name">'+(roleId?dvLink('role',roleId,roleName):escHtml(roleName||'배역 미정'))+'</div>'
     +'<div class="dv-role-cast">'+dvNames(pids)+'</div></div></div>';
 }

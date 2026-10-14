@@ -284,7 +284,7 @@ function sheetBarHtml(field,prefix){
   var kind=!url?'':/docs\.google\.com\/spreadsheets/.test(url)?'Google 시트':/sharepoint|onedrive|office/.test(url)?'Excel 온라인':/notion/.test(url)?'Notion':'연결된 시트';
   return '<div class="sheet-bar">'
     +(url?'<a class="sheet-link" href="'+escHtml(url)+'" target="_blank" rel="noopener">📄 '+kind+' 열기 ↗</a>':'')
-    +(ed?'<button type="button" class="sheet-btn" onclick="setSheetLink(\''+field+'\')">'+(url?'링크 바꾸기':'🔗 시트 연결')+'</button>':'')
+    +(ed?'<button type="button" class="sheet-btn" onclick="setSheetLink(\''+field+'\')">'+(url?'링크 바꾸기':''+ico('link')+' 시트 연결')+'</button>':'')
     +'<button type="button" class="sheet-btn" onclick="'+(prefix==='bg'?'bgExportCsv()':'propsExportMenu()')+'">CSV 내보내기</button></div>';
 }
 async function setSheetLink(field){

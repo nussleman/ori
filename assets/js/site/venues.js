@@ -34,7 +34,7 @@ function venueSizeTier(seats){
 function clearVenueFilter(){_venueFilter={sizeTier:'',sort:'name',parkingOnly:false};renderVenueIndex();}
 function renderVenueIndex(){
   var all=_allVenues;
-  if(!all.length){mn('<div class="tab-index"><div class="result-empty"><div class="result-empty-icon">📍</div>극장 데이터가 없습니다.</div></div>');return;}
+  if(!all.length){mn('<div class="tab-index"><div class="result-empty"><div class="result-empty-icon">'+ico('pin')+'</div>극장 데이터가 없습니다.</div></div>');return;}
 
   var showCntMap={},seatMap={};
   all.forEach(function(v){
@@ -68,13 +68,13 @@ function renderVenueIndex(){
   var resultH='';
   var listH='';
   if(!filtered.length){
-    listH='<div class="result-empty"><div class="result-empty-icon">📍</div>해당하는 극장이 없어요.'+fbEmptyReset('venues')+'</div>';
+    listH='<div class="result-empty"><div class="result-empty-icon">'+ico('pin')+'</div>해당하는 극장이 없어요.'+fbEmptyReset('venues')+'</div>';
   } else {
     listH='<div class="result-grid">';
     filtered.forEach(function(v){
       var seatsLabel=venueSeatsLabel(v);
       var vphoto=iurl(fld(v,'사진'));
-      var vphH=vphoto?'<img src="'+vphoto+'" style="width:100%;height:100%;object-fit:cover;border-radius:8px">':'📍';
+      var vphH=vphoto?'<img src="'+vphoto+'" style="width:100%;height:100%;object-fit:cover;border-radius:8px">':ico('pin');
       listH+='<div class="result-card" data-action="venue" data-id="'+v.id+'">'+favBtnHtml('venue',v.id)+'<div class="result-card-ph">'+vphH+'</div><div class="result-card-body"><div class="result-card-title">'+fld(v,'극장명')+'</div><div class="result-card-sub">공연 '+showCntMap[v.id]+'개'+(seatsLabel?' · 좌석 '+seatsLabel:'')+'</div></div></div>';
     });
     listH+='</div>';
@@ -90,7 +90,7 @@ function showVenue(vid,push){
   var photos=fld(venue,'사진')||[];
   dvRender({
     type:'venue',id:vid,back:{label:'극장 목록',go:'goVenues()'},hero:true,
-    thumb:{url:iurl(photos),shape:'square',ph:'📍'},
+    thumb:{url:iurl(photos),shape:'square',ph:ico('pin')},
     kicker:'극장',
     title:fld(venue,'극장명'),
     sub:[venueSeatsLabel(venue),escHtml(fld(venue,'대중교통정보')||'')].filter(Boolean).join(' · '),

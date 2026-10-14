@@ -50,7 +50,7 @@ function renderOpportunities(){
     onReset:function(){_opp.f={type:'',role:''};renderOpportunities();}
   });
   var el=$('opp-list');if(!el)return;
-  if(!rows.length){el.innerHTML='<div class="result-empty"><div class="result-empty-icon">📣</div>'+(all.length?'조건에 맞는 자리가 없어요.':'지금은 모집 중인 자리가 없어요.<br><span style="font-size:0.8rem;color:var(--muted)">새 자리가 올라오면 여기에 보여요.</span>')+'</div>';}
+  if(!rows.length){el.innerHTML='<div class="result-empty"><div class="result-empty-icon">'+ico('megaphone')+'</div>'+(all.length?'조건에 맞는 자리가 없어요.':'지금은 모집 중인 자리가 없어요.<br><span style="font-size:0.8rem;color:var(--muted)">새 자리가 올라오면 여기에 보여요.</span>')+'</div>';}
   else el.innerHTML=rows.map(oppCardHtml).join('');
   renderOppProjects();
 }
@@ -106,7 +106,7 @@ async function renderMyApplications(el){
   var r=await sbClient.rpc('my_join_requests');
   if(r.error){el.innerHTML=loadFailHtml('지원 현황');return;}
   var rows=r.data||[];
-  if(!rows.length){el.innerHTML='<div class="result-empty"><div class="result-empty-icon">📮</div><div style="font-size:0.95rem;margin-bottom:0.4rem">아직 지원한 자리가 없어요</div><div style="font-size:0.8rem;color:var(--muted);margin-bottom:1rem">기회에서 함께할 공연을 찾아보세요.</div><button class="pf-btn pf-active" onclick="goProjectBrowse()">기회 보기</button></div>';return;}
+  if(!rows.length){el.innerHTML='<div class="result-empty"><div class="result-empty-icon">'+ico('send')+'</div><div style="font-size:0.95rem;margin-bottom:0.4rem">아직 지원한 자리가 없어요</div><div style="font-size:0.8rem;color:var(--muted);margin-bottom:1rem">기회에서 함께할 공연을 찾아보세요.</div><button class="pf-btn pf-active" onclick="goProjectBrowse()">기회 보기</button></div>';return;}
   var label={pending:'답 기다리는 중',approved:'합류했어요',rejected:'이번엔 함께하지 못해요'};
   el.innerHTML='<div class="apply-list">'+rows.map(function(x){
     return '<div class="apply-row" onclick="goProject(\''+x.project_id+'\')"><div><div class="apply-t">'+escHtml(x.position_label||'자리')+' <span class="apply-p">· '+escHtml(x.project_title||'')+'</span></div>'

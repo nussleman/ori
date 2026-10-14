@@ -1670,11 +1670,11 @@ body.is-home main{padding-top:0.4rem}
 .nx-arrow{position:absolute;top:0;bottom:0;z-index:2;width:44px;border:none;background:rgba(10,10,12,0.6);color:#fff;font-size:2rem;cursor:pointer;opacity:0;transition:opacity .2s}
 .nx-prev{left:0;border-radius:6px 0 0 6px}.nx-next{right:0;border-radius:0 6px 6px 0}
 .nx-track-wrap:hover .nx-arrow{opacity:1}
-.nx-card{position:relative;flex:0 0 clamp(200px,17vw,260px);aspect-ratio:16/9;border-radius:6px;overflow:hidden;background:var(--tone,#2a2a2e);cursor:pointer;scroll-snap-align:start;transition:transform .2s,box-shadow .2s}
+.nx-card{position:relative;flex:0 0 clamp(140px,11.5vw,184px);aspect-ratio:2/3;border-radius:6px;overflow:hidden;background:var(--tone,#2a2a2e);cursor:pointer;scroll-snap-align:start;transition:transform .2s,box-shadow .2s}
 .nx-card:hover{transform:scale(1.04);box-shadow:0 10px 30px rgba(0,0,0,0.6);z-index:1}
 .nx-card img{width:100%;height:100%;object-fit:cover;object-position:center 22%;display:block}
-.nx-card-type{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0.8rem 1rem 1.8rem;font-family:'Nanum Myeongjo',serif;font-weight:800;font-size:1.35rem;line-height:1.2;color:#fff;text-align:center;word-break:keep-all;background:radial-gradient(120% 90% at 50% 0%,rgba(255,255,255,0.12),rgba(255,255,255,0) 60%)}
-.nx-initial{font-size:2.6rem}
+.nx-card-type{position:absolute;inset:8px;display:flex;align-items:flex-start;justify-content:flex-start;padding:0.9rem 0.8rem 2.4rem;border:1px solid rgba(255,255,255,0.28);font-family:'Nanum Myeongjo',serif;font-weight:800;font-size:1.3rem;text-align:left;line-height:1.2;color:#fff;word-break:keep-all;background:radial-gradient(120% 90% at 50% 0%,rgba(255,255,255,0.12),rgba(255,255,255,0) 60%)}
+.nx-initial{font-size:3rem;align-items:center!important;justify-content:center!important;text-align:center}
 .nx-card-cap{position:absolute;left:0;right:0;bottom:0;padding:1.6rem 0.75rem 0.55rem;background:linear-gradient(0deg,rgba(0,0,0,0.85),rgba(0,0,0,0));display:flex;flex-direction:column}
 .nx-card-cap b{font-size:0.88rem;font-weight:500;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nx-card-cap span{font-size:0.72rem;color:rgba(255,255,255,0.72);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1696,7 +1696,7 @@ body.is-home main{padding-top:0.4rem}
   .nx-hero-text{left:1.1rem;right:1.1rem;max-width:none;bottom:1.2rem}
   .nx-hero-shade{background:linear-gradient(0deg,rgba(10,10,12,0.95) 30%,rgba(10,10,12,0.2) 80%)}
   .nx-btn{height:40px;padding:0 1rem;font-size:0.9rem}
-  .nx-card{flex-basis:62vw}
+  .nx-card{flex-basis:38vw}
   .nx-arrow{display:none}
   .mob-tab svg{width:20px;height:20px}
   .mob-tab{font-size:0.62rem}
@@ -1714,3 +1714,45 @@ body.is-home main{padding-top:0.4rem}
 .offer-yes{background:var(--accent);color:var(--bg);border:1px solid var(--accent)}
 .offer-no{background:none;color:var(--muted);border:1px solid var(--line)}
 .offer-no:hover{color:var(--text)}
+
+/* 목록 카드 = 아카이브 홈 카드와 같은 세로 포스터 (10/14) */
+.result-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1.2rem 0.9rem}
+.result-card{background:none;border:none;border-radius:0;overflow:visible}
+.result-card:hover{transform:none;border-color:transparent}
+.result-card>img,.result-card-ph{border-radius:6px;transition:transform .2s,box-shadow .2s}
+.result-card:hover>img,.result-card:hover .result-card-ph{transform:scale(1.03);box-shadow:0 10px 30px rgba(0,0,0,0.55)}
+.result-card-ph{position:relative;background:var(--tone,var(--bg3));color:rgba(255,255,255,0.75);font-size:2.4rem;overflow:hidden}
+.result-card-ph img{border-radius:6px}
+.result-card-ph .ph-name{position:absolute;inset:8px;padding:0.8rem 0.75rem;border:1px solid rgba(255,255,255,0.28);font-family:'Nanum Myeongjo',serif;font-weight:800;font-size:1.15rem;line-height:1.25;color:#fff;word-break:keep-all;text-align:left;background:radial-gradient(120% 90% at 50% 0%,rgba(255,255,255,0.12),rgba(255,255,255,0) 60%)}
+.result-card-body{padding:0.55rem 0.1rem 0}
+.result-card-title{font-size:0.88rem;font-weight:500;color:var(--text)}
+.result-card.has-type .result-card-title{display:none}
+.result-card .fav-btn{top:0.5rem;right:0.5rem}
+/* 아이콘 */
+.ico{width:1em;height:1em;vertical-align:-0.14em;flex-shrink:0}
+.ico-duck{width:1.2em}
+.result-empty-icon .ico{width:2.2rem;height:2.2rem;color:var(--muted)}
+.dv-card-ph .ico,.rr-poster .ico{width:40%;height:40%;color:var(--muted)}
+.gs-item-icon .ico{width:18px;height:18px;color:var(--muted)}
+/* 레일 정리 */
+.rail-label{padding:0.5rem 0.75rem 0.2rem;font-size:0.78rem;color:var(--muted)}
+.rail-head{display:flex;align-items:center;gap:1.2rem;width:100%;height:42px;padding:0 0.75rem;border-radius:10px;font-size:0.88rem;font-weight:500}
+.rail-head:hover{background:rgba(255,255,255,0.08);color:var(--text)}
+.rail-head span{flex:1}
+.rail-caret{display:flex;transition:transform .2s;color:var(--muted)}
+#rail-projects.closed .rail-caret{transform:rotate(-90deg)}
+#rail-projects.closed .rail-proj-body{display:none}
+.rail-proj-body{padding-left:2.4rem}
+.rail .nav-all{margin:0;padding:0.45rem 0.75rem;border:none;background:none;color:var(--muted);font-family:inherit;font-size:0.8rem;text-align:left;cursor:pointer;border-radius:10px}
+.rail .nav-all:hover{color:var(--text)}
+.rail-mini-only{display:none}
+body.rail-mini .rail-mini-only{display:flex}
+body.rail-mini .rail-label{display:none}
+.pd-who{padding:0.5rem 0.7rem 0.6rem;font-size:0.76rem;color:var(--muted);border-bottom:1px solid var(--line);margin-bottom:0.3rem;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pd-who:empty{display:none}
+.profile-dropdown-item{display:flex;align-items:center;gap:0.55rem}
+.top-bar .profile-fab .ico{width:20px;height:20px}
+.rail-item .ico,.rail-head .ico,.mob-tab .ico{width:22px;height:22px}
+.rail-caret .ico{width:16px;height:16px}
+.result-card-ph .ph-name{padding-top:2.3rem}
+.mob-tab .ico{width:20px;height:20px}

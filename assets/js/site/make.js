@@ -3,7 +3,7 @@
    '공연'은 아카이브에 기록된 실제 공연, '프로젝트'는 오리에서 준비 중인 공연 — 두 말을 섞지 않는다.
    좌측 메뉴에는 진행 중인 공연을 바로가기로 띄운다(renderMakeNav). 목록은 MY_PROJECTS_CACHE(account.js)를 쓴다. */
 var PROJECT_ACTIVE_STATUS=['planning','upcoming','running'];
-var PROJECT_STATUS_ICON={planning:'✏️',upcoming:'📅',running:'🎭',completed:'✓',cancelled:'—'};
+var PROJECT_STATUS_ICON={planning:ico('pencil'),upcoming:ico('calendar'),running:ico('mask'),completed:'✓',cancelled:'—'};
 
 /* 만들기 모드: 프로필 메뉴에서 전환한다 (기업회원으로 들어가는 느낌). 한 번 들어오면 기억해 두었다가 다음에 바로 연다. */
 function modeSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}

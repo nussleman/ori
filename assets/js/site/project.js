@@ -12,7 +12,7 @@ async function loadMyProjects(elId){
       return '<div class="item-card proj-card">'
         +'<div class="proj-card-actions">'
         +'<button class="proj-icon-btn" onclick="event.stopPropagation();renameProject(\''+p.id+'\')" title="이름 수정">✎</button>'
-        +'<button class="proj-icon-btn" onclick="event.stopPropagation();deleteProject(\''+p.id+'\')" title="삭제">🗑</button>'
+        +'<button class="proj-icon-btn" onclick="event.stopPropagation();deleteProject(\''+p.id+'\')" title="삭제">'+ico('trash')+'</button>'
         +'</div>'
         +'<div style="cursor:pointer" onclick="goProject(\''+p.id+'\')"><div class="item-card-title">'+escHtml(p.title||'새 프로젝트')+'</div>'
         +'<div style="font-size:0.72rem;color:var(--muted);margin-top:0.3rem">'+(PROJECT_STATUS_LABEL[p.status]||p.status)+'</div></div></div>';
@@ -193,7 +193,7 @@ async function loadOverviewAdminList(pid){
     });
     el.innerHTML=admins.map(function(m){
       var nameH=m.person_id?'<span class="link" data-action="person" data-id="'+m.person_id+'">'+escHtml(m.nickname||m.email)+'</span>':escHtml(m.nickname||m.email);
-      return '<div style="margin-bottom:0.35rem">'+(m.member_role==='owner'?'👑 ':'')+nameH+'</div>';
+      return '<div style="margin-bottom:0.35rem">'+(m.member_role==='owner'?''+ico('crown')+' ':'')+nameH+'</div>';
     }).join('')||'<span style="color:var(--muted)">없음</span>';
   }catch(e){el.innerHTML=loadFailHtml('관리자 목록');}
 }
@@ -273,7 +273,7 @@ function renderProjectPromoTab(el){
     +'<div class="sec" style="margin-top:1.6rem"><div class="sec-label">홍보 링크</div>'
     +'<div id="promo-links-list">'+links.map(function(l,i){
       return '<div class="proj-member-row"><a href="'+escHtml(l)+'" target="_blank" rel="noopener noreferrer" style="color:var(--accent);font-size:0.82rem;word-break:break-all">'+escHtml(l)+'</a>'
-        +'<button class="proj-icon-btn" style="margin-left:auto;position:static" onclick="removePromoLink(\''+pid+'\','+i+')" title="삭제">🗑</button></div>';
+        +'<button class="proj-icon-btn" style="margin-left:auto;position:static" onclick="removePromoLink(\''+pid+'\','+i+')" title="삭제">'+ico('trash')+'</button></div>';
     }).join('')+'</div>'
     +'<div style="display:flex;gap:0.5rem;margin-top:0.6rem">'
     +'<input type="text" id="promo-link-input" class="wizard-search" style="margin-bottom:0" placeholder="SNS 게시물, 포스터 이미지, 티켓 예매 링크 등 URL">'
@@ -362,7 +362,7 @@ async function loadVenueCandidatesList(pid){
       return '<div class="person-side-card'+(c.status==='selected'?' venue-cand-selected':'')+'">'
         +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem">'
         +'<span class="link" data-action="venue" data-id="'+venue.id+'">'+escHtml(fld(venue,'극장명'))+'</span>'
-        +'<button class="proj-icon-btn" style="position:static" onclick="removeVenueCandidate(\''+c.id+'\',\''+pid+'\')" title="제거">🗑</button>'
+        +'<button class="proj-icon-btn" style="position:static" onclick="removeVenueCandidate(\''+c.id+'\',\''+pid+'\')" title="제거">'+ico('trash')+'</button>'
         +'</div>'
         +(seats?'<div style="font-size:0.76rem;color:var(--muted);margin-top:0.3rem">좌석 '+seats+'</div>':'')
         +'<select class="wizard-search" style="margin:0.6rem 0 0;padding:0.35rem 0.5rem;font-size:0.78rem" onchange="setVenueCandStatus(\''+c.id+'\',\''+pid+'\',\''+venue.id+'\',this.value)">'
@@ -390,7 +390,7 @@ function renderTeamSubTabBody(){
   var sub=window._teamSubTab;
   if(sub==='people'){
     var rows=ctx.memberDetail||[];
-    var roleLabel={owner:'👑 대표 관리자',admin:'관리자',member:'멤버'};
+    var roleLabel={owner:''+ico('crown')+' 대표 관리자',admin:'관리자',member:'멤버'};
     var byMember={};var order=[];
     rows.forEach(function(m){
       if(!byMember[m.member_id]){byMember[m.member_id]=Object.assign({},m,{positionLabels:[]});order.push(m.member_id);}

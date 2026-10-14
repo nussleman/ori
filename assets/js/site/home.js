@@ -2,8 +2,7 @@
    맨 위 큰 무대(히어로): 포스터가 있는 최근 공연을 몇 편 돌려 보여준다.
    그 아래 가로로 넘기는 줄: 최근 공연 · 여러 단체가 올린 작품 · 무대에 많이 선 사람 · 단체 · 극장.
    포스터·사진이 없는 항목은 이름을 크게 쓴 "글자 카드"로 (빈 상자 대신). 관객용 기능은 키우지 않는다 (direction.md) */
-var NX_TONES=['#5A1C26','#1F2A44','#24463B','#4B2E52','#6A4A12','#2E4A5C','#3B3F48','#5B2A3E'];
-function nxTone(id){var h=0;String(id).split('').forEach(function(c){h=(h*31+c.charCodeAt(0))>>>0;});return NX_TONES[h%NX_TONES.length];}
+function nxTone(id){return cardTone(id);}
 function nxYear(d){return d?String(d).slice(0,4):'';}
 function goHome(push){
   if(push!==false)history.pushState({view:'home'},'','#home');
