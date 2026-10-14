@@ -294,9 +294,12 @@ function popShow(card){
   el.classList.remove('on');el.style.top='0px';el.style.visibility='hidden';el.style.display='block';
   var ph=el.offsetHeight,y=rc.top+rc.height/2-ph/2;y=Math.max(70,Math.min(y,window.innerHeight-ph-12));
   el.style.top=y+'px';el.style.transformOrigin=((rc.left+rc.width/2-x)/w*100)+'% '+((rc.top+rc.height/2-y)/ph*100)+'%';
-  el.style.visibility='';requestAnimationFrame(function(){el.classList.add('on');});
+  el.style.visibility='';el.classList.remove('closing');
+  if(_pop.faded&&_pop.faded!==card)_pop.faded.classList.remove('popping');
+  card.classList.add('popping');_pop.faded=card;  // 카드가 먼저 투명해지고, 그 자리에서 창이 떠오른다
+  requestAnimationFrame(function(){el.classList.add('on');});
 }
-function popHide(){clearTimeout(_pop.timer);_pop.card=null;var el=_pop.el;if(el){el.classList.remove('on');setTimeout(function(){if(!el.classList.contains('on'))el.style.display='none';},180);}}
+function popHide(){clearTimeout(_pop.timer);_pop.card=null;if(_pop.faded){_pop.faded.classList.remove('popping');_pop.faded=null;}var el=_pop.el;if(el&&el.classList.contains('on')){el.classList.add('closing');el.classList.remove('on');setTimeout(function(){if(!el.classList.contains('on'))el.style.display='none';},220);}}
 if(window.matchMedia&&window.matchMedia('(hover:hover) and (pointer:fine)').matches){
   document.addEventListener('mouseover',function(e){
     if(e.target.closest&&e.target.closest('#nx-pop'))return;
@@ -307,7 +310,7 @@ if(window.matchMedia&&window.matchMedia('(hover:hover) and (pointer:fine)').matc
     if(!c){_pop.card=null;return;}
     if(PEEK&&PEEK.rendering)return;
     _pop.card=c;
-    _pop.timer=setTimeout(function(){if(_pop.card===c&&document.body.contains(c))popShow(c);},550);
+    _pop.timer=setTimeout(function(){if(_pop.card===c&&document.body.contains(c))popShow(c);},1100);  // 넷플릭스처럼 좀 더 머물러야 연다
   });
   document.addEventListener('mouseout',function(e){var c=e.target.closest&&e.target.closest('.nx-card[data-action],.result-card[data-action]');if(c&&!(e.relatedTarget&&(c.contains(e.relatedTarget)||(e.relatedTarget.closest&&e.relatedTarget.closest('#nx-pop')))))
     {clearTimeout(_pop.timer);if(_pop.card===c)_pop.card=null;if(_pop.el&&_pop.el.classList.contains('on')&&!(e.relatedTarget&&e.relatedTarget.closest&&e.relatedTarget.closest('#nx-pop')))popHide();}});
