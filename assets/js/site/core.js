@@ -296,8 +296,9 @@ function injectBackBtn(label,fn){
       make·project (만들기) / 그 밖(mypage 등)은 둘러보기 모드, 메뉴 선택 없음
    projectId: 만들기 모드에서 좌측 목록 중 열린 프로젝트 */
 var MAKE_MODE_VIEWS=['make','project'];
-/* 주 메뉴 세 갈래 (10/14): 아카이브(DB) · 기회(매칭) · 내 프로젝트. 화면마다 어느 갈래인지 정하고,
-   위 막대의 주 메뉴와 왼쪽(모바일은 아래) 하위 메뉴를 그 갈래 것으로 맞춘다 */
+/* 틀 (10/14): 위 막대 = 오리 · 주 메뉴(아카이브·기회·내 프로젝트) · 검색 · 알림 · 마이페이지.
+   왼쪽 레일 = 나에게 온 것·내 것(홈·받은 제안·내 지원·저장·내 페이지 + 내 프로젝트 목록). 모바일은 아래 탭.
+   아카이브 갈래 안에서는 위에 칩 줄(전체·작품·공연·사람·단체·극장·배역) */
 var SECTION_OF={projects:'match',offers:'match',apply:'match',make:'mine',project:'mine',mypage:''};
 function setNav(v,projectId){
   if(PEEK.rendering)return; // 패널 미리보기는 현재 메뉴 상태를 바꾸지 않는다
@@ -306,18 +307,30 @@ function setNav(v,projectId){
   var make=sec==='mine';
   document.body.classList.toggle('mode-make',make);
   document.body.classList.toggle('sec-match',sec==='match');
-  document.body.classList.toggle('sec-archive',sec==='archive'||sec==='');
+  document.body.classList.toggle('sec-archive',sec==='archive');
   document.body.classList.toggle('is-home',v==='home');
+  document.body.classList.remove('search-open');
   ['archive','match','mine'].forEach(function(n){var el=$('gnav-'+n);if(el)el.classList.toggle('active',n===sec);});
-  ['home','shows','people','works','roles','venues','troupes','projects','offers','apply','make'].forEach(function(n){
-    var el=$('nav-'+n);if(el)el.classList.toggle('active',n===v);
-    var mel=$('mobt-'+n);if(mel)mel.classList.toggle('active',n===v||(n==='make'&&make));
-  });
+  ['home','works','shows','people','troupes','venues','roles'].forEach(function(n){var el=$('chip-'+n);if(el)el.classList.toggle('active',n===v);});
+  // 레일·아래 탭: 마이페이지는 열린 탭(지원·저장·기록)으로 가린다
+  var tab=(v==='mypage'||v==='apply')?(window._myPageTab||'records'):'';
+  var on={home:v==='home',offers:v==='offers',apply:tab==='apply',saved:tab==='saved',records:tab==='records'||tab==='info',make:make};
+  Object.keys(on).forEach(function(n){var r=$('rail-'+n);if(r)r.classList.toggle('active',on[n]);var m=$('mobt-'+n);if(m)m.classList.toggle('active',on[n]);});
   window._currentProjectNav=v==='project'?projectId:null;
   document.querySelectorAll('#make-nav-projects button').forEach(function(b){b.classList.toggle('active',b.dataset.pid===window._currentProjectNav);});
-  // 아카이브 홈에서는 검색창이 화면 가운데(home.js)로 옮겨가 있다 — 다른 화면에선 상단바로 되돌린다
-  if(v!=='home'){var wrap=$('gs-wrap'),bar=$('top-bar');if(wrap&&bar&&wrap.parentNode!==bar)bar.appendChild(wrap);var gi=$('gs-input');if(gi)gi.placeholder='검색…';}
+  if(typeof loadBell==='function'&&CURRENT_USER&&!window._bellLoaded)loadBell();
 }
+/* 왼쪽 레일 접기·펴기 (기억). 처음엔 넓은 화면이면 펼침 */
+function toggleRail(){
+  var mini=!document.body.classList.contains('rail-mini');
+  document.body.classList.toggle('rail-mini',mini);
+  try{localStorage.setItem('ori-rail',mini?'mini':'full');}catch(e){}
+}
+(function(){var pref=null;try{pref=localStorage.getItem('ori-rail');}catch(e){}
+  var mini=pref?pref==='mini':window.innerWidth<1300;
+  document.addEventListener('DOMContentLoaded',function(){document.body.classList.toggle('rail-mini',mini);});})();
+/* 검색 버튼: 입력한 말로 결과를 열고, 하나뿐이면 바로 간다 */
+function gsGo(){var i=$('gs-input');if(!i)return;if(!i.value.trim()){i.focus();return;}gsInput();gsOpen();if(_gsItems&&_gsItems.length===1)gsSelect(0);else i.focus();}
 /* ── 오리 스타일 모달 (네이티브 alert/confirm/prompt 대체) ── */
 var _oriModalResolve=null;
 function _oriModalClose(result){
