@@ -887,8 +887,8 @@ body.is-home .content-area{margin-left:0;margin-top:0;min-height:100vh;width:100
 .home-hero-top{align-self:end;padding-bottom:2.4rem}
 .home-hero-bottom{align-self:start;padding-top:2.4rem}
 .home-hero-tagline{font-size:0.78rem;letter-spacing:0.34em;padding-left:0.34em;color:var(--muted);text-transform:uppercase}
-.home-hero-title{display:flex;flex-direction:column;align-items:center;gap:0.7rem;font-family:inherit;font-weight:600;font-size:3.4rem;color:var(--text);letter-spacing:0;line-height:1;margin:1.1rem 0 0}
-.home-hero-title .logo-mark{width:60px;height:50px}
+.home-hero-title{display:flex;flex-direction:row;justify-content:center;align-items:center;gap:0.85rem;font-family:inherit;font-weight:600;font-size:3.4rem;color:var(--text);letter-spacing:0;line-height:1;margin:1.1rem 0 0}
+.home-hero-title .logo-mark{width:64px;height:54px}
 .home-hero-search{width:100%;max-width:480px}
 .home-hero-search .global-search{max-width:none}
 .home-hero-search .global-search input{padding:0.85rem 1.1rem 0.85rem 3rem;font-size:1rem;border-radius:10px}
@@ -1573,7 +1573,7 @@ body.mode-make .pd-to-browse{display:block}
 .is-new{animation:ori-new 1.6s var(--ease-out)}
 
 /* 첫 화면 위 한 줄 (10/14): 왼쪽 둘러볼 곳, 오른쪽 내 프로젝트 — 프로필 아이콘(.profile-fab, 고정)과 같은 줄에 선다 */
-.home-head{position:absolute;top:-0.9rem;left:-0.6rem;right:2.4rem;height:40px;display:flex;align-items:center;justify-content:space-between;gap:1rem;z-index:5}
+.home-head{position:absolute;top:-0.9rem;right:2.4rem;height:40px;display:flex;align-items:center;justify-content:flex-end;gap:1rem;z-index:5}
 .home-head-nav{display:flex;flex-direction:row;align-items:center;gap:0.1rem;padding:0}
 .home-head-nav button{background:none;border:none;border-left:none;margin:0;width:auto;line-height:1.2;color:var(--muted);font-family:'Noto Sans KR',sans-serif;font-size:0.84rem;padding:0.45rem 0.7rem;border-radius:8px;cursor:pointer;transition:color var(--dur-fast,150ms),background var(--dur-fast,150ms)}
 .home-head-nav button:hover{color:var(--text);background:rgba(255,255,255,0.06)}
@@ -1581,4 +1581,4 @@ body.mode-make .pd-to-browse{display:block}
 .home-head-make{margin-left:auto;background:none;border:1px solid rgba(200,169,110,0.55);color:var(--accent);font-family:'Noto Sans KR',sans-serif;font-size:0.82rem;padding:0.45rem 0.95rem;border-radius:20px;cursor:pointer;white-space:nowrap;transition:background var(--dur-fast,150ms),color var(--dur-fast,150ms)}
 .home-head-make:hover{background:var(--accent);color:var(--bg)}
 body.is-home .home-nav-dock{display:none}
-@media(max-width:768px){.home-head{top:-0.6rem;left:0;right:2.3rem;height:34px}.home-head-nav{display:none}.home-head-make{font-size:0.78rem;padding:0.38rem 0.8rem}}
+@media(max-width:768px){.home-head{top:-0.6rem;right:2.3rem;height:34px}.home-head-nav{display:none}.home-head-make{font-size:0.78rem;padding:0.38rem 0.8rem}}
