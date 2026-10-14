@@ -92,7 +92,7 @@ async function requestJoinPosition(projectId,positionId){
   var r=await sbClient.from('project_join_requests').insert({project_id:projectId,position_id:positionId,user_id:CURRENT_USER.id,message:msg||null});
   if(r.error){oriAlert(r.error.code==='23505'?'이미 지원한 자리예요.':'지원하지 못했어요: '+r.error.message);return;}
   var row=_opp.rows.find(function(x){return x.position_id===positionId;});if(row)row.my_status='pending';
-  if(location.hash==='#projects')renderOpportunities();else if($('hr-opps'))loadHomeCounts();
+  if(location.hash==='#projects')renderOpportunities();else if($('rr-notes'))loadNotes();
   oriAlert('지원했어요! 프로젝트에서 답하면 마이페이지 "지원 현황"에서 볼 수 있어요.',{action:{label:'지원 현황 보기',fn:function(){goMyPageTab('apply');}}});
 }
 
