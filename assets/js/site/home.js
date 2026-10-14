@@ -1,7 +1,8 @@
-/* 오리 사이트 — 첫 화면 (4단계 입구 재구성)
-   오른쪽 위 내 프로젝트(프로필 옆) + 가운데 한 문장과 검색 하나.
-   아래로는 많이 올라간 작품(작품 허브로) → 지금 모집 중인 자리 → 최근 공연. 관객용 기능은 키우지 않는다 (direction.md) */
-/* ══ 홈: 한가운데 검색창만 있는 랜딩 화면 ══ */
+/* 오리 사이트 — 첫 화면 (10/14: 만드는 사람의 출발점)
+   본질 = 연극·뮤지컬을 만드는 걸 돕는다. 첫 화면에서 바로 할 수 있는 것:
+     찾기(검색 + 갈래 바로가기) → 나한테 온 제안(있을 때만, 바로 수락·거절) → 내 프로젝트 들어가기 / 새 프로젝트 시작
+     → 열린 기회 둘러보기 → (아래) 많이 올라간 작품 · 최근 공연
+   관객용 기능은 키우지 않는다 (direction.md) */
 function goHome(push){
   if(push!==false)history.pushState({view:'home'},'','#home');
   setNav('home');sb('');_sbContext='';  renderHome();
@@ -11,41 +12,91 @@ function renderHome(){
   // 들어가 있는 상태에서 다시 렌더링하면 참조를 잃어버린다. mn() 호출 전에 미리 붙잡아둔다.
   var wrap=$('gs-wrap');
   var shows=sortShows(DB.shows.filter(function(s){return fld(s,'공연명');}));
-  var people=DB.people.filter(function(p){return fld(p,'이름');});
-  var hasProj=MY_PROJECTS_CACHE&&MY_PROJECTS_CACHE.length;
-  // 위 한 줄: 왼쪽은 둘러볼 곳(아카이브), 오른쪽은 내 것(내 프로젝트 + 프로필 아이콘). 가운데는 문장 + 검색 하나만
-  // 오른쪽 위: 내 프로젝트(프로필 아이콘 옆). 둘러보기 메뉴는 첫 화면에 따로 띄우지 않는다
-  var headH='<div class="home-head"><button type="button" class="home-head-make" id="home-start" onclick="homeStart()">'+(hasProj?'내 프로젝트':'내 공연 시작하기')+'</button></div>';
-  var heroH='<div class="home-hero">'+headH
-    +'<div class="home-hero-top"><div class="home-hero-tagline">연극·뮤지컬을 만드는 사람들</div>'
+  var heroH='<div class="home-hero">'
+    +'<div class="home-hero-tagline">연극·뮤지컬을 만드는 사람들</div>'
     +'<h1 class="home-hero-title"><svg class="logo-mark" aria-hidden="true"><use href="#duck-logo"></use></svg>오리</h1>'
-    +'<div class="home-hero-pitch">올리고 싶은 작품을 찾고, 함께할 사람을 만나고,<br>정식으로 허락받아 무대에 올려요.</div></div>'
+    +'<div class="home-hero-pitch">올리고 싶은 작품을 찾고, 함께할 사람을 만나고,<br>정식으로 허락받아 무대에 올려요.</div>'
     +'<div class="home-hero-search" id="home-search-slot"></div>'
-    +'<div class="home-hero-bottom"><div class="home-scroll">아래로 둘러보기 ↓</div></div>'
+    +'<div class="home-jump" aria-label="갈래별로 찾기">'
+    +'<button type="button" onclick="goWorks()">작품</button><button type="button" onclick="goShows()">공연</button>'
+    +'<button type="button" onclick="goPeople()">사람</button><button type="button" onclick="goTroupes()">단체</button>'
+    +'<button type="button" onclick="goVenues()">극장</button></div>'
     +'</div>';
-  // 첫 화면 아래: 최근 공연(둘러보고 기록 남기기)과 지금 모집 중인 자리(기회)
   var feed='<div class="home-feed">'
-    +'<section class="home-sec" id="home-works"></section>'
+    +'<section class="home-sec" id="home-offers"></section>'
+    +'<section class="home-sec" id="home-projects"></section>'
     +'<section class="home-sec" id="home-opps"></section>'
+    +'<section class="home-sec" id="home-works"></section>'
     +'<section class="home-sec"><div class="dv-h-row"><h2 class="dv-h">최근 공연</h2><button type="button" class="dv-all" onclick="goShows()">모두보기 ›</button></div>'
     +'<div class="home-posters">'+shows.slice(0,8).map(function(s){return dvShowCard(s,dvShowSub(s,['troupe','date']));}).join('')+'</div></section>'
     +'<p class="home-credit">오리는 team 오리가 만들고 있어요</p></div>';
   mn(heroH+feed);
-  // 검색창을 사이드바/상단바가 아닌 홈 히어로 한가운데로 옮긴다
   var slot=$('home-search-slot');
   if(wrap&&slot)slot.appendChild(wrap);
-  var gi=$('gs-input');if(gi)gi.placeholder='작품, 사람, 극장 이름으로 찾아보기';
+  var gi=$('gs-input');if(gi)gi.placeholder='작품, 사람, 단체, 극장 이름으로 찾아보기';
+  renderHomeProjects();
+  if(CURRENT_USER)loadMyProjectsCache().then(function(){if(location.hash===''||location.hash==='#home')renderHomeProjects();});
+  loadHomeOffers();
   loadHomeOpps();
   loadHomeWorks();
-  // 내 프로젝트 목록이 늦게 오면 버튼 이름을 그때 맞춘다
-  if(!hasProj&&CURRENT_USER)loadMyProjectsCache().then(function(){var b=$('home-start');if(b&&MY_PROJECTS_CACHE.length)b.textContent='내 프로젝트';});
 }
-/* 내 공연 시작하기: 이미 프로젝트가 있으면 내 프로젝트로, 없으면 새로 (누르는 순간의 목록으로 판단 — 실수로 새 프로젝트가 생기지 않게) */
-async function homeStart(){
-  if(!CURRENT_USER){loginWithGoogle();return;}
-  if(!(MY_PROJECTS_CACHE&&MY_PROJECTS_CACHE.length))await loadMyProjectsCache();
-  if(MY_PROJECTS_CACHE&&MY_PROJECTS_CACHE.length){await ensureMakerEntry();goMake();}
-  else startNewProject();
+/* 내 프로젝트: 진행 중인 것 바로 들어가기 + 새 프로젝트 */
+function renderHomeProjects(){
+  var el=$('home-projects');if(!el)return;
+  if(!CURRENT_USER){
+    el.innerHTML='<div class="dv-h-row"><h2 class="dv-h">내 프로젝트</h2></div>'
+      +'<button type="button" class="home-new home-new-solo" onclick="loginWithGoogle()"><b>로그인하고 공연 준비 시작하기</b><span>작품·사람·극장·일정·예산을 한곳에서</span></button>';
+    return;
+  }
+  var list=MY_PROJECTS_CACHE||[];
+  var active=list.filter(function(p){return PROJECT_ACTIVE_STATUS.indexOf(p.status||'planning')>-1;});
+  var newCard='<button type="button" class="home-new'+(active.length?'':' home-new-solo')+'" onclick="startNewProject()">'
+    +'<b>＋ 새 프로젝트</b><span>'+(active.length?'다음 공연 준비 시작하기':'올릴 작품이 정해지지 않아도 시작할 수 있어요')+'</span></button>';
+  el.innerHTML='<div class="dv-h-row"><h2 class="dv-h">내 프로젝트'+(active.length?'<span class="dv-n">'+active.length+'</span>':'')+'</h2>'
+    +(list.length?'<button type="button" class="dv-all" onclick="goMake()">모두보기 ›</button>':'')+'</div>'
+    +'<div class="home-proj-grid">'+active.slice(0,5).map(myShowCard).join('')+newCard+'</div>';
+}
+/* 나한테 온 제안: 있을 때만 맨 위에. 그 자리에서 수락·거절 */
+var _homeOffers=[];
+async function loadHomeOffers(){
+  var el=$('home-offers');if(!el)return;
+  if(!CURRENT_USER){el.innerHTML='';return;}
+  var r=await sbClient.rpc('my_offers');
+  el=$('home-offers');if(!el)return;
+  if(r.error){el.innerHTML='';return;}
+  _homeOffers=r.data||[];
+  renderHomeOffers();
+}
+function renderHomeOffers(){
+  var el=$('home-offers');if(!el)return;
+  if(!_homeOffers.length){el.innerHTML='';return;}
+  el.innerHTML='<div class="dv-h-row"><h2 class="dv-h">나한테 온 제안<span class="dv-n">'+_homeOffers.length+'</span></h2></div>'
+    +'<div class="offer-grid">'+_homeOffers.map(function(o){
+      var from=[o.troupe_name,o.inviter_nickname&&o.inviter_nickname+'님'].filter(Boolean).join(' · ');
+      var meta=[o.work_name,o.target_start_date?String(o.target_start_date).slice(0,10).replace(/-/g,'.')+' 공연':''].filter(Boolean).join(' · ');
+      return '<div class="offer-card" id="offer-'+o.id+'">'
+        +'<div class="opp-kind">제안'+(from?' · '+escHtml(from):'')+'</div>'
+        +'<div class="opp-title">'+escHtml(o.position_label||'함께해요')+'</div>'
+        +'<div class="opp-proj">'+escHtml(o.project_title||'새 프로젝트')+'</div>'
+        +(meta?'<div class="opp-meta">'+escHtml(meta)+'</div>':'')
+        +(o.message?'<div class="offer-msg">“'+escHtml(o.message)+'”</div>':'')
+        +(o.position_open===false?'<div class="opp-meta">그 사이 이 자리가 채워졌어요</div>':'')
+        +'<div class="offer-actions">'
+        +(o.position_open===false?'':'<button type="button" class="offer-yes" onclick="answerOffer(\''+o.id+'\',true)">함께할게요</button>')
+        +'<button type="button" class="offer-no" onclick="answerOffer(\''+o.id+'\',false)">'+(o.position_open===false?'목록에서 지우기':'이번엔 어려워요')+'</button></div></div>';
+    }).join('')+'</div>';
+}
+async function answerOffer(id,accept){
+  var o=_homeOffers.find(function(x){return x.id===id;});if(!o)return;
+  if(!accept&&o.position_open!==false&&!(await oriConfirm('「'+(o.project_title||'이 프로젝트')+'」의 '+(o.position_label||'제안')+' 제안을 거절할까요?',{ok:'거절하기',cancel:'그대로 두기'})))return;
+  try{await sbOk(sbClient.rpc('respond_offer',{p_request_id:id,p_accept:accept}));}
+  catch(e){oriAlert('답하지 못했어요: '+e.message);loadHomeOffers();return;}
+  _homeOffers=_homeOffers.filter(function(x){return x.id!==id;});
+  renderHomeOffers();
+  if(accept){
+    await loadMyProjectsCache();renderHomeProjects();
+    oriAlert('「'+(o.project_title||'프로젝트')+'」에 합류했어요',{action:{label:'프로젝트 열기',fn:function(){goProject(o.project_id);}}});
+  }else oriAlert('제안을 거절했어요');
 }
 /* 많이 올라간 작품: 라이선스와 상관없는 집계(숫자만)로 순위 → 작품 허브로 들어가는 입구 */
 async function loadHomeWorks(){
@@ -63,12 +114,14 @@ async function loadHomeWorks(){
         +'<div class="dv-row-sub">'+escHtml([workStageLabel(w.id),st.wish_count?st.wish_count+'명이 올리고 싶어해요':''].filter(Boolean).join(' · '))+'</div></div></div>';
     }).join('')+'</div>';
 }
+/* 열린 기회: 지금 사람을 찾는 자리 */
 async function loadHomeOpps(){
   if(!CURRENT_USER)return;
   var r=await sbClient.rpc('list_opportunities');
   var el=$('home-opps');if(!el||r.error)return;
-  var rows=r.data||[];if(!rows.length){el.innerHTML='';return;}
+  var rows=r.data||[];
   _opp.rows=rows;
-  el.innerHTML='<div class="dv-h-row"><h2 class="dv-h">지금 모집 중인 자리<span class="dv-n">'+rows.length+'</span></h2><button type="button" class="dv-all" onclick="goProjectBrowse()">기회 모두보기 ›</button></div>'
-    +'<div class="opp-grid">'+rows.slice(0,3).map(oppCardHtml).join('')+'</div>';
+  el.innerHTML='<div class="dv-h-row"><h2 class="dv-h">열린 기회'+(rows.length?'<span class="dv-n">'+rows.length+'</span>':'')+'</h2><button type="button" class="dv-all" onclick="goProjectBrowse()">기회 모두보기 ›</button></div>'
+    +(rows.length?'<div class="opp-grid">'+rows.slice(0,6).map(oppCardHtml).join('')+'</div>'
+      :'<div class="dv-empty">지금 사람을 찾는 자리가 없어요. 내 프로젝트에서 자리를 열면 여기 보여요.</div>');
 }
