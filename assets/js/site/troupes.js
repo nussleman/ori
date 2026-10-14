@@ -22,7 +22,7 @@ function showTroupe(tid,push){
   var photos=fld(troupe,'사진')||[];
   dvRender({
     type:'troupe',id:tid,back:{label:'단체 목록',go:'goTroupes()'},hero:true,
-    thumb:{url:iurl(photos),shape:'square',ph:'🏢'},
+    thumb:{url:iurl(photos),shape:'square',ph:ico('building')},
     kicker:'단체'+(arr(fld(troupe,'조직형태'))?' · '+escHtml(arr(fld(troupe,'조직형태'))):''),
     title:fld(troupe,'극단명'),
     sub:[escHtml(arr(fld(troupe,'활동지역'))),fld(troupe,'창단연도')?fld(troupe,'창단연도')+'년 창단':'',shows.length?'공연 '+shows.length+'편':''].filter(Boolean).join(' · '),
@@ -53,7 +53,7 @@ function clearTroupeFilter(){_troupeFilter={orgType:'',memberBase:'',region:'',s
 
 function renderTroupeIndex(){
   var all=_allTroupes;
-  if(!all.length){mn('<div class="tab-index"><div class="result-empty"><div class="result-empty-icon">🏢</div>단체 데이터가 없습니다.</div></div>');return;}
+  if(!all.length){mn('<div class="tab-index"><div class="result-empty"><div class="result-empty-icon">'+ico('building')+'</div>단체 데이터가 없습니다.</div></div>');return;}
 
   var showCntMap={},memberCntMap={};
   all.forEach(function(t){
@@ -106,12 +106,12 @@ function renderTroupeIndex(){
 
   var listH='';
   if(!filtered.length){
-    listH='<div class="result-empty"><div class="result-empty-icon">🏢</div>해당하는 단체가 없어요.'+fbEmptyReset('troupes')+'</div>';
+    listH='<div class="result-empty"><div class="result-empty-icon">'+ico('building')+'</div>해당하는 단체가 없어요.'+fbEmptyReset('troupes')+'</div>';
   } else {
     listH='<div class="result-grid">';
     filtered.forEach(function(t){
       var tphoto=iurl(fld(t,'사진'));
-      var tphH=tphoto?'<img src="'+tphoto+'" style="width:100%;height:100%;object-fit:cover;border-radius:8px">':'🏢';
+      var tphH=tphoto?'<img src="'+tphoto+'" style="width:100%;height:100%;object-fit:cover;border-radius:8px">':ico('building');
       listH+='<div class="result-card" data-action="troupe" data-id="'+t.id+'">'+favBtnHtml('troupe',t.id)
         +'<div class="result-card-ph">'+tphH+'</div>'
         +'<div class="result-card-body">'

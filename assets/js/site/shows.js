@@ -64,7 +64,7 @@ function renderShowIndex(){
   // 결과 목록
   var listH='';
   if(!filtered.length){
-    listH='<div class="result-empty"><div class="result-empty-icon">🎭</div>조건에 맞는 공연이 없어요.<br><span style="font-size:0.75rem;opacity:0.6">필터를 조정해보세요</span></div>';
+    listH='<div class="result-empty"><div class="result-empty-icon">'+ico('mask')+'</div>조건에 맞는 공연이 없어요.<br><span style="font-size:0.75rem;opacity:0.6">필터를 조정해보세요</span></div>';
   } else if(_showIndexView==='grid'){
     listH='<div class="result-grid">';
     filtered.forEach(function(s){
@@ -73,7 +73,7 @@ function renderShowIndex(){
       var date=ym(fld(s,'공연 날짜')||'');
       var p=POSTER[s.id]||'';
       listH+='<div class="result-card" data-action="show" data-id="'+s.id+'">'+favBtnHtml('show',s.id)
-        +(p?'<img src="'+p+'" alt="'+fld(s,'공연명')+'">':'<div class="result-card-ph">🎭</div>')
+        +(p?'<img src="'+p+'" alt="'+fld(s,'공연명')+'">':'<div class="result-card-ph">'+ico('mask')+'</div>')
         +'<div class="result-card-body">'
         +'<div class="result-card-title">'+fld(s,'공연명')+'</div>'
         +'<div class="result-card-sub">'+(nm(trid)||nm(wid)||'')+'</div>'
@@ -90,7 +90,7 @@ function renderShowIndex(){
       var date=fld(s,'공연 날짜')||'';
       var p=POSTER[s.id]||'';
       listH+='<div class="result-row" data-action="show" data-id="'+s.id+'">'
-        +'<div class="rr-poster">'+(p?'<img src="'+p+'">':'🎭')+'</div>'
+        +'<div class="rr-poster">'+(p?'<img src="'+p+'">':ico('mask'))+'</div>'
         +'<div class="rr-main">'
         +'<div class="rr-title">'+fld(s,'공연명')+'</div>'
         +'<div class="rr-meta">'
@@ -169,7 +169,7 @@ function showShow(sid,push){
   var photoBody=buildPhotoGalleryHtml(fld(show,'포스터'),fld(show,'공연명'));
   dvRender({
     type:'show',id:sid,back:{label:'공연 목록',go:'goShows()'},hero:true,
-    thumb:{url:POSTER[sid]||'',shape:'poster',ph:'🎭'},
+    thumb:{url:POSTER[sid]||'',shape:'poster',ph:ico('mask')},
     kicker:'공연'+(wid?' · '+dvLink('work',wid,nm(wid)):''),
     title:fld(show,'공연명'),
     favs:[dvFavIcon('show',sid)],

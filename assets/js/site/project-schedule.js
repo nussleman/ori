@@ -26,7 +26,7 @@ function eventRowHtml(ev,canEdit){
   return '<div class="ev-row'+(past?' past':'')+'">'
     +'<div class="ev-date"><b>'+evDate(s)+'</b><span>'+evTime(s)+(e?' – '+evTime(e):'')+'</span></div>'
     +'<div class="ev-main"><div class="ev-title"><span class="ev-kind '+k.c+'">'+k.l+'</span>'+escHtml(ev.title)+'</div>'
-    +((ev.location||ev.note)?'<div class="ev-sub">'+(ev.location?'📍 '+escHtml(ev.location):'')+(ev.location&&ev.note?' · ':'')+(ev.note?escHtml(ev.note):'')+'</div>':'')+'</div>'
+    +((ev.location||ev.note)?'<div class="ev-sub">'+(ev.location?''+ico('pin')+' '+escHtml(ev.location):'')+(ev.location&&ev.note?' · ':'')+(ev.note?escHtml(ev.note):'')+'</div>':'')+'</div>'
     +(!past?'<span class="ev-dday">'+ddayLabel(s)+'</span>':'')
     +(canEdit?'<button type="button" class="ev-del" title="삭제" onclick="deleteProjectEvent(\''+ev.id+'\')">✕</button>':'')
     +'</div>';

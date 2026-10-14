@@ -57,8 +57,9 @@ function renderProfileFab(){
     btn.title=CURRENT_USER.nickname?CURRENT_USER.nickname+' · 마이페이지':'마이페이지';
     btn.classList.add('logged-in');
     btn.textContent=CURRENT_USER.avatarEmoji||(CURRENT_USER.nickname||'?').charAt(0);
+    var w=$('pd-who');if(w)w.textContent=(CURRENT_USER.nickname||'')+(CURRENT_USER.email?' · '+CURRENT_USER.email:'');
   }else{
-    btn.title='';btn.classList.remove('logged-in');btn.textContent='';
+    btn.title='로그인';btn.classList.remove('logged-in');btn.innerHTML=ico('user');
   }
 }
 async function loadUserProfile(){

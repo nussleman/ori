@@ -50,7 +50,7 @@ async function loadMyPageTroupesList(){
   try{
     var r=await sbClient.rpc('list_my_troupes');
     var rows=r.data||[];
-    if(!rows.length){el.innerHTML='<div class="result-empty"><div class="result-empty-icon">🏢</div><div style="font-size:0.95rem;margin-bottom:0.4rem">아직 연결된 단체가 없어요</div><div style="font-size:0.8rem;color:var(--muted)">단체 페이지에서 "우리 단체예요"를 눌러 연결해보세요.</div></div>';return;}
+    if(!rows.length){el.innerHTML='<div class="result-empty"><div class="result-empty-icon">'+ico('building')+'</div><div style="font-size:0.95rem;margin-bottom:0.4rem">아직 연결된 단체가 없어요</div><div style="font-size:0.8rem;color:var(--muted)">단체 페이지에서 "우리 단체예요"를 눌러 연결해보세요.</div></div>';return;}
     el.innerHTML='<div class="project-card-grid">'+rows.map(function(t){
       return '<div class="item-card" style="cursor:pointer" onclick="'+(t.member_role==='admin'?'goMyTroupe(\''+t.troupe_id+'\')':'showTroupe(\''+t.troupe_id+'\')')+'">'
         +'<div class="item-card-title">'+escHtml(t.troupe_name)+'</div>'
@@ -288,7 +288,7 @@ function renderMyPageFavorites(el){
     ids2.forEach(function(id){h+=myCardHtml(type,id,'favorite');});
     h+='</div></div>';
   });
-  if(!any)h='<div class="result-empty"><div class="result-empty-icon">🦆</div><div style="font-size:0.95rem;margin-bottom:0.4rem">아직 즐겨찾기한 게 없어요</div><div style="font-size:0.8rem;color:var(--muted)">공연·작품·단체·극장·사람 페이지에서 오리 아이콘을 눌러보세요.</div></div>';
+  if(!any)h='<div class="result-empty"><div class="result-empty-icon">'+ico('duck')+'</div><div style="font-size:0.95rem;margin-bottom:0.4rem">아직 즐겨찾기한 게 없어요</div><div style="font-size:0.8rem;color:var(--muted)">공연·작품·단체·극장·사람 페이지에서 오리 아이콘을 눌러보세요.</div></div>';
   el.innerHTML=h;
 }
 /* 저장한 것: 즐겨찾기 + 해보고 싶은 것 한곳에 */
@@ -296,7 +296,7 @@ function renderMySaved(el){
   var a=document.createElement('div'),b=document.createElement('div');
   renderMyPageFavorites(a);renderMyPageWishlist(b);
   var ea=a.querySelector('.result-empty'),eb=b.querySelector('.result-empty');
-  if(ea&&eb){el.innerHTML='<div class="result-empty"><div class="result-empty-icon">🦆</div><div style="font-size:0.95rem;margin-bottom:0.4rem">아직 저장한 게 없어요</div><div style="font-size:0.8rem;color:var(--muted)">공연·작품·사람 페이지의 오리 아이콘으로 저장하고, 작품·배역은 깃발 아이콘으로 "해보고 싶어요"를 남길 수 있어요.</div></div>';return;}
+  if(ea&&eb){el.innerHTML='<div class="result-empty"><div class="result-empty-icon">'+ico('duck')+'</div><div style="font-size:0.95rem;margin-bottom:0.4rem">아직 저장한 게 없어요</div><div style="font-size:0.8rem;color:var(--muted)">공연·작품·사람 페이지의 오리 아이콘으로 저장하고, 작품·배역은 깃발 아이콘으로 "해보고 싶어요"를 남길 수 있어요.</div></div>';return;}
   el.innerHTML=(ea?'':a.innerHTML)+(eb?'':b.innerHTML);
 }
 function renderMyPageWishlist(el){
@@ -311,14 +311,14 @@ function renderMyPageWishlist(el){
     ids2.forEach(function(id){h+=myCardHtml(type,id,'wishlist');});
     h+='</div></div>';
   });
-  if(!any)h='<div class="result-empty"><div class="result-empty-icon">💗</div><div style="font-size:0.95rem;margin-bottom:0.4rem">아직 담아둔 게 없어요</div><div style="font-size:0.8rem;color:var(--muted)">작품·배역 페이지에서 하트 아이콘을 눌러보세요.</div></div>';
+  if(!any)h='<div class="result-empty"><div class="result-empty-icon">'+ico('heart')+'</div><div style="font-size:0.95rem;margin-bottom:0.4rem">아직 담아둔 게 없어요</div><div style="font-size:0.8rem;color:var(--muted)">작품·배역 페이지에서 하트 아이콘을 눌러보세요.</div></div>';
   el.innerHTML=h;
 }
 function goMyPage(push,keepTab){
   if(push!==false)history.pushState({view:'mypage'},'','#mypage');
   setNav(keepTab&&window._myPageTab==='apply'?'apply':'mypage');sb('');_sbContext='';mobShowDetail();  // 지원 현황은 "기회" 갈래 안의 화면
   if(!CURRENT_USER){
-    mn('<div class="tab-index"><div class="result-empty"><div class="result-empty-icon">👤</div><div style="font-size:0.95rem;margin-bottom:0.4rem">로그인이 필요해요</div><div style="font-size:0.8rem;color:var(--muted);margin-bottom:1rem">구글 계정으로 로그인하면 즐겨찾기를 저장할 수 있어요.</div><button class="pf-btn" onclick="loginWithGoogle()">구글로 로그인</button></div></div>');
+    mn('<div class="tab-index"><div class="result-empty"><div class="result-empty-icon">'+ico('user')+'</div><div style="font-size:0.95rem;margin-bottom:0.4rem">로그인이 필요해요</div><div style="font-size:0.8rem;color:var(--muted);margin-bottom:1rem">구글 계정으로 로그인하면 즐겨찾기를 저장할 수 있어요.</div><button class="pf-btn" onclick="loginWithGoogle()">구글로 로그인</button></div></div>');
     return;
   }
   if(!keepTab)window._myPageTab='records';

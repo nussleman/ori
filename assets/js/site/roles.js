@@ -63,7 +63,7 @@ function renderRoleIndex(){
   var resultH='';
 
   var listH='';
-  if(!filtered.length){listH='<div class="result-empty"><div class="result-empty-icon">🎬</div>해당하는 배역이 없어요.'+fbEmptyReset('roles')+'</div>';}
+  if(!filtered.length){listH='<div class="result-empty"><div class="result-empty-icon">'+ico('clapper')+'</div>해당하는 배역이 없어요.'+fbEmptyReset('roles')+'</div>';}
   else if(_roleIndexView==='grid'){
     listH='<div class="result-grid">';
     filtered.forEach(function(r){
@@ -72,7 +72,7 @@ function renderRoleIndex(){
       var rTags=fld(r,'태그')||[];
       var rTagsH=rTags.length?('<div class="result-card-tags">'+rTags.map(function(t){return '<span class="result-card-tag">'+t+'</span>';}).join('')+'</div>'):'';
       var rPhoto=(fld(r,'사진')||[])[0];
-      var rPhotoH=rPhoto?'<img src="'+rPhoto.url+'" style="width:100%;height:100%;object-fit:cover;border-radius:8px">':'🎬';
+      var rPhotoH=rPhoto?'<img src="'+rPhoto.url+'" style="width:100%;height:100%;object-fit:cover;border-radius:8px">':ico('clapper');
       listH+='<div class="result-card" data-action="role" data-id="'+r.id+'">'+wishBtnHtml('role',r.id)+'<div class="result-card-ph">'+rPhotoH+'</div><div class="result-card-body"><div class="result-card-title">'+fld(r,'배역명')+'</div>'+(nm(wid)?'<div class="result-card-sub">'+nm(wid)+'</div>':'')+(gender?'<div class="result-card-sub">'+gender+'</div>':'')+rTagsH+'</div></div>';
     });
     listH+='</div>';
@@ -82,7 +82,7 @@ function renderRoleIndex(){
       var wid=ids(fld(r,'작품'))[0]||'';
       var gender=fld(r,'성별')||fld(r,'젠더')||'';
       var actCnt=DB.history.filter(function(h){return isValidH(h)&&ids(fld(h,'배역')).indexOf(r.id)>-1;}).length;
-      listH+='<div class="result-row" data-action="role" data-id="'+r.id+'"><div class="rr-poster">🎬</div><div class="rr-main"><div class="rr-title">'+fld(r,'배역명')+'</div><div class="rr-meta">'+(nm(wid)?'<span class="rr-tag">'+nm(wid)+'</span>':'')+(gender?'<span class="rr-tag">'+gender+'</span>':'')+(actCnt?'<span class="rr-tag">'+actCnt+'명 출연</span>':'')+'</div></div></div>';
+      listH+='<div class="result-row" data-action="role" data-id="'+r.id+'"><div class="rr-poster">'+ico('clapper')+'</div><div class="rr-main"><div class="rr-title">'+fld(r,'배역명')+'</div><div class="rr-meta">'+(nm(wid)?'<span class="rr-tag">'+nm(wid)+'</span>':'')+(gender?'<span class="rr-tag">'+gender+'</span>':'')+(actCnt?'<span class="rr-tag">'+actCnt+'명 출연</span>':'')+'</div></div></div>';
     });
     listH+='</div>';
   }
@@ -105,7 +105,7 @@ function showRole(rid,push){
   var photos=fld(role,'사진')||[];
   dvRender({
     type:'role',id:rid,back:{label:'배역 목록',go:'goRoles()'},hero:true,
-    thumb:{url:iurl(photos),shape:'square',ph:'🎬'},
+    thumb:{url:iurl(photos),shape:'square',ph:ico('clapper')},
     kicker:'배역'+(wid?' · '+dvLink('work',wid,nm(wid)):''),
     title:fld(role,'배역명'),
     tags:fld(role,'태그')||[],

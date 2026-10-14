@@ -22,8 +22,25 @@ function sb(h){$('sb').innerHTML=h;}
 function mn(h){
   if(PEEK.rendering){$('peek-body').innerHTML=h;return;}
   var el=$('mn');el.innerHTML=h;
+  cardDecorate(el);
   // 새 화면이 들어왔다는 걸 짧게 알려준다 (사용성 3단계, 동작 줄이기 설정이면 CSS에서 꺼짐)
   el.classList.remove('ori-in');void el.offsetWidth;el.classList.add('ori-in');
+}
+/* 목록 카드 통일 (10/14): 아카이브 홈과 같은 세로 포스터 카드. 사진 없는 카드는 이름을 크게 쓴 글자 표지 */
+var CARD_TONES=['#5A1C26','#1F2A44','#24463B','#4B2E52','#6A4A12','#2E4A5C','#3B3F48','#5B2A3E'];
+function cardTone(id){var h=0;String(id||'').split('').forEach(function(c){h=(h*31+c.charCodeAt(0))>>>0;});return CARD_TONES[h%CARD_TONES.length];}
+function cardDecorate(root){
+  if(!root||!root.querySelectorAll)return;
+  root.querySelectorAll('.result-card').forEach(function(c){
+    if(c.dataset.deco)return;c.dataset.deco='1';
+    c.style.setProperty('--tone',cardTone(c.dataset.id));
+    var ph=c.querySelector('.result-card-ph');
+    if(ph&&!ph.querySelector('img')){
+      var t=c.querySelector('.result-card-title');
+      ph.innerHTML='<span class="ph-name">'+escHtml(t?t.textContent:'')+'</span>';
+      c.classList.add('has-type');
+    }
+  });
 }
 function openLightbox(src){
   var lb=$('lightbox'),img=$('lightbox-img');
@@ -80,6 +97,12 @@ function flashNew(sel){
   if(el.scrollIntoView)el.scrollIntoView({block:'nearest',behavior:'smooth'});
 }
 async function retryCurrentView(){try{await load();}catch(e){}routeFromHash(location.hash);}
+var ICONS={mask:'<path d="M4 4h9v6a4.5 4.5 0 0 1-9 0z"/><path d="M13 9.5h7v6.5a4.5 4.5 0 0 1-8.6 1.9"/><path d="M7 8h.01M10 8h.01M15.5 13.5h.01M18 13.5h.01"/><path d="M7 11.5c.8.6 2.2.6 3 0"/>',user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',building:'<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1M10.5 21v-3h3v3"/>',pin:'<path d="M12 21s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/>',clapper:'<path d="M4 10h16v10H4z"/><path d="M4 10l1.2-5.2 14.6 3.4L19 10"/><path d="M8.5 5.8l-1 3.9M13.5 7l-1 3"/>',book:'<path d="M2.5 5h6a3.5 3.5 0 0 1 3.5 3.5V20a2.5 2.5 0 0 0-2.5-2.5h-7z"/><path d="M21.5 5h-6A3.5 3.5 0 0 0 12 8.5V20a2.5 2.5 0 0 1 2.5-2.5h7z"/>',trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',stage:'<path d="M3 4h18M3 20h18M5 4v16M19 4v16"/><path d="M5 4c2.5 3.5 4.5 4.5 7 4.5S16.5 7.5 19 4"/>',link:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',ticket:'<path d="M3 7h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4z"/><path d="M14 7v10"/>',crown:'<path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/>',send:'<path d="M4 12l16-8-6 16-3-7z"/>',megaphone:'<path d="M3 10v4h4l9 5V5L7 10z"/><path d="M19 9a3 3 0 0 1 0 6"/>',heart:'<path d="M12 20s-8-5-8-11a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 6-8 11-8 11z"/>',coin:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M14.5 9.5h-3.2a1.6 1.6 0 0 0 0 3.2h1.4a1.6 1.6 0 0 1 0 3.2H9.5"/>',camera:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l2-3h4l2 3"/><circle cx="12" cy="13.5" r="3.5"/>',note:'<path d="M5 3h10l4 4v14H5z"/><path d="M9 11h6M9 15h6"/>',chat:'<path d="M4 5h16v11H9l-5 4z"/>',music:'<path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',pencil:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',home:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/>',bookmark:'<path d="M6 3h12v18l-6-4-6 4z"/>',compass:'<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',settings:'<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3.9a7 7 0 0 0-2.1-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2.1 1.2l-2.3-.9-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-.9a7 7 0 0 0 2.1 1.2L10 21h4l.5-2.6a7 7 0 0 0 2.1-1.2l2.3.9 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z"/>',logout:'<path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/>',chevron:'<path d="M6 9l6 6 6-6"/>'};
+/* 아이콘 (10/14): 이모지 대신 선 아이콘. 글자 크기(1em)를 따라간다. duck은 오리 로고 */
+function ico(n,cls){
+  if(n==='duck')return '<svg class="ico ico-duck'+(cls?' '+cls:'')+'" viewBox="0 0 120 100" aria-hidden="true"><use href="#duck-logo"></use></svg>';
+  return '<svg class="ico'+(cls?' '+cls:'')+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(ICONS[n]||'')+'</svg>';
+}
 function photoField(urls){return(urls&&urls.length)?urls.map(function(u){return{url:u};}):null;}
 function groupBy(rows,key){
   var m={};
@@ -209,14 +232,14 @@ function gsClose(){var d=$('gs-dropdown');if(d){d.classList.remove('open');d.inn
 function gsRender(q){
   var d=$('gs-dropdown');if(!d)return;
   var results=[];
-  DB.shows.filter(function(s){return(fld(s,'공연명')||'').includes(q);}).slice(0,4).forEach(function(s){var trid=ids(fld(s,'극단'))[0]||'';results.push({type:'show',id:s.id,icon:'🎭',name:fld(s,'공연명'),sub:nm(trid)||fld(s,'공연 날짜')||''});});
-  DB.people.filter(function(p){return(fld(p,'이름')||'').includes(q);}).slice(0,4).forEach(function(p){var cnt=DB.history.filter(function(h){return isValidH(h)&&ids(fld(h,'참여자')).indexOf(p.id)>-1;}).length;results.push({type:'person',id:p.id,icon:'👤',name:fld(p,'이름'),sub:cnt+'개 이력'});});
-  DB.works.filter(function(w){return(fld(w,'작품명')||'').includes(q);}).slice(0,3).forEach(function(w){var cnt=DB.shows.filter(function(s){return ids(fld(s,'작품')).indexOf(w.id)>-1;}).length;results.push({type:'work',id:w.id,icon:'📖',name:fld(w,'작품명'),sub:'공연 '+cnt+'개'});});
-  DB.troupes.filter(function(t){return(fld(t,'극단명')||'').includes(q);}).slice(0,3).forEach(function(t){var cnt=DB.shows.filter(function(s){return ids(fld(s,'극단')).indexOf(t.id)>-1;}).length;results.push({type:'troupe',id:t.id,icon:'🏢',name:fld(t,'극단명'),sub:'공연 '+cnt+'개'});});
-  DB.venues.filter(function(v){return(fld(v,'극장명')||'').includes(q);}).slice(0,3).forEach(function(v){var cnt=DB.shows.filter(function(s){return ids(fld(s,'극장')).indexOf(v.id)>-1;}).length;results.push({type:'venue',id:v.id,icon:'📍',name:fld(v,'극장명'),sub:'공연 '+cnt+'개'});});
-  DB.roles.filter(function(r){return(fld(r,'배역명')||'').includes(q);}).slice(0,4).forEach(function(r){var wid=ids(fld(r,'작품'))[0]||'';var actCnt=DB.history.filter(function(h){return isValidH(h)&&ids(fld(h,'배역')).indexOf(r.id)>-1;}).length;results.push({type:'role',id:r.id,icon:'🎬',name:fld(r,'배역명'),sub:(nm(wid)?nm(wid)+' · ':'')+actCnt+'명 출연'});});
+  DB.shows.filter(function(s){return(fld(s,'공연명')||'').includes(q);}).slice(0,4).forEach(function(s){var trid=ids(fld(s,'극단'))[0]||'';results.push({type:'show',id:s.id,icon:ico('mask'),name:fld(s,'공연명'),sub:nm(trid)||fld(s,'공연 날짜')||''});});
+  DB.people.filter(function(p){return(fld(p,'이름')||'').includes(q);}).slice(0,4).forEach(function(p){var cnt=DB.history.filter(function(h){return isValidH(h)&&ids(fld(h,'참여자')).indexOf(p.id)>-1;}).length;results.push({type:'person',id:p.id,icon:ico('user'),name:fld(p,'이름'),sub:cnt+'개 이력'});});
+  DB.works.filter(function(w){return(fld(w,'작품명')||'').includes(q);}).slice(0,3).forEach(function(w){var cnt=DB.shows.filter(function(s){return ids(fld(s,'작품')).indexOf(w.id)>-1;}).length;results.push({type:'work',id:w.id,icon:ico('book'),name:fld(w,'작품명'),sub:'공연 '+cnt+'개'});});
+  DB.troupes.filter(function(t){return(fld(t,'극단명')||'').includes(q);}).slice(0,3).forEach(function(t){var cnt=DB.shows.filter(function(s){return ids(fld(s,'극단')).indexOf(t.id)>-1;}).length;results.push({type:'troupe',id:t.id,icon:ico('building'),name:fld(t,'극단명'),sub:'공연 '+cnt+'개'});});
+  DB.venues.filter(function(v){return(fld(v,'극장명')||'').includes(q);}).slice(0,3).forEach(function(v){var cnt=DB.shows.filter(function(s){return ids(fld(s,'극장')).indexOf(v.id)>-1;}).length;results.push({type:'venue',id:v.id,icon:ico('pin'),name:fld(v,'극장명'),sub:'공연 '+cnt+'개'});});
+  DB.roles.filter(function(r){return(fld(r,'배역명')||'').includes(q);}).slice(0,4).forEach(function(r){var wid=ids(fld(r,'작품'))[0]||'';var actCnt=DB.history.filter(function(h){return isValidH(h)&&ids(fld(h,'배역')).indexOf(r.id)>-1;}).length;results.push({type:'role',id:r.id,icon:ico('clapper'),name:fld(r,'배역명'),sub:(nm(wid)?nm(wid)+' · ':'')+actCnt+'명 출연'});});
   if(CURRENT_USER){
-    MY_PROJECTS_CACHE.filter(function(p){return(p.title||'').includes(q);}).slice(0,3).forEach(function(p){results.push({type:'project',id:p.id,icon:'🎪',name:p.title||'새 프로젝트',sub:'내 프로젝트'});});
+    MY_PROJECTS_CACHE.filter(function(p){return(p.title||'').includes(q);}).slice(0,3).forEach(function(p){results.push({type:'project',id:p.id,icon:ico('stage'),name:p.title||'새 프로젝트',sub:'내 프로젝트'});});
   }
   _gsItems=results;_gsFocusIdx=-1;
   if(!results.length){d.innerHTML='<div class="gs-empty">검색 결과 없음</div>';d.classList.add('open');return;}
@@ -258,15 +281,15 @@ function detectLinkPlatform(url){
   var host='';
   try{host=new URL(url).hostname.replace(/^www\./,'').toLowerCase();}catch(e){return null;}
   var table=[
-    [/instagram\.com/,'Instagram','📷'],
+    [/instagram\.com/,'Instagram',ico('camera')],
     [/(youtube\.com|youtu\.be)/,'YouTube','▶'],
     [/(twitter\.com|x\.com)/,'X','𝕏'],
     [/facebook\.com/,'Facebook','f'],
-    [/blog\.naver\.com/,'네이버 블로그','📝'],
-    [/tiktok\.com/,'TikTok','🎵'],
+    [/blog\.naver\.com/,'네이버 블로그',ico('note')],
+    [/tiktok\.com/,'TikTok',ico('music')],
     [/threads\.net/,'Threads','@'],
-    [/open\.kakao\.com|pf\.kakao\.com/,'카카오채널','💬'],
-    [/linktr\.ee/,'Linktree','🔗'],
+    [/open\.kakao\.com|pf\.kakao\.com/,'카카오채널',ico('chat')],
+    [/linktr\.ee/,'Linktree',ico('link')],
     [/vimeo\.com/,'Vimeo','▶'],
   ];
   for(var i=0;i<table.length;i++){if(table[i][0].test(host))return {name:table[i][1],icon:table[i][2]};}
@@ -310,11 +333,10 @@ function setNav(v,projectId){
   document.body.classList.toggle('sec-archive',sec==='archive');
   document.body.classList.toggle('is-home',v==='home');
   document.body.classList.remove('search-open');
-  ['archive','match','mine'].forEach(function(n){var el=$('gnav-'+n);if(el)el.classList.toggle('active',n===sec);});
   ['home','works','shows','people','troupes','venues','roles'].forEach(function(n){var el=$('chip-'+n);if(el)el.classList.toggle('active',n===v);});
   // 레일·아래 탭: 마이페이지는 열린 탭(지원·저장·기록)으로 가린다
   var tab=(v==='mypage'||v==='apply')?(window._myPageTab||'records'):'';
-  var on={home:v==='home',offers:v==='offers',apply:tab==='apply',saved:tab==='saved',records:tab==='records'||tab==='info',make:make};
+  var on={home:sec==='archive',match:v==='projects',offers:v==='offers',apply:tab==='apply',saved:tab==='saved',records:tab==='records',make:make};
   Object.keys(on).forEach(function(n){var r=$('rail-'+n);if(r)r.classList.toggle('active',on[n]);var m=$('mobt-'+n);if(m)m.classList.toggle('active',on[n]);});
   window._currentProjectNav=v==='project'?projectId:null;
   document.querySelectorAll('#make-nav-projects button').forEach(function(b){b.classList.toggle('active',b.dataset.pid===window._currentProjectNav);});
@@ -329,6 +351,15 @@ function toggleRail(){
 (function(){var pref=null;try{pref=localStorage.getItem('ori-rail');}catch(e){}
   var mini=pref?pref==='mini':window.innerWidth<1300;
   document.addEventListener('DOMContentLoaded',function(){document.body.classList.toggle('rail-mini',mini);});})();
+/* 레일의 내 프로젝트 목록 접기·펴기 (기억) */
+function toggleRailProjects(force){
+  var el=$('rail-projects');if(!el)return;
+  var closed=force!==undefined?force:!el.classList.contains('closed');
+  el.classList.toggle('closed',closed);
+  var b=$('rail-proj-toggle');if(b)b.setAttribute('aria-expanded',closed?'false':'true');
+  try{localStorage.setItem('ori-rail-proj',closed?'closed':'open');}catch(e){}
+}
+document.addEventListener('DOMContentLoaded',function(){var c=null;try{c=localStorage.getItem('ori-rail-proj');}catch(e){}if(c==='closed')toggleRailProjects(true);});
 /* 검색 버튼: 입력한 말로 결과를 열고, 하나뿐이면 바로 간다 */
 function gsGo(){var i=$('gs-input');if(!i)return;if(!i.value.trim()){i.focus();return;}gsInput();gsOpen();if(_gsItems&&_gsItems.length===1)gsSelect(0);else i.focus();}
 /* ── 오리 스타일 모달 (네이티브 alert/confirm/prompt 대체) ── */

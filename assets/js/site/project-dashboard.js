@@ -339,7 +339,7 @@ function dashLicenseTip(D){
 async function dashCostRecs(a,D){
   var r=await sbClient.rpc('budget_benchmarks');
   var rows=(r.data||[]).filter(function(b){return a[3]==='budget'||b.category===a[5];});
-  if(!rows.length)return '<p class="dash-hint dash-cost">💰 예상 비용: 비슷한 프로젝트의 기록이 3건 이상 모이면 알려드려요. 공연이 끝나고 예산 탭에 실제 쓴 금액을 적어주면 다음 프로젝트들의 추천이 정확해져요.</p>';
+  if(!rows.length)return '<p class="dash-hint dash-cost">'+ico('coin')+' 예상 비용: 비슷한 프로젝트의 기록이 3건 이상 모이면 알려드려요. 공연이 끝나고 예산 탭에 실제 쓴 금액을 적어주면 다음 프로젝트들의 추천이 정확해져요.</p>';
   return dashRecBlock('예상 비용','오리에서 진행한 프로젝트들의 중앙값',rows.map(function(b){
     return dashRecRow(escHtml(b.category),'계획 '+dashWon(b.median_planned)+(b.median_actual!=null?' · 실제 '+dashWon(b.median_actual):'')+' · 프로젝트 '+b.n_projects+'개','');
   }));

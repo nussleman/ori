@@ -85,7 +85,7 @@ function renderWorkIndex(){
   var resultH='';
 
   var listH='';
-  if(!filtered.length){listH='<div class="result-empty"><div class="result-empty-icon">📖</div>조건에 맞는 작품이 없어요.'+fbEmptyReset('works')+'</div>';}
+  if(!filtered.length){listH='<div class="result-empty"><div class="result-empty-icon">'+ico('book')+'</div>조건에 맞는 작품이 없어요.'+fbEmptyReset('works')+'</div>';}
   else if(_workIndexView==='grid'){
     listH='<div class="result-grid">';
     filtered.forEach(function(w){
@@ -100,7 +100,7 @@ function renderWorkIndex(){
         tagsRowH='<div class="result-card-tags">'+(genre?'<span class="result-card-tag">'+genre+'</span>':'')+wTags.map(function(t){return '<span class="result-card-tag">'+t+'</span>';}).join('')+'</div>';
       }
       var wPhoto=(fld(w,'사진')||[])[0];
-      var wPhotoH=wPhoto?'<img src="'+wPhoto.url+'" style="width:100%;height:100%;object-fit:cover;border-radius:8px">':'📖';
+      var wPhotoH=wPhoto?'<img src="'+wPhoto.url+'" style="width:100%;height:100%;object-fit:cover;border-radius:8px">':ico('book');
       listH+='<div class="result-card" data-action="work" data-id="'+w.id+'">'+favBtnHtml('work',w.id)+wishBtnHtml('work',w.id)
         +'<div class="result-card-ph">'+wPhotoH+'</div><div class="result-card-body"><div class="result-card-title">'+fld(w,'작품명')+'</div>'+(fld(w,'작품명 (영문)')?'<div class="result-card-sub">'+fld(w,'작품명 (영문)')+'</div>':'')+(countryLabel?'<div class="result-card-sub">'+countryLabel+'</div>':'')+'<div class="result-card-sub">'+([workStageLabel(w.id)||(shows.length?'공연 '+shows.length+'개':''),roleCnt?'배역 '+roleCnt+'명':''].filter(Boolean).join(' · ')||'&nbsp;')+'</div>'+tagsRowH+'</div></div>';
     });
@@ -113,7 +113,7 @@ function renderWorkIndex(){
       var country=fld(w,'국가')||fld(w,'원작국가')||fld(w,'나라')||'';
       var countryLabel=Array.isArray(country)?country.join(', '):country;
       var genre=workGenre(w);
-      listH+='<div class="result-row" data-action="work" data-id="'+w.id+'"><div class="rr-poster">📖</div><div class="rr-main"><div class="rr-title">'+fld(w,'작품명')+'</div><div class="rr-meta">'+(genre?'<span class="rr-tag" style="color:var(--accent)">'+genre+'</span>':'')+(fld(w,'작품명 (영문)')?'<span class="rr-tag">'+fld(w,'작품명 (영문)')+'</span>':'')+(countryLabel?'<span class="rr-tag">'+countryLabel+'</span>':'')+'<span class="rr-tag">'+(workStageLabel(w.id)||'공연 '+shows.length+'개')+'</span>'+(roleCnt?'<span class="rr-tag">배역 '+roleCnt+'명</span>':'')+'</div></div></div>';
+      listH+='<div class="result-row" data-action="work" data-id="'+w.id+'"><div class="rr-poster">'+ico('book')+'</div><div class="rr-main"><div class="rr-title">'+fld(w,'작품명')+'</div><div class="rr-meta">'+(genre?'<span class="rr-tag" style="color:var(--accent)">'+genre+'</span>':'')+(fld(w,'작품명 (영문)')?'<span class="rr-tag">'+fld(w,'작품명 (영문)')+'</span>':'')+(countryLabel?'<span class="rr-tag">'+countryLabel+'</span>':'')+'<span class="rr-tag">'+(workStageLabel(w.id)||'공연 '+shows.length+'개')+'</span>'+(roleCnt?'<span class="rr-tag">배역 '+roleCnt+'명</span>':'')+'</div></div></div>';
     });
     listH+='</div>';
   }
@@ -132,14 +132,14 @@ function showWork(wid,push){
   var photos=fld(work,'사진')||[];
   dvRender({
     type:'work',id:wid,back:{label:'작품 목록',go:'goWorks()'},hero:true,
-    thumb:{url:iurl(photos),shape:'poster',ph:'📖'},
+    thumb:{url:iurl(photos),shape:'poster',ph:ico('book')},
     kicker:'작품'+(workGenre(work)?' · '+escHtml(workGenre(work)):''),
     title:fld(work,'작품명'),
     sub:fld(work,'작품명 (영문)')?escHtml(fld(work,'작품명 (영문)')):'',
     tags:fld(work,'태그')||[],
     favs:[dvFavIcon('work',wid),dvFavIcon('work',wid,'wishlist')],
     info:[['국가',escHtml(country)],['초연',fld(work,'초연 연도')?fld(work,'초연 연도')+'년':''],['등장인물',roles.length?roles.length+'명':'']],
-    primary:dvActBtn('이 작품으로 프로젝트 시작','startProjectFromWork(\''+wid+'\')','🎭',true)+reviewBtn('work',wid),
+    primary:dvActBtn('이 작품으로 프로젝트 시작','startProjectFromWork(\''+wid+'\')',ico('mask'),true)+reviewBtn('work',wid),
     links:[dvTextLink('라이선스 문의','openLicenseInquiry(\'\',\''+wid+'\')'),dvEditBtn('work',wid)],
     sections:[
       {title:'이 작품을 올리려면',body:'<div id="work-hub-'+wid+'" class="wh"><div class="hf-loading">불러오는 중…</div></div>',peek:true},
@@ -190,7 +190,7 @@ async function renderWorkHub(wid,roles,shows){
     }).join('')+'</div></div>';
   }
   h+='<div id="wh-demand-'+wid+'" class="wh-demand"></div>';
-  h+='<div class="wh-acts">'+dvActBtn('라이선스 문의','openLicenseInquiry(\'\',\''+wid+'\')','✉️')+'</div>';
+  h+='<div class="wh-acts">'+dvActBtn('라이선스 문의','openLicenseInquiry(\'\',\''+wid+'\')',ico('mail'))+'</div>';
   el.innerHTML=h;
   renderDemandBox(wid);
 }
