@@ -316,7 +316,7 @@ function renderMyPageWishlist(el){
 }
 function goMyPage(push,keepTab){
   if(push!==false)history.pushState({view:'mypage'},'','#mypage');
-  setNav('mypage');sb('');_sbContext='';mobShowDetail();
+  setNav(keepTab&&window._myPageTab==='apply'?'apply':'mypage');sb('');_sbContext='';mobShowDetail();  // 지원 현황은 "기회" 갈래 안의 화면
   if(!CURRENT_USER){
     mn('<div class="tab-index"><div class="result-empty"><div class="result-empty-icon">👤</div><div style="font-size:0.95rem;margin-bottom:0.4rem">로그인이 필요해요</div><div style="font-size:0.8rem;color:var(--muted);margin-bottom:1rem">구글 계정으로 로그인하면 즐겨찾기를 저장할 수 있어요.</div><button class="pf-btn" onclick="loginWithGoogle()">구글로 로그인</button></div></div>');
     return;

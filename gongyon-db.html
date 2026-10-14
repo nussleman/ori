@@ -13,7 +13,7 @@
 <meta name="twitter:description" content="프로와 아마추어를 가리지 않는 연극·뮤지컬 공연 기록. 사람·극장·작품으로 이어지는 이력을 찾아보고, 내 공연의 기획부터 라이선스·제작·운영까지 한 곳에서.">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&display=swap">
-<link rel="stylesheet" href="assets/css/site.css?v=20261014g">
+<link rel="stylesheet" href="assets/css/site.css?v=20261014h">
 </head>
 <body>
 
@@ -50,15 +50,18 @@
 <div class="page-wrap">
   <!-- 좌측 메뉴: 모드(둘러보기 / 만들기)에 따라 둘 중 하나만 보인다 (body.mode-make) -->
   <nav class="left-nav">
-    <nav id="main-nav" class="nav-browse" aria-label="둘러보기">
-      <button id="nav-home" onclick="goHome()">홈</button>
-      <button id="nav-shows" onclick="goShows()">공연</button>
+    <nav id="main-nav" class="nav-browse" aria-label="아카이브">
+      <button id="nav-home" onclick="goHome()">아카이브 홈</button>
       <button id="nav-works" onclick="goWorks()">작품</button>
+      <button id="nav-shows" onclick="goShows()">공연</button>
       <button id="nav-people" onclick="goPeople()">사람</button>
       <button id="nav-troupes" onclick="goTroupes()">단체</button>
       <button id="nav-venues" onclick="goVenues()">극장</button>
-      <div class="nav-divider"></div>
-      <button id="nav-projects" onclick="goProjectBrowse()">기회</button>
+    </nav>
+    <nav id="match-nav" class="nav-match" aria-label="기회">
+      <button id="nav-projects" onclick="goProjectBrowse()">열린 기회</button>
+      <button id="nav-offers" onclick="goOffers()">나한테 온 제안</button>
+      <button id="nav-apply" onclick="goMyPageTab('apply')">내가 지원한 곳</button>
     </nav>
     <nav id="make-nav" class="nav-make" aria-label="만들기">
       <button id="nav-make" onclick="goMake()">내 프로젝트</button>
@@ -72,7 +75,11 @@
   <div class="content-area">
     <div class="top-bar" id="top-bar">
       <div class="top-bar-title" onclick="goHome()"><svg class="logo-mark"><use href="#duck-logo"></use></svg>오리</div>
-      <span class="mode-badge" title="만들기 모드 — 프로필 메뉴에서 둘러보기로 돌아가요">만들기</span>
+      <nav class="gnav" aria-label="주 메뉴">
+        <button type="button" id="gnav-archive" onclick="goHome()">아카이브</button>
+        <button type="button" id="gnav-match" onclick="goProjectBrowse()">기회</button>
+        <button type="button" id="gnav-mine" onclick="goMake()">내 프로젝트</button>
+      </nav>
       <div class="global-search" id="gs-wrap">
         <span class="gs-icon">🔍</span>
         <input id="gs-input" type="text" placeholder="검색…" autocomplete="off"
@@ -104,9 +111,6 @@
   <button class="profile-dropdown-item" onclick="closeProfileDropdown();goMyPageTab('apply')">📮 지원 현황</button>
   <button class="profile-dropdown-item" onclick="closeProfileDropdown();goMyPageTab('saved')">🦆 저장한 것</button>
   <button class="profile-dropdown-item" onclick="closeProfileDropdown();goMyPageTab('info')">👤 내 정보</button>
-  <div class="profile-dropdown-divider"></div>
-  <button class="profile-dropdown-item pd-mode pd-to-make" onclick="closeProfileDropdown();enterMakeMode()">🎬 만들기 모드로 전환<small>공연을 기획·제작하거나 참여 중인 프로젝트로</small></button>
-  <button class="profile-dropdown-item pd-mode pd-to-browse" onclick="closeProfileDropdown();leaveMakeMode()">🦆 둘러보기로 돌아가기</button>
   <div class="profile-dropdown-divider"></div>
   <button class="profile-dropdown-item" onclick="closeProfileDropdown();logout()">↩ 로그아웃</button>
 </div>
@@ -228,47 +232,51 @@
 
 <nav class="mobile-tab-bar mob-browse" id="mob-nav">
   <button class="mob-tab" id="mobt-home" onclick="goHome()"><span class="mob-icon">🦆</span>홈</button>
-  <button class="mob-tab" id="mobt-shows" onclick="goShows()"><span class="mob-icon">🎭</span>공연</button>
   <button class="mob-tab" id="mobt-works" onclick="goWorks()"><span class="mob-icon">📖</span>작품</button>
+  <button class="mob-tab" id="mobt-shows" onclick="goShows()"><span class="mob-icon">🎭</span>공연</button>
   <button class="mob-tab" id="mobt-people" onclick="goPeople()"><span class="mob-icon">👤</span>사람</button>
-  <button class="mob-tab" id="mobt-projects" onclick="goProjectBrowse()"><span class="mob-icon">📣</span>기회</button>
+  <button class="mob-tab" id="mobt-troupes" onclick="goTroupes()"><span class="mob-icon">🏠</span>단체</button>
+</nav>
+<nav class="mobile-tab-bar mob-match" id="mob-nav-match">
+  <button class="mob-tab" id="mobt-projects" onclick="goProjectBrowse()"><span class="mob-icon">📣</span>열린 기회</button>
+  <button class="mob-tab" id="mobt-offers" onclick="goOffers()"><span class="mob-icon">✉️</span>받은 제안</button>
+  <button class="mob-tab" id="mobt-apply" onclick="goMyPageTab('apply')"><span class="mob-icon">📮</span>내 지원</button>
 </nav>
 <nav class="mobile-tab-bar mob-make" id="mob-nav-make">
   <button class="mob-tab" id="mobt-make" onclick="goMake()"><span class="mob-icon">🎬</span>내 프로젝트</button>
   <button class="mob-tab" onclick="startNewProject()"><span class="mob-icon">＋</span>새 프로젝트</button>
-  <button class="mob-tab" onclick="leaveMakeMode()"><span class="mob-icon">🦆</span>둘러보기로</button>
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/config.js?v=20261014g"></script>
-<script src="assets/js/site/core.js?v=20261014g"></script>
-<script src="assets/js/site/filters.js?v=20261014g"></script>
-<script src="assets/js/site/detail.js?v=20261014g"></script>
-<script src="assets/js/site/account.js?v=20261014g"></script>
-<script src="assets/js/site/edit-request.js?v=20261014g"></script>
-<script src="assets/js/site/mypage.js?v=20261014g"></script>
-<script src="assets/js/site/troupe-shows.js?v=20261014g"></script>
-<script src="assets/js/site/my-history.js?v=20261014g"></script>
-<script src="assets/js/site/project.js?v=20261014g"></script>
-<script src="assets/js/site/project-home.js?v=20261014g"></script>
-<script src="assets/js/site/project-dashboard.js?v=20261014g"></script>
-<script src="assets/js/site/project-budget.js?v=20261014g"></script>
-<script src="assets/js/site/project-props.js?v=20261014g"></script>
-<script src="assets/js/site/project-schedule.js?v=20261014g"></script>
-<script src="assets/js/site/project-wizard.js?v=20261014g"></script>
-<script src="assets/js/site/project-browse.js?v=20261014g"></script>
-<script src="assets/js/site/pages.js?v=20261014g"></script>
-<script src="assets/js/site/home.js?v=20261014g"></script>
-<script src="assets/js/site/shows.js?v=20261014g"></script>
-<script src="assets/js/site/works.js?v=20261014g"></script>
-<script src="assets/js/site/roles.js?v=20261014g"></script>
-<script src="assets/js/site/people.js?v=20261014g"></script>
-<script src="assets/js/site/troupes.js?v=20261014g"></script>
-<script src="assets/js/site/venues.js?v=20261014g"></script>
-<script src="assets/js/site/peek.js?v=20261014g"></script>
-<script src="assets/js/site/make.js?v=20261014g"></script>
-<script src="assets/js/site/bridges.js?v=20261014g"></script>
-<script src="assets/js/site/reviews.js?v=20261014g"></script>
-<script src="assets/js/site/router.js?v=20261014g"></script>
+<script src="assets/js/config.js?v=20261014h"></script>
+<script src="assets/js/site/core.js?v=20261014h"></script>
+<script src="assets/js/site/filters.js?v=20261014h"></script>
+<script src="assets/js/site/detail.js?v=20261014h"></script>
+<script src="assets/js/site/account.js?v=20261014h"></script>
+<script src="assets/js/site/edit-request.js?v=20261014h"></script>
+<script src="assets/js/site/mypage.js?v=20261014h"></script>
+<script src="assets/js/site/troupe-shows.js?v=20261014h"></script>
+<script src="assets/js/site/my-history.js?v=20261014h"></script>
+<script src="assets/js/site/project.js?v=20261014h"></script>
+<script src="assets/js/site/project-home.js?v=20261014h"></script>
+<script src="assets/js/site/project-dashboard.js?v=20261014h"></script>
+<script src="assets/js/site/project-budget.js?v=20261014h"></script>
+<script src="assets/js/site/project-props.js?v=20261014h"></script>
+<script src="assets/js/site/project-schedule.js?v=20261014h"></script>
+<script src="assets/js/site/project-wizard.js?v=20261014h"></script>
+<script src="assets/js/site/project-browse.js?v=20261014h"></script>
+<script src="assets/js/site/pages.js?v=20261014h"></script>
+<script src="assets/js/site/home.js?v=20261014h"></script>
+<script src="assets/js/site/shows.js?v=20261014h"></script>
+<script src="assets/js/site/works.js?v=20261014h"></script>
+<script src="assets/js/site/roles.js?v=20261014h"></script>
+<script src="assets/js/site/people.js?v=20261014h"></script>
+<script src="assets/js/site/troupes.js?v=20261014h"></script>
+<script src="assets/js/site/venues.js?v=20261014h"></script>
+<script src="assets/js/site/peek.js?v=20261014h"></script>
+<script src="assets/js/site/make.js?v=20261014h"></script>
+<script src="assets/js/site/bridges.js?v=20261014h"></script>
+<script src="assets/js/site/reviews.js?v=20261014h"></script>
+<script src="assets/js/site/router.js?v=20261014h"></script>
 </body>
 </html>
