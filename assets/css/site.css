@@ -1863,3 +1863,13 @@ body.sec-archive.show-chips .fbar{top:calc(64px + var(--chips-h))}
 #nx-pop{transform:scale(0.86);transition:opacity .24s ease .12s,transform .32s cubic-bezier(.2,.8,.2,1) .12s}
 #nx-pop.on{transform:scale(1)}
 #nx-pop.closing{transition:opacity .16s ease,transform .2s ease}
+
+/* 미리보기 창 (10/14 개정): 카드 크기에서 커지는 움직임. transform은 JS가 카드 자리 → 제자리로 */
+#nx-pop{opacity:0;transition:transform .34s cubic-bezier(.2,.8,.2,1),opacity .12s ease,box-shadow .34s ease;box-shadow:0 0 0 1px var(--line)}
+#nx-pop.on{opacity:1;box-shadow:0 22px 60px rgba(0,0,0,0.5),0 0 0 1px var(--line)}
+#nx-pop.closing{opacity:1;transition:transform .22s cubic-bezier(.4,0,.6,1),box-shadow .22s ease,opacity .1s ease .14s}
+.pop-body{opacity:0;transform:translateY(-8px);transition:opacity .2s ease,transform .26s ease}
+#nx-pop.on .pop-body{opacity:1;transform:none;transition-delay:.18s}
+#nx-pop.closing .pop-body{transition-duration:.08s;transition-delay:0s}
+.nx-card.popping,.result-card.popping{opacity:0;transition:opacity .08s ease}
+@media (prefers-reduced-motion:reduce){#nx-pop,.pop-body{transition:none!important}}
