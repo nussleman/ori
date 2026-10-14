@@ -309,7 +309,7 @@ function setNav(v,projectId){
   window._currentProjectNav=v==='project'?projectId:null;
   document.querySelectorAll('#make-nav-projects button').forEach(function(b){b.classList.toggle('active',b.dataset.pid===window._currentProjectNav);});
   // 첫 화면에서는 검색창이 화면 가운데(home.js)로 옮겨가 있다 — 다른 화면에선 상단바로 되돌린다
-  if(v!=='home'){var wrap=$('gs-wrap'),bar=$('top-bar');if(wrap&&bar&&wrap.parentNode!==bar)bar.appendChild(wrap);}
+  if(v!=='home'){var wrap=$('gs-wrap'),bar=$('top-bar');if(wrap&&bar&&wrap.parentNode!==bar)bar.appendChild(wrap);var gi=$('gs-input');if(gi)gi.placeholder='검색…';}
 }
 /* ── 오리 스타일 모달 (네이티브 alert/confirm/prompt 대체) ── */
 var _oriModalResolve=null;

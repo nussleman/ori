@@ -1,5 +1,5 @@
 /* 오리 사이트 — 첫 화면 (4단계 입구 재구성)
-   만드는 사람에게 거는 한 문장 + 검색 + 두 갈래(작품 찾기 / 내 공연 시작하기).
+   위 한 줄(둘러볼 곳 / 내 프로젝트·프로필) + 가운데 한 문장과 검색 하나.
    아래로는 많이 올라간 작품(작품 허브로) → 지금 모집 중인 자리 → 최근 공연. 관객용 기능은 키우지 않는다 (direction.md) */
 /* ══ 홈: 한가운데 검색창만 있는 랜딩 화면 ══ */
 function goHome(push){
@@ -13,15 +13,19 @@ function renderHome(){
   var shows=sortShows(DB.shows.filter(function(s){return fld(s,'공연명');}));
   var people=DB.people.filter(function(p){return fld(p,'이름');});
   var hasProj=MY_PROJECTS_CACHE&&MY_PROJECTS_CACHE.length;
-  var heroH='<div class="home-hero">'
-    +'<div class="home-hero-top"><div class="home-hero-tagline">연극·뮤지컬을 만드는 사람들</div><div class="home-hero-title"><svg class="logo-mark"><use href="#duck-logo"></use></svg>오리</div>'
-    +'<div class="home-hero-pitch">올리고 싶은 작품을 찾고, 함께할 사람을 만나고,<br>정식으로 허락받아 무대에 올려요.</div></div>'
+  // 위 한 줄: 왼쪽은 둘러볼 곳(아카이브), 오른쪽은 내 것(내 프로젝트 + 프로필 아이콘). 가운데는 문장 + 검색 하나만
+  var headH='<div class="home-head"><nav class="home-head-nav" aria-label="둘러보기">'
+    +'<button type="button" onclick="goShows()">공연</button><button type="button" onclick="goWorks()">작품</button>'
+    +'<button type="button" onclick="goPeople()">사람</button><button type="button" onclick="goTroupes()">단체</button>'
+    +'<button type="button" onclick="goVenues()">극장</button><span class="home-head-sep"></span>'
+    +'<button type="button" onclick="goProjectBrowse()">기회</button></nav>'
+    +'<button type="button" class="home-head-make" id="home-start" onclick="homeStart()">'+(hasProj?'내 프로젝트':'내 공연 시작하기')+'</button></div>';
+  var heroH='<div class="home-hero">'+headH
+    +'<div class="home-hero-top"><div class="home-hero-tagline">연극·뮤지컬을 만드는 사람들</div>'
+    +'<h1 class="home-hero-title"><svg class="logo-mark" aria-hidden="true"><use href="#duck-logo"></use></svg>오리</h1>'
+    +'<div class="home-hero-pitch">올리고 싶던 그 작품, 이번엔 정식으로.</div></div>'
     +'<div class="home-hero-search" id="home-search-slot"></div>'
-    +'<div class="home-hero-bottom"><div class="home-hero-cta">'
-    +'<button type="button" class="pf-btn" onclick="goWorks()">작품 찾기</button>'
-    +'<button type="button" class="pf-btn pf-active" id="home-start" onclick="homeStart()">'+(hasProj?'내 프로젝트로 →':'내 공연 시작하기')+'</button></div>'
-    +'<div class="home-hero-stats">공연 <em>'+shows.length+'</em>편 · 사람 <em>'+people.length+'</em>명 · 작품 <em>'+DB.works.length+'</em>개</div>'
-    +'<div class="home-scroll">아래로 둘러보기 ↓</div></div>'
+    +'<div class="home-hero-bottom"><div class="home-scroll">아래로 둘러보기 ↓</div></div>'
     +'</div>';
   // 첫 화면 아래: 최근 공연(둘러보고 기록 남기기)과 지금 모집 중인 자리(기회)
   var feed='<div class="home-feed">'
@@ -34,10 +38,11 @@ function renderHome(){
   // 검색창을 사이드바/상단바가 아닌 홈 히어로 한가운데로 옮긴다
   var slot=$('home-search-slot');
   if(wrap&&slot)slot.appendChild(wrap);
+  var gi=$('gs-input');if(gi)gi.placeholder='작품, 사람, 극장 이름으로 찾아보기';
   loadHomeOpps();
   loadHomeWorks();
   // 내 프로젝트 목록이 늦게 오면 버튼 이름을 그때 맞춘다
-  if(!hasProj&&CURRENT_USER)loadMyProjectsCache().then(function(){var b=$('home-start');if(b&&MY_PROJECTS_CACHE.length)b.textContent='내 프로젝트로 →';});
+  if(!hasProj&&CURRENT_USER)loadMyProjectsCache().then(function(){var b=$('home-start');if(b&&MY_PROJECTS_CACHE.length)b.textContent='내 프로젝트';});
 }
 /* 내 공연 시작하기: 이미 프로젝트가 있으면 내 프로젝트로, 없으면 새로 (누르는 순간의 목록으로 판단 — 실수로 새 프로젝트가 생기지 않게) */
 async function homeStart(){
