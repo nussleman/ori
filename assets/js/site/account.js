@@ -35,9 +35,9 @@ function logout(){
   sbClient.auth.signOut().then(function(){location.reload();});
 }
 function handleProfileFabClick(){
-  if(!CURRENT_USER)return;
   var dd=$('profile-dropdown');
   if(!dd)return;
+  dd.classList.toggle('anon',!CURRENT_USER);  // 로그인 전엔 화면 설정과 로그인만
   dd.classList.toggle('open');
 }
 function closeProfileDropdown(){
