@@ -1572,48 +1572,90 @@ body.mode-make .pd-to-browse{display:block}
 @keyframes ori-new{0%{background:rgba(212,175,106,0.22)}100%{background:transparent}}
 .is-new{animation:ori-new 1.6s var(--ease-out)}
 
-/* 첫 화면 (10/14): 한 화면, 같은 크기 상자 세 개 — 1 정보 찾기 · 2 기회와 제안 · 3 프로젝트 */
+/* 첫 화면 (10/14): "내 연습실에 왔다" — 불 꺼진 방, 정면 화이트보드(내 공연)에만 핀 조명. 옆 벽 쪽지, 구석 서가 */
 body.is-home .home-nav-dock{display:none}
-.home-one{min-height:calc(100vh - 4rem);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.6rem;text-align:center}
-.home-brand .home-hero-title{margin-top:0.9rem}
-.home-boxes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;width:100%;max-width:1080px;text-align:left}
-.home-box{display:flex;flex-direction:column;gap:1rem;height:280px;padding:1.4rem 1.4rem 1.2rem;background:var(--bg2);border:1px solid var(--line);border-radius:16px}
-.home-box-head{display:flex;align-items:baseline;gap:0.6rem}
-.home-box-num{font-size:0.78rem;color:var(--accent);font-weight:500}
-.home-box-title{font-size:1.1rem;font-weight:500;color:var(--text);margin:0}
-.home-box-body{display:flex;flex-direction:column;gap:0.5rem;flex:1;min-height:0}
-.home-box .global-search{max-width:none;width:100%}
-.home-box .global-search input{padding:0.7rem 0.9rem 0.7rem 2.4rem;font-size:0.9rem;border-radius:10px}
-.home-box .gs-icon{left:0.85rem;font-size:0.9rem}
-.home-box .gs-dropdown{right:auto;min-width:100%;width:420px;max-width:80vw}
-.home-jump{display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.3rem}
-.home-jump button{background:none;border:1px solid var(--line);color:var(--muted);font-family:inherit;font-size:0.8rem;padding:0.35rem 0.85rem;border-radius:16px;cursor:pointer;transition:color var(--dur-fast,150ms),border-color var(--dur-fast,150ms)}
-.home-jump button:hover{color:var(--text);border-color:rgba(255,255,255,0.25)}
-.home-row{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:0.15rem;width:100%;padding:0.75rem 2rem 0.75rem 0.95rem;background:rgba(255,255,255,0.025);border:1px solid var(--line);border-radius:11px;color:var(--text);font-family:inherit;text-align:left;cursor:pointer;transition:border-color var(--dur-fast,150ms),background var(--dur-fast,150ms)}
-.home-row:hover{border-color:rgba(200,169,110,0.6);background:rgba(200,169,110,0.05)}
-.home-row-label{font-size:0.9rem;font-weight:500;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.home-row-sub{font-size:0.78rem;color:var(--muted)}
-.home-row-sub em{font-style:normal;color:var(--accent);font-weight:500}
-.home-row-go{position:absolute;right:0.9rem;top:50%;transform:translateY(-50%);color:var(--muted)}
-.home-row.has-new{border-color:rgba(200,169,110,0.7);background:rgba(200,169,110,0.07)}
-.home-row.has-new .home-row-label::after{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-left:0.45rem;vertical-align:middle}
-#hr-projs{display:flex;flex-direction:column;gap:0.5rem}
-.home-row-new{margin-top:auto;border-style:dashed;border-color:rgba(200,169,110,0.5);background:none}
-.home-row-new .home-row-label{color:var(--accent)}
-.home-row-empty{font-size:0.82rem;color:var(--muted);padding:0.3rem 0.1rem}
-.home-more{align-self:flex-start;background:none;border:none;color:var(--muted);font-family:inherit;font-size:0.78rem;padding:0.1rem;cursor:pointer}
-.home-more:hover{color:var(--text)}
+.rr{min-height:calc(100vh - 4rem);max-width:1120px;margin:0 auto;display:flex;flex-direction:column;justify-content:center;gap:1.6rem}
+.rr-brand{display:flex;align-items:center;gap:0.6rem;color:var(--text)}
+.rr-brand .logo-mark{width:34px;height:28px}
+.rr-brand b{font-size:1.35rem;font-weight:600;letter-spacing:0.02em}
+.rr-brand span{font-size:0.78rem;color:var(--muted);letter-spacing:0.12em;margin-left:0.4rem}
+.rr-room{display:grid;grid-template-columns:1.25fr 1fr;gap:1.2rem;align-items:stretch}
+.rr-label{font-size:0.72rem;letter-spacing:0.18em;color:var(--muted);margin-bottom:0.8rem}
+/* 화이트보드: 유일하게 불이 켜진 곳 */
+.rr-board{position:relative;display:flex;flex-direction:column;padding:1.6rem 1.7rem 1.4rem;border-radius:18px;border:1px solid rgba(200,169,110,0.35);
+  background:radial-gradient(120% 90% at 50% -10%,rgba(200,169,110,0.20),rgba(200,169,110,0.05) 45%,rgba(23,23,26,0.9) 75%),var(--bg2);
+  box-shadow:0 30px 80px rgba(0,0,0,0.45),inset 0 1px 0 rgba(255,255,255,0.04);min-height:430px}
+.rr-board .rr-label{color:var(--accent)}
+.rr-main{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:0.35rem;background:none;border:none;padding:0;color:var(--text);font-family:inherit;text-align:left;cursor:pointer}
+.rr-dday{font-size:4.2rem;line-height:1;font-weight:600;letter-spacing:-0.02em;color:var(--accent);margin-top:0.6rem}
+.rr-dday-tbd{font-size:2.6rem;color:var(--muted)}
+.rr-dday-soon{color:#e8b86a}
+.rr-ddate{font-size:0.82rem;color:var(--muted)}
+.rr-title{font-size:1.7rem;font-weight:600;margin-top:1.2rem;line-height:1.25}
+.rr-meta{font-size:0.88rem;color:var(--muted)}
+.rr-next{margin-top:auto;display:flex;flex-direction:column;gap:0.2rem;padding:0.85rem 1rem;width:100%;border-radius:12px;background:rgba(0,0,0,0.28);border:1px solid rgba(255,255,255,0.06);font-size:1rem;color:var(--text);transition:border-color var(--dur-fast,150ms)}
+.rr-next span{font-size:0.7rem;letter-spacing:0.14em;color:var(--accent)}
+.rr-main:hover .rr-next{border-color:rgba(200,169,110,0.6)}
+.rr-main:hover .rr-title{color:var(--accent)}
+.rr-board-foot{display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.9rem}
+.rr-chip{display:inline-flex;align-items:center;gap:0.45rem;background:rgba(255,255,255,0.04);border:1px solid var(--line);color:var(--text);font-family:inherit;font-size:0.8rem;padding:0.4rem 0.8rem;border-radius:16px;cursor:pointer}
+.rr-chip em{font-style:normal;color:var(--muted);font-size:0.74rem}
+.rr-chip:hover{border-color:rgba(200,169,110,0.6)}
+.rr-chip-new{color:var(--accent);border-style:dashed;border-color:rgba(200,169,110,0.5);background:none}
+.rr-board-empty{flex:1;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:0.6rem}
+.rr-board-title{font-size:1.7rem;font-weight:600;color:var(--text)}
+.rr-board-empty p{color:var(--muted);font-size:0.92rem;margin:0}
+.rr-start{margin-top:0.8rem;background:var(--accent);color:var(--bg);border:none;font-family:inherit;font-size:0.95rem;font-weight:500;padding:0.75rem 1.4rem;border-radius:24px;cursor:pointer}
+.rr-link{background:none;border:none;color:var(--muted);font-family:inherit;font-size:0.84rem;cursor:pointer;padding:0.2rem 0}
+.rr-link:hover{color:var(--text)}
+/* 옆 벽과 서가: 차분하게 가라앉은 곳 */
+.rr-side{display:flex;flex-direction:column;gap:1.2rem}
+.rr-wall,.rr-shelf{display:flex;flex-direction:column;padding:1.2rem 1.3rem;border-radius:16px;background:rgba(255,255,255,0.018);border:1px solid var(--line)}
+.rr-wall{flex:1}
+.rr-notes{display:flex;flex-direction:column;gap:0.55rem}
+.rr-note{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:0.2rem;padding:0.75rem 0.95rem 0.75rem 1.7rem;background:#1d1c1f;border:1px solid rgba(255,255,255,0.06);border-radius:4px 10px 10px 10px;color:var(--text);font-family:inherit;text-align:left;cursor:pointer;transform:rotate(-0.35deg);transition:transform var(--dur-fast,150ms),border-color var(--dur-fast,150ms)}
+.rr-note:nth-child(2){transform:rotate(0.3deg)}
+.rr-note:hover{transform:rotate(0) translateY(-1px);border-color:rgba(200,169,110,0.5)}
+.rr-pin{position:absolute;left:0.7rem;top:0.95rem;width:7px;height:7px;border-radius:50%;background:var(--muted);box-shadow:0 1px 2px rgba(0,0,0,0.6)}
+.rr-note-offer{background:rgba(200,169,110,0.10);border-color:rgba(200,169,110,0.45)}
+.rr-note-offer .rr-pin{background:var(--accent)}
+.rr-note-main{font-size:0.9rem;line-height:1.4}
+.rr-note-sub{font-size:0.76rem;color:var(--muted)}
+.rr-quiet{font-size:0.84rem;color:var(--muted);line-height:1.6}
+.rr-more{align-self:flex-start;margin-top:0.7rem;background:none;border:none;color:var(--muted);font-family:inherit;font-size:0.78rem;cursor:pointer;padding:0}
+.rr-more:hover{color:var(--text)}
+.rr-shelf .global-search{max-width:none;width:100%}
+.rr-shelf .global-search input{padding:0.65rem 0.9rem 0.65rem 2.4rem;font-size:0.88rem;border-radius:10px}
+.rr-shelf .gs-icon{left:0.85rem;font-size:0.88rem}
+.rr-books{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.45rem;margin-top:0.7rem}
+.rr-books:empty{display:none}
+.rr-book{display:flex;flex-direction:column;align-items:flex-start;gap:0.15rem;padding:0.55rem 0.7rem;background:rgba(255,255,255,0.025);border:1px solid var(--line);border-left:3px solid rgba(200,169,110,0.55);border-radius:3px 8px 8px 3px;color:var(--text);font-family:inherit;text-align:left;cursor:pointer;min-width:0}
+.rr-book:hover{border-color:rgba(200,169,110,0.6)}
+.rr-book-title{font-size:0.86rem;font-weight:500;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rr-book-sub{font-size:0.7rem;color:var(--muted)}
+.rr-jump{display:flex;gap:0.35rem;flex-wrap:wrap;margin-top:0.7rem}
+.rr-jump button{background:none;border:none;color:var(--muted);font-family:inherit;font-size:0.78rem;padding:0.15rem 0.45rem;cursor:pointer;border-radius:6px}
+.rr-jump button:hover{color:var(--text);background:rgba(255,255,255,0.05)}
 @media(max-width:900px){
-  .home-one{min-height:calc(100vh - 3rem - 56px);gap:1.1rem;justify-content:flex-start;padding-top:0.6rem}
-  .home-brand .home-hero-pitch{display:none}
-  .home-brand .home-hero-title{font-size:2rem;margin-top:0.4rem}
-  .home-brand .home-hero-title .logo-mark{width:38px;height:32px}
-  .home-boxes{grid-template-columns:1fr;gap:0.6rem}
-  .home-box{height:auto;padding:0.9rem 1rem;gap:0.6rem;border-radius:13px}
-  .home-box-body{gap:0.4rem}
-  .home-row{padding:0.55rem 2rem 0.55rem 0.8rem}
-  #hb-proj .home-row-sub{display:none}
-  .home-box .gs-dropdown{width:auto;right:0;max-width:none}
+  .rr{min-height:0;justify-content:flex-start;gap:0.9rem}
+  .rr-brand span{display:none}
+  .rr-room{grid-template-columns:1fr;gap:0.8rem}
+  .rr-board{min-height:0;padding:1.1rem 1.15rem 1rem}
+  .rr-dday{font-size:2.8rem;margin-top:0.2rem}
+  .rr-title{font-size:1.25rem;margin-top:0.5rem}
+  .rr-next{margin-top:0.8rem;padding:0.6rem 0.8rem;font-size:0.9rem}
+  .rr-side{gap:0.8rem}
+  .rr-wall,.rr-shelf{padding:0.9rem 1rem}
+  .rr-label{margin-bottom:0.55rem}
+  .rr-shelf .gs-dropdown{right:0}
+  .rr-ddate,.rr-books,.rr-more{display:none}
+  .rr-note:nth-child(n+3){display:none}
+  .rr-note{padding:0.55rem 0.8rem 0.55rem 1.6rem}
+  .rr-pin{top:0.8rem}
+  .rr-dday{font-size:2.4rem}
+  .rr-brand .logo-mark{width:28px;height:23px}.rr-brand b{font-size:1.15rem}
+  .rr-shelf .rr-label{display:none}
+  .rr-jump{margin-top:0.5rem}
 }
 .offers-page{max-width:1100px;margin:0 auto}
 .offer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0.7rem}
