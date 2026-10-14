@@ -22,7 +22,11 @@ function sb(h){$('sb').innerHTML=h;}
 function mn(h){
   if(PEEK.rendering){$('peek-body').innerHTML=h;return;}
   var el=$('mn');el.innerHTML=h;
+  if(typeof catRowsHook==='function')catRowsHook(el);
   cardDecorate(el);
+  // 아카이브 칩 줄은 목록·홈 화면에서만 (상세 화면에선 숨김)
+  document.body.classList.toggle('show-chips',!!el.querySelector('.nx,.tab-index'));
+  if(typeof popHide==='function')popHide();
   // 새 화면이 들어왔다는 걸 짧게 알려준다 (사용성 3단계, 동작 줄이기 설정이면 CSS에서 꺼짐)
   el.classList.remove('ori-in');void el.offsetWidth;el.classList.add('ori-in');
 }
@@ -338,7 +342,7 @@ var SECTION_OF={projects:'match',offers:'match',apply:'match',make:'mine',projec
 function setNav(v,projectId){
   if(PEEK.rendering)return; // 패널 미리보기는 현재 메뉴 상태를 바꾸지 않는다
   closePeek(true);
-  var sec=SECTION_OF[v]!==undefined?SECTION_OF[v]:'archive';
+  var sec=SECTION_OF[v]!==undefined?SECTION_OF[v]:'archive';window._navV=v;
   var make=sec==='mine';
   document.body.classList.toggle('mode-make',make);
   document.body.classList.toggle('sec-match',sec==='match');
