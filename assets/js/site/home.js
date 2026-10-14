@@ -43,7 +43,7 @@ function renderHero(){
   var n=window._nxCast&&window._nxCast[s.id]?Object.keys(window._nxCast[s.id]).length:0;
   var title=fld(s,'공연명')||'',work=wid?nm(wid):'';
   var meta=[nxYear(fld(s,'공연 날짜')),tid&&nm(tid),vid&&nm(vid),n?'출연·스태프 '+n+'명':''].filter(Boolean).map(escHtml).join('<i>•</i>');
-  el.innerHTML=(p?'<div class="nx-hero-bg" style="background-image:url(\''+p.replace(/'/g,'%27')+'\')"></div>':'<div class="nx-hero-bg" style="background:'+nxTone(s.id)+'"></div>')
+  el.innerHTML=(p?'<div class="nx-hero-bg" style="background-image:url(\''+p.replace(/'/g,'%27')+'\')"></div>':'<div class="nx-hero-bg" style="background:#1c1c20"></div>')
     +'<div class="nx-hero-shade"></div>'
     +(p?'<img class="nx-hero-poster" src="'+escHtml(p)+'" alt="'+escHtml(title)+' 포스터">':'')
     +'<div class="nx-hero-text">'
@@ -73,18 +73,18 @@ function nxShowCard(s){
   var p=POSTER[s.id]||'',tid=ids(fld(s,'극단'))[0],title=fld(s,'공연명')||'';
   var sub=[tid&&nm(tid),nxYear(fld(s,'공연 날짜'))].filter(Boolean).join(' · ');
   return '<div class="nx-card" data-action="show" data-id="'+s.id+'" style="--tone:'+nxTone(s.id)+'">'
-    +(p?'<img src="'+escHtml(p)+'" alt="" loading="lazy">':'<div class="nx-card-type">'+escHtml(title)+'</div>')
+    +(p?'<img src="'+escHtml(p)+'" alt="" loading="lazy">':'<div class="nx-card-type">'+phCover('show',title,sub)+'</div>')
     +'<div class="nx-card-cap"><b>'+escHtml(title)+'</b>'+(sub?'<span>'+escHtml(sub)+'</span>':'')+'</div></div>';
 }
 function nxPersonCard(p,n){
   var ph=PERSON_PHOTO[p.id]||'',name=fld(p,'이름')||'';
   return '<div class="nx-card nx-person" data-action="person" data-id="'+p.id+'" style="--tone:'+nxTone(p.id)+'">'
-    +(ph?'<img src="'+escHtml(ph)+'" alt="" loading="lazy">':'<div class="nx-card-type nx-initial">'+escHtml(name.charAt(0))+'</div>')
+    +(ph?'<img src="'+escHtml(ph)+'" alt="" loading="lazy">':'<div class="nx-card-type">'+phCover('person',name,'공연 '+n+'편')+'</div>')
     +'<div class="nx-card-cap"><b>'+escHtml(name)+'</b><span>공연 '+n+'편</span></div></div>';
 }
 function nxTextCard(action,id,name,sub,img){
   return '<div class="nx-card" data-action="'+action+'" data-id="'+id+'" style="--tone:'+nxTone(id)+'">'
-    +(img?'<img src="'+escHtml(img)+'" alt="" loading="lazy">':'<div class="nx-card-type">'+escHtml(name||'')+'</div>')
+    +(img?'<img src="'+escHtml(img)+'" alt="" loading="lazy">':'<div class="nx-card-type">'+phCover(action,name,sub)+'</div>')
     +'<div class="nx-card-cap"><b>'+escHtml(name||'')+'</b>'+(sub?'<span>'+escHtml(sub)+'</span>':'')+'</div></div>';
 }
 /* 여러 단체가 올린 작품: 라이선스와 상관없는 집계(숫자만). "몇몇"(작은 숫자라 가린 것)은 순서로 짐작되지 않게 뺀다 */

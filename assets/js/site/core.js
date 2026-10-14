@@ -29,6 +29,18 @@ function mn(h){
 /* 목록 카드 통일 (10/14): 아카이브 홈과 같은 세로 포스터 카드. 사진 없는 카드는 이름을 크게 쓴 글자 표지 */
 var CARD_TONES=['#5A1C26','#1F2A44','#24463B','#4B2E52','#6A4A12','#2E4A5C','#3B3F48','#5B2A3E'];
 function cardTone(id){var h=0;String(id||'').split('').forEach(function(c){h=(h*31+c.charCodeAt(0))>>>0;});return CARD_TONES[h%CARD_TONES.length];}
+/* 포스터·사진 없는 표지: 색 없이 비어 있음이 보이는 단색 판. 위엔 종류 아이콘, 아래엔 이름 */
+var PH_ICON={show:'mask',work:'book',person:'user',troupe:'building',venue:'pin',role:'clapper'};
+function phCover(action,name,sub){
+  return '<span class="ph-icon">'+ico(PH_ICON[action]||'mask')+'</span><span><span class="ph-name">'+escHtml(name||'')+'</span>'+(sub?'<span class="ph-sub" style="display:block">'+escHtml(sub)+'</span>':'')+'</span>';
+}
+/* 화면 테마: system(기기 따라) · light · dark. <head>의 짧은 스크립트가 첫 화면 전에 먼저 적용한다 */
+function setTheme(mode){
+  try{localStorage.setItem('ori-theme',mode);}catch(e){}
+  if(mode==='light'||mode==='dark')document.documentElement.setAttribute('data-theme',mode);else document.documentElement.removeAttribute('data-theme');
+  document.querySelectorAll('.pd-seg button').forEach(function(b){b.classList.toggle('on',b.dataset.mode===mode);});
+}
+document.addEventListener('DOMContentLoaded',function(){var m='system';try{m=localStorage.getItem('ori-theme')||'system';}catch(e){}setTheme(m);});
 function cardDecorate(root){
   if(!root||!root.querySelectorAll)return;
   root.querySelectorAll('.result-card').forEach(function(c){
@@ -37,7 +49,7 @@ function cardDecorate(root){
     var ph=c.querySelector('.result-card-ph');
     if(ph&&!ph.querySelector('img')){
       var t=c.querySelector('.result-card-title');
-      ph.innerHTML='<span class="ph-name">'+escHtml(t?t.textContent:'')+'</span>';
+      ph.innerHTML=phCover(c.dataset.action,t?t.textContent:'');
       c.classList.add('has-type');
     }
   });
@@ -336,7 +348,7 @@ function setNav(v,projectId){
   ['home','works','shows','people','troupes','venues','roles'].forEach(function(n){var el=$('chip-'+n);if(el)el.classList.toggle('active',n===v);});
   // 레일·아래 탭: 마이페이지는 열린 탭(지원·저장·기록)으로 가린다
   var tab=(v==='mypage'||v==='apply')?(window._myPageTab||'records'):'';
-  var on={home:sec==='archive',match:v==='projects',offers:v==='offers',apply:tab==='apply',saved:tab==='saved',records:tab==='records',make:make};
+  var on={home:sec==='archive',match:v==='projects',offers:v==='offers',apply:tab==='apply',saved:tab==='saved',make:make};
   Object.keys(on).forEach(function(n){var r=$('rail-'+n);if(r)r.classList.toggle('active',on[n]);var m=$('mobt-'+n);if(m)m.classList.toggle('active',on[n]);});
   window._currentProjectNav=v==='project'?projectId:null;
   document.querySelectorAll('#make-nav-projects button').forEach(function(b){b.classList.toggle('active',b.dataset.pid===window._currentProjectNav);});
