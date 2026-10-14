@@ -12,6 +12,7 @@ function routeFromHash(hash){
   if(h==='#content'){goContent(false);return;}
   if(h==='#mypage'){goMyPage(false);return;}
   if(h==='#projects'){goProjectBrowse(false);return;}
+  if(h==='#offers'){goOffers(false);return;}
   if(h==='#make'||h==='#my'){goMake(false);return;}
   if(h==='#terms'){goTerms(false);return;}
   if(h==='#privacy'){goPrivacy(false);return;}
