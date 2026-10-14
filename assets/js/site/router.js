@@ -1,7 +1,7 @@
 /* 오리 사이트 — 해시 라우팅 + 앱 시작 (반드시 마지막에 로드) */
 function routeFromHash(hash){
   var h=hash||location.hash;
-  if(!h){if(typeof savedModeIsMake==='function'&&savedModeIsMake()&&CURRENT_USER){history.replaceState({view:'make'},'','#make');goMake(false);return;}goHome(false);return;}
+  if(!h){goHome(false);return;}  // 사이트 첫 화면 = 아카이브 홈 (10/14)
   if(h==='#home'){goHome(false);return;}
   if(h==='#shows'){goShows(false);return;}
   if(h==='#people'){goPeople(false);return;}

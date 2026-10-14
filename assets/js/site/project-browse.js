@@ -9,11 +9,15 @@ async function goProjectBrowse(push){
   if(push!==false)history.pushState({view:'projects'},'','#projects');
   setNav('projects');sb('');_sbContext='';mobShowDetail();
   if(!CURRENT_USER){mn('<div class="tab-index"><div class="result-empty">로그인이 필요해요</div></div>');return;}
-  mn('<div class="tab-index opp-page"><header class="opp-head"><h1 class="dv-title">기회</h1><p class="opp-sub">지금 함께할 사람을 찾는 공연들이에요. 마음에 드는 자리에 지원해 보세요.</p><div id="opp-mine"></div></header>'
+  mn('<div class="tab-index opp-page"><div class="opp-head"><h1 class="dv-title">기회</h1><p class="opp-sub">지금 함께할 사람을 찾는 공연들이에요. 마음에 드는 자리에 지원해 보세요.</p><div id="opp-mine"></div></div>'
     +'<div id="opp-bar"></div><div id="opp-list" class="opp-grid"><div class="hf-loading">불러오는 중…</div></div>'
     +'<section class="dv-sec" id="opp-projects"></section></div>');
-  var res=await Promise.all([sbClient.rpc('list_opportunities'),sbClient.rpc('list_public_projects'),sbClient.rpc('my_join_requests')]);
+  var res=await Promise.all([sbClient.rpc('list_opportunities'),sbClient.rpc('list_public_projects'),sbClient.rpc('my_join_requests'),sbClient.rpc('my_offers')]);
   if(location.hash!=='#projects')return;
+  // 답을 기다리는 제안이 있으면 기회 첫 화면 맨 위에 (10/14)
+  var offers=res[3].error?[]:(res[3].data||[]);
+  if(offers.length&&$('opp-mine'))$('opp-mine').insertAdjacentHTML('beforebegin','<button type="button" class="opp-offer-banner" onclick="goOffers()"><b>나한테 온 제안 '+offers.length+'개</b>'
+    +escHtml(offers.slice(0,2).map(function(o){return (o.project_title||'프로젝트')+' · '+(o.position_label||'');}).join(' / '))+'<span>답하기 ›</span></button>');
   _opp.rows=res[0].data||[];_opp.projects=res[1].data||[];
   var mine=res[2].data||[],waiting=mine.filter(function(r){return r.status==='pending';}).length;
   var m=$('opp-mine');
@@ -92,7 +96,7 @@ async function requestJoinPosition(projectId,positionId){
   var r=await sbClient.from('project_join_requests').insert({project_id:projectId,position_id:positionId,user_id:CURRENT_USER.id,message:msg||null});
   if(r.error){oriAlert(r.error.code==='23505'?'이미 지원한 자리예요.':'지원하지 못했어요: '+r.error.message);return;}
   var row=_opp.rows.find(function(x){return x.position_id===positionId;});if(row)row.my_status='pending';
-  if(location.hash==='#projects')renderOpportunities();else if($('rr-notes'))loadNotes();
+  if(location.hash==='#projects')renderOpportunities();
   oriAlert('지원했어요! 프로젝트에서 답하면 마이페이지 "지원 현황"에서 볼 수 있어요.',{action:{label:'지원 현황 보기',fn:function(){goMyPageTab('apply');}}});
 }
 

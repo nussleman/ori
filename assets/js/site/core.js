@@ -296,19 +296,26 @@ function injectBackBtn(label,fn){
       make·project (만들기) / 그 밖(mypage 등)은 둘러보기 모드, 메뉴 선택 없음
    projectId: 만들기 모드에서 좌측 목록 중 열린 프로젝트 */
 var MAKE_MODE_VIEWS=['make','project'];
+/* 주 메뉴 세 갈래 (10/14): 아카이브(DB) · 기회(매칭) · 내 프로젝트. 화면마다 어느 갈래인지 정하고,
+   위 막대의 주 메뉴와 왼쪽(모바일은 아래) 하위 메뉴를 그 갈래 것으로 맞춘다 */
+var SECTION_OF={projects:'match',offers:'match',apply:'match',make:'mine',project:'mine',mypage:''};
 function setNav(v,projectId){
   if(PEEK.rendering)return; // 패널 미리보기는 현재 메뉴 상태를 바꾸지 않는다
   closePeek(true);
-  var make=MAKE_MODE_VIEWS.indexOf(v)>-1;
+  var sec=SECTION_OF[v]!==undefined?SECTION_OF[v]:'archive';
+  var make=sec==='mine';
   document.body.classList.toggle('mode-make',make);
+  document.body.classList.toggle('sec-match',sec==='match');
+  document.body.classList.toggle('sec-archive',sec==='archive'||sec==='');
   document.body.classList.toggle('is-home',v==='home');
-  ['home','shows','people','works','roles','venues','troupes','projects','make'].forEach(function(n){
+  ['archive','match','mine'].forEach(function(n){var el=$('gnav-'+n);if(el)el.classList.toggle('active',n===sec);});
+  ['home','shows','people','works','roles','venues','troupes','projects','offers','apply','make'].forEach(function(n){
     var el=$('nav-'+n);if(el)el.classList.toggle('active',n===v);
     var mel=$('mobt-'+n);if(mel)mel.classList.toggle('active',n===v||(n==='make'&&make));
   });
   window._currentProjectNav=v==='project'?projectId:null;
   document.querySelectorAll('#make-nav-projects button').forEach(function(b){b.classList.toggle('active',b.dataset.pid===window._currentProjectNav);});
-  // 첫 화면에서는 검색창이 화면 가운데(home.js)로 옮겨가 있다 — 다른 화면에선 상단바로 되돌린다
+  // 아카이브 홈에서는 검색창이 화면 가운데(home.js)로 옮겨가 있다 — 다른 화면에선 상단바로 되돌린다
   if(v!=='home'){var wrap=$('gs-wrap'),bar=$('top-bar');if(wrap&&bar&&wrap.parentNode!==bar)bar.appendChild(wrap);var gi=$('gs-input');if(gi)gi.placeholder='검색…';}
 }
 /* ── 오리 스타일 모달 (네이티브 alert/confirm/prompt 대체) ── */
