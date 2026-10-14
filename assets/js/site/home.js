@@ -1,5 +1,5 @@
 /* 오리 사이트 — 첫 화면 (4단계 입구 재구성)
-   위 한 줄(둘러볼 곳 / 내 프로젝트·프로필) + 가운데 한 문장과 검색 하나.
+   오른쪽 위 내 프로젝트(프로필 옆) + 가운데 한 문장과 검색 하나.
    아래로는 많이 올라간 작품(작품 허브로) → 지금 모집 중인 자리 → 최근 공연. 관객용 기능은 키우지 않는다 (direction.md) */
 /* ══ 홈: 한가운데 검색창만 있는 랜딩 화면 ══ */
 function goHome(push){
@@ -14,16 +14,12 @@ function renderHome(){
   var people=DB.people.filter(function(p){return fld(p,'이름');});
   var hasProj=MY_PROJECTS_CACHE&&MY_PROJECTS_CACHE.length;
   // 위 한 줄: 왼쪽은 둘러볼 곳(아카이브), 오른쪽은 내 것(내 프로젝트 + 프로필 아이콘). 가운데는 문장 + 검색 하나만
-  var headH='<div class="home-head"><nav class="home-head-nav" aria-label="둘러보기">'
-    +'<button type="button" onclick="goShows()">공연</button><button type="button" onclick="goWorks()">작품</button>'
-    +'<button type="button" onclick="goPeople()">사람</button><button type="button" onclick="goTroupes()">단체</button>'
-    +'<button type="button" onclick="goVenues()">극장</button><span class="home-head-sep"></span>'
-    +'<button type="button" onclick="goProjectBrowse()">기회</button></nav>'
-    +'<button type="button" class="home-head-make" id="home-start" onclick="homeStart()">'+(hasProj?'내 프로젝트':'내 공연 시작하기')+'</button></div>';
+  // 오른쪽 위: 내 프로젝트(프로필 아이콘 옆). 둘러보기 메뉴는 첫 화면에 따로 띄우지 않는다
+  var headH='<div class="home-head"><button type="button" class="home-head-make" id="home-start" onclick="homeStart()">'+(hasProj?'내 프로젝트':'내 공연 시작하기')+'</button></div>';
   var heroH='<div class="home-hero">'+headH
     +'<div class="home-hero-top"><div class="home-hero-tagline">연극·뮤지컬을 만드는 사람들</div>'
     +'<h1 class="home-hero-title"><svg class="logo-mark" aria-hidden="true"><use href="#duck-logo"></use></svg>오리</h1>'
-    +'<div class="home-hero-pitch">올리고 싶던 그 작품, 이번엔 정식으로.</div></div>'
+    +'<div class="home-hero-pitch">올리고 싶은 작품을 찾고, 함께할 사람을 만나고,<br>정식으로 허락받아 무대에 올려요.</div></div>'
     +'<div class="home-hero-search" id="home-search-slot"></div>'
     +'<div class="home-hero-bottom"><div class="home-scroll">아래로 둘러보기 ↓</div></div>'
     +'</div>';
