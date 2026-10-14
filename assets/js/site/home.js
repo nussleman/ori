@@ -177,3 +177,140 @@ async function answerOffer(id,accept){
     oriAlert('「'+(o.project_title||'프로젝트')+'」에 합류했어요',{action:{label:'프로젝트 열기',fn:function(){goProject(o.project_id);}}});
   }else oriAlert('제안을 거절했어요');
 }
+
+/* ══ 갈래별 줄 (10/14): 작품·공연·사람·단체·극장·배역 목록 맨 위에도 홈처럼 가로 줄 몇 개 → 그 아래 전체 목록(필터) ══
+   숫자는 화면에 보이는 공개 공연(DB.shows)만으로 센다 */
+var _catRowsCache={};
+function nxStats(){
+  var key=DB.shows.length+':'+DB.history.length+':'+DB.people.length;  // 로그인 뒤 다시 불러오면 새로 센다
+  if(window._nxStats&&window._nxStatsKey===key)return window._nxStats;
+  window._nxStatsKey=key;_catRowsCache={};
+  var st={showsOf:{},castOf:{},actOf:{},staffOf:{},pShows:{},roleN:{},wTroupes:{},tShows:{},vShows:{},lastOf:{}};
+  var shows=sortShows(DB.shows.filter(function(s){return fld(s,'공연명');}));
+  shows.forEach(function(s,i){
+    var w=ids(fld(s,'작품'))[0],t=ids(fld(s,'극단'))[0],v=ids(fld(s,'극장'))[0];
+    if(w){(st.showsOf[w]=st.showsOf[w]||[]).push(s);if(t)(st.wTroupes[w]=st.wTroupes[w]||{})[t]=1;}
+    if(t)(st.tShows[t]=st.tShows[t]||[]).push(s);
+    if(v)(st.vShows[v]=st.vShows[v]||[]).push(s);
+  });
+  DB.history.forEach(function(h){
+    var p=ids(fld(h,'참여자'))[0],s=ids(fld(h,'공연'))[0];if(!p||!s)return;
+    (st.castOf[s]=st.castOf[s]||{})[p]=1;(st.pShows[p]=st.pShows[p]||{})[s]=1;
+    if(fld(h,'역할 타입')==='배우'){(st.actOf[p]=st.actOf[p]||{})[s]=1;ids(fld(h,'배역')).forEach(function(r){(st.roleN[r]=st.roleN[r]||{})[p]=1;});}
+    if(fld(h,'역할 타입')==='스텝')(st.staffOf[p]=st.staffOf[p]||{})[s]=1;
+  });
+  st.shows=shows;
+  window._nxStats=st;return st;
+}
+function nKeys(o){return o?Object.keys(o).length:0;}
+function topBy(list,score,min){return list.filter(function(x){return score(x)>=(min||1);}).sort(function(a,b){return score(b)-score(a);}).slice(0,16);}
+function catRows(v){
+  var st=nxStats();
+  if(_catRowsCache[v]!==undefined)return _catRowsCache[v];
+  var yr=String(new Date().getFullYear()),h='';
+  var row=function(title,cards,sub){return cards.length>=3?nxRow(title,'',cards,sub):'';};
+  var showCard=function(s){return nxShowCard(s);};
+  if(v==='shows'){
+    h+=row('최근 무대에 오른 공연',st.shows.slice(0,16).map(showCard));
+    h+=row(yr+'년에 오른 공연',st.shows.filter(function(s){return String(fld(s,'공연 날짜')||'').slice(0,4)===yr;}).slice(0,16).map(showCard));
+    h+=row('많은 사람이 함께한 공연',topBy(st.shows,function(s){return nKeys(st.castOf[s.id]);},2).map(showCard));
+  }else if(v==='works'){
+    var wcard=function(w,sub){return nxTextCard('work',w.id,fld(w,'작품명'),sub,iurl(fld(w,'사진')));};
+    h+=row('여러 단체가 올린 작품',topBy(DB.works,function(w){return nKeys(st.wTroupes[w.id]);},2).map(function(w){return wcard(w,'단체 '+nKeys(st.wTroupes[w.id])+'곳 · '+st.showsOf[w.id].length+'번 올라감');}),'다음 공연 작품을 고를 때 참고해 보세요.');
+    var seen={},recent=[];st.shows.forEach(function(s){var w=ids(fld(s,'작품'))[0];if(w&&!seen[w]){seen[w]=1;var ww=DB.works.find(function(x){return x.id===w;});if(ww)recent.push(ww);}});
+    h+=row('최근 무대에 오른 작품',recent.slice(0,16).map(function(w){var s=st.showsOf[w.id][0];return wcard(w,[nm(ids(fld(s,'극단'))[0]),String(fld(s,'공연 날짜')||'').slice(0,4)].filter(Boolean).join(' · '));}));
+    var rc={};DB.roles.forEach(function(r){var w=ids(fld(r,'작품'))[0];if(w)rc[w]=(rc[w]||0)+1;});
+    h+=row('배역이 많은 작품',topBy(DB.works,function(w){return rc[w.id]||0;},8).map(function(w){return wcard(w,'배역 '+rc[w.id]+'명');}),'출연진이 많은 단체에 맞는 작품이에요.');
+  }else if(v==='people'){
+    var pc=function(p,o){return nxPersonCard(p,nKeys(o[p.id]));};
+    h+=row('무대에 많이 선 사람',topBy(DB.people,function(p){return nKeys(st.pShows[p.id]);},2).map(function(p){return pc(p,st.pShows);}));
+    h+=row('배우로 많이 선 사람',topBy(DB.people,function(p){return nKeys(st.actOf[p.id]);},2).map(function(p){return pc(p,st.actOf);}));
+    h+=row('스태프로 많이 함께한 사람',topBy(DB.people,function(p){return nKeys(st.staffOf[p.id]);},2).map(function(p){return pc(p,st.staffOf);}));
+  }else if(v==='troupes'){
+    var tc=function(t){var ss=st.tShows[t.id]||[];return nxTextCard('troupe',t.id,fld(t,'극단명'),'공연 '+ss.length+'편',iurl(fld(t,'사진')));};
+    h+=row('자주 무대에 오르는 단체',topBy(DB.troupes,function(t){return (st.tShows[t.id]||[]).length;},1).map(tc));
+    h+=row('최근 공연한 단체',DB.troupes.filter(function(t){return st.tShows[t.id];}).sort(function(a,b){return String(fld(st.tShows[b.id][0],'공연 날짜')||'').localeCompare(String(fld(st.tShows[a.id][0],'공연 날짜')||''));}).slice(0,16).map(tc));
+  }else if(v==='venues'){
+    var vc=function(x){var ss=st.vShows[x.id]||[],seats=fld(x,'좌석수');return nxTextCard('venue',x.id,fld(x,'극장명'),'공연 '+ss.length+'편'+(seats?' · '+seats+'석':''),iurl(fld(x,'사진')));};
+    h+=row('자주 쓰인 극장',topBy(DB.venues,function(x){return (st.vShows[x.id]||[]).length;},1).map(vc));
+    h+=row('최근 공연이 열린 극장',DB.venues.filter(function(x){return st.vShows[x.id];}).sort(function(a,b){return String(fld(st.vShows[b.id][0],'공연 날짜')||'').localeCompare(String(fld(st.vShows[a.id][0],'공연 날짜')||''));}).slice(0,16).map(vc));
+  }else if(v==='roles'){
+    h+=row('많이 연기된 배역',topBy(DB.roles,function(r){return nKeys(st.roleN[r.id]);},2).map(function(r){var w=ids(fld(r,'작품'))[0];return nxTextCard('role',r.id,fld(r,'배역명'),[w&&'〈'+nm(w)+'〉',nKeys(st.roleN[r.id])+'명이 연기'].filter(Boolean).join(' · '),iurl(fld(r,'사진')));}));
+  }
+  _catRowsCache[v]=h?'<div class="cat-rows">'+h+'<h2 class="cat-all">전체 목록</h2></div>':'';
+  return _catRowsCache[v];
+}
+/* mn()이 목록 화면을 그릴 때 맨 위에 붙인다 (core.js mn → catRowsHook) */
+function catRowsHook(el){
+  var root=el.firstElementChild;if(!root||!root.classList.contains('tab-index'))return;
+  var v=window._navV;if(['shows','works','people','troupes','venues','roles'].indexOf(v)<0)return;
+  var h=catRows(v);if(!h)return;
+  root.insertAdjacentHTML('afterbegin',h);nxArrows();
+}
+
+/* ══ 넷플릭스식 호버 미리보기 (10/14): 카드에 커서를 잠깐 두면 커지면서 자세한 정보 ══ */
+var _pop={timer:null,card:null,el:null};
+function popInfo(action,id){
+  var st=nxStats(),r=null,L=[],title='',meta=[],img='';
+  var yr=function(s){return String(fld(s,'공연 날짜')||'').slice(0,4);};
+  if(action==='show'){r=DB.shows.find(function(x){return x.id===id;});if(!r)return null;title=fld(r,'공연명');img=POSTER[id]||'';
+    var w=ids(fld(r,'작품'))[0],t=ids(fld(r,'극단'))[0],v=ids(fld(r,'극장'))[0];
+    meta=[yr(r),t&&nm(t),v&&nm(v)];if(w&&nm(w)!==title)L.push('작품 〈'+nm(w)+'〉');
+    var n=nKeys(st.castOf[id]);if(n)L.push('출연·스태프 '+n+'명');
+    var names=Object.keys(st.castOf[id]||{}).slice(0,4).map(nm).filter(Boolean);if(names.length)L.push(names.join(', ')+(n>4?' 외':''));
+  }else if(action==='work'){r=DB.works.find(function(x){return x.id===id;});if(!r)return null;title=fld(r,'작품명');img=iurl(fld(r,'사진'));
+    var ss=st.showsOf[id]||[],rc=DB.roles.filter(function(x){return ids(fld(x,'작품')).indexOf(id)>-1;}).length;
+    meta=[ss.length?ss.length+'번 올라감':'',nKeys(st.wTroupes[id])?'단체 '+nKeys(st.wTroupes[id])+'곳':'',rc?'배역 '+rc+'명':''];
+    var c=fld(r,'국가');if(c)L.push(Array.isArray(c)?c.join(', '):c);
+    if(ss[0])L.push('최근: '+[nm(ids(fld(ss[0],'극단'))[0]),yr(ss[0])].filter(Boolean).join(' · '));
+  }else if(action==='person'){r=DB.people.find(function(x){return x.id===id;});if(!r)return null;title=fld(r,'이름');img=PERSON_PHOTO[id]||'';
+    meta=['공연 '+nKeys(st.pShows[id])+'편',nKeys(st.actOf[id])?'배우 '+nKeys(st.actOf[id]):'',nKeys(st.staffOf[id])?'스태프 '+nKeys(st.staffOf[id]):''];
+    var mine=st.shows.filter(function(s){return st.pShows[id]&&st.pShows[id][s.id];});
+    if(mine[0])L.push('최근: '+fld(mine[0],'공연명')+(yr(mine[0])?' ('+yr(mine[0])+')':''));
+    var tr={};mine.forEach(function(s){var t=ids(fld(s,'극단'))[0];if(t)tr[t]=(tr[t]||0)+1;});var tt=Object.keys(tr).sort(function(a,b){return tr[b]-tr[a];}).slice(0,2).map(nm);if(tt.length)L.push('함께한 단체: '+tt.join(', '));
+  }else if(action==='troupe'||action==='venue'){var tb=action==='troupe'?DB.troupes:DB.venues;r=tb.find(function(x){return x.id===id;});if(!r)return null;
+    title=fld(r,action==='troupe'?'극단명':'극장명');img=iurl(fld(r,'사진'));var ss2=(action==='troupe'?st.tShows:st.vShows)[id]||[];
+    meta=['공연 '+ss2.length+'편',action==='venue'&&fld(r,'좌석수')?fld(r,'좌석수')+'석':'',action==='troupe'?fld(r,'활동지역'):''];
+    if(ss2[0])L.push('최근: '+fld(ss2[0],'공연명')+(yr(ss2[0])?' ('+yr(ss2[0])+')':''));
+    if(ss2[1])L.push(fld(ss2[1],'공연명')+(yr(ss2[1])?' ('+yr(ss2[1])+')':''));
+  }else if(action==='role'){r=DB.roles.find(function(x){return x.id===id;});if(!r)return null;title=fld(r,'배역명');img=iurl(fld(r,'사진'));
+    var w2=ids(fld(r,'작품'))[0];meta=[w2&&'〈'+nm(w2)+'〉',fld(r,'성별'),nKeys(st.roleN[id])?nKeys(st.roleN[id])+'명이 연기':''];
+  }else return null;
+  return {title:title||'',img:img,meta:meta.filter(Boolean),lines:L};
+}
+function popShow(card){
+  var action=card.dataset.action,id=card.dataset.id,info=popInfo(action,id);if(!info)return;
+  var media=card.querySelector('img,.result-card-ph,.nx-card-type');var rc=(media||card).getBoundingClientRect();
+  var w=Math.max(rc.width*1.55,280),x=rc.left+rc.width/2-w/2;x=Math.max(12,Math.min(x,window.innerWidth-w-12));
+  var el=_pop.el;if(!el){el=_pop.el=document.createElement('div');el.id='nx-pop';el.addEventListener('mouseleave',popHide);el.addEventListener('click',function(e){if(e.target.closest('button'))return;openDetail(el.dataset.action,el.dataset.id);popHide();});document.body.appendChild(el);}
+  el.dataset.action=action;el.dataset.id=id;
+  el.innerHTML='<div class="pop-media">'+(info.img?'<div class="pop-bg" style="background-image:url(\''+String(info.img).replace(/'/g,'%27')+'\')"></div><img src="'+escHtml(info.img)+'" alt="">':'<div class="pop-ph">'+phCover(action,info.title)+'</div>')+'</div>'
+    +'<div class="pop-body"><div class="pop-acts"><button type="button" class="pop-go" onclick="openDetail(\''+action+'\',\''+id+'\');popHide()"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>자세히 보기</button>'
+    +(typeof favBtnHtml==='function'&&action!=='role'?'<span class="pop-fav">'+favBtnHtml(action,id)+'</span>':'')+'</div>'
+    +'<div class="pop-title">'+escHtml(info.title)+'</div>'
+    +(info.meta.length?'<div class="pop-meta">'+info.meta.map(escHtml).join('<i>·</i>')+'</div>':'')
+    +info.lines.map(function(l){return '<div class="pop-line">'+escHtml(l)+'</div>';}).join('')+'</div>';
+  el.style.width=w+'px';el.style.left=x+'px';
+  el.classList.remove('on');el.style.top='0px';el.style.visibility='hidden';el.style.display='block';
+  var ph=el.offsetHeight,y=rc.top+rc.height/2-ph/2;y=Math.max(70,Math.min(y,window.innerHeight-ph-12));
+  el.style.top=y+'px';el.style.transformOrigin=((rc.left+rc.width/2-x)/w*100)+'% '+((rc.top+rc.height/2-y)/ph*100)+'%';
+  el.style.visibility='';requestAnimationFrame(function(){el.classList.add('on');});
+}
+function popHide(){clearTimeout(_pop.timer);_pop.card=null;var el=_pop.el;if(el){el.classList.remove('on');setTimeout(function(){if(!el.classList.contains('on'))el.style.display='none';},180);}}
+if(window.matchMedia&&window.matchMedia('(hover:hover) and (pointer:fine)').matches){
+  document.addEventListener('mouseover',function(e){
+    if(e.target.closest&&e.target.closest('#nx-pop'))return;
+    var c=e.target.closest&&e.target.closest('.nx-card[data-action],.result-card[data-action]');
+    if(c===_pop.card)return;
+    clearTimeout(_pop.timer);
+    if(_pop.el&&_pop.el.classList.contains('on')&&!c)return;
+    if(!c){_pop.card=null;return;}
+    if(PEEK&&PEEK.rendering)return;
+    _pop.card=c;
+    _pop.timer=setTimeout(function(){if(_pop.card===c&&document.body.contains(c))popShow(c);},550);
+  });
+  document.addEventListener('mouseout',function(e){var c=e.target.closest&&e.target.closest('.nx-card[data-action],.result-card[data-action]');if(c&&!(e.relatedTarget&&(c.contains(e.relatedTarget)||(e.relatedTarget.closest&&e.relatedTarget.closest('#nx-pop')))))
+    {clearTimeout(_pop.timer);if(_pop.card===c)_pop.card=null;if(_pop.el&&_pop.el.classList.contains('on')&&!(e.relatedTarget&&e.relatedTarget.closest&&e.relatedTarget.closest('#nx-pop')))popHide();}});
+  window.addEventListener('scroll',function(){if(_pop.el&&_pop.el.classList.contains('on'))popHide();},{passive:true});
+  document.addEventListener('scroll',function(e){if(e.target.classList&&e.target.classList.contains('nx-track'))popHide();},true);
+}

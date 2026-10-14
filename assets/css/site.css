@@ -1817,3 +1817,36 @@ body.rail-mini .rail-label{display:none}
   .top-bar{position:fixed}
   .top-bar .global-search{position:absolute;left:50%;top:12px;transform:translateX(-50%);width:min(560px,calc(100vw - 440px));max-width:none;margin:0}
 }
+
+/* 칩 줄은 목록·홈에서만, 필터 막대는 칩 아래에 붙는다 (10/14) */
+body.sec-archive .chips{display:none}
+body.sec-archive.show-chips .chips{display:flex}
+:root{--chips-h:54px}
+body.sec-archive.show-chips .fbar{top:calc(64px + var(--chips-h))}
+@media(max-width:768px){:root{--chips-h:50px}body.sec-archive.show-chips .fbar{top:calc(56px + var(--chips-h))}}
+/* 검색 결과 글씨 */
+.gs-item-name{color:var(--text);font-weight:500}
+.gs-item-sub{color:var(--muted)}
+.gs-group-label{color:var(--muted);font-weight:500}
+.gs-dropdown{box-shadow:0 12px 36px rgba(0,0,0,0.28)}
+/* 갈래별 줄 */
+.cat-rows{margin:0.2rem 0 0.6rem}
+.cat-all{font-size:1.25rem;font-weight:700;color:var(--text);margin:0.4rem 0 1rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+/* 호버 미리보기 */
+#nx-pop{position:fixed;z-index:900;display:none;border-radius:10px;overflow:hidden;background:var(--bg2);box-shadow:0 18px 50px rgba(0,0,0,0.45),0 0 0 1px var(--line);opacity:0;transform:scale(0.72);transition:opacity .2s ease,transform .26s cubic-bezier(.2,.8,.2,1);cursor:pointer}
+#nx-pop.on{opacity:1;transform:scale(1)}
+.pop-media{position:relative;aspect-ratio:16/10;overflow:hidden;background:#141416}
+.pop-bg{position:absolute;inset:-30px;background-size:cover;background-position:center 25%;filter:blur(22px) brightness(0.55)}
+.pop-media img{position:relative;display:block;height:100%;margin:0 auto;aspect-ratio:2/3;object-fit:cover}
+.pop-ph{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:1rem;background:var(--ph);box-shadow:inset 0 0 0 1px var(--line)}
+.pop-ph .ph-name{font-size:1.1rem;font-weight:500;color:var(--text)}
+.pop-body{padding:0.85rem 1rem 1rem}
+.pop-acts{display:flex;align-items:center;gap:0.5rem;margin-bottom:0.7rem}
+.pop-go{display:inline-flex;align-items:center;gap:0.4rem;height:34px;padding:0 0.9rem;border:none;border-radius:17px;background:var(--text);color:var(--bg);font-family:inherit;font-size:0.82rem;font-weight:500;cursor:pointer}
+.pop-go:hover{opacity:0.85}
+.pop-fav .fav-btn{position:static;width:34px;height:34px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--line-strong);display:inline-flex;align-items:center;justify-content:center;background:none}
+.pop-title{font-size:1.02rem;font-weight:700;color:var(--text);line-height:1.3}
+.pop-meta{margin-top:0.3rem;font-size:0.78rem;font-weight:500;color:var(--text)}
+.pop-meta i{font-style:normal;color:var(--faint);margin:0 0.35rem}
+.pop-line{margin-top:0.25rem;font-size:0.76rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (prefers-reduced-motion:reduce){#nx-pop{transition:none}}
