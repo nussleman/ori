@@ -1871,9 +1871,8 @@ body.sec-archive.show-chips .fbar{top:calc(64px + var(--chips-h))}
 .pop-media{position:relative;z-index:1;box-shadow:0 0 0 1px var(--line);transition:box-shadow .34s ease}
 #nx-pop.on .pop-media,#nx-pop.on .pop-body{box-shadow:0 22px 60px rgba(0,0,0,0.5),0 0 0 1px var(--line)}
 #nx-pop.closing{opacity:1;transition:transform .22s cubic-bezier(.4,0,.6,1),opacity .1s ease .14s}
-.pop-body{opacity:0;transform:translateX(-14px);transition:opacity .2s ease,transform .26s ease,box-shadow .2s ease}
-#nx-pop.flip .pop-body{transform:translateX(14px)}
-#nx-pop.on .pop-body,#nx-pop.flip.on .pop-body{opacity:1;transform:none;transition-delay:.18s}
-#nx-pop.closing .pop-body{transition-duration:.08s;transition-delay:0s}
+/* 포스터와 정보 패널이 한 덩어리로 같이 커진다 (따로 늦게 나오지 않음) */
+.pop-body{transition:box-shadow .34s ease}
+
 .nx-card.popping,.result-card.popping{opacity:0;transition:opacity .08s ease}
 @media (prefers-reduced-motion:reduce){#nx-pop,.pop-body{transition:none!important}}
