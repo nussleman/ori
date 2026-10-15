@@ -281,22 +281,25 @@ function popInfo(action,id){
 function popShow(card){
   var action=card.dataset.action,id=card.dataset.id,info=popInfo(action,id);if(!info)return;
   var media=card.querySelector('img,.result-card-ph,.nx-card-type');var rc=(media||card).getBoundingClientRect();
-  var w=Math.max(rc.width*1.55,280),x=rc.left+rc.width/2-w/2;x=Math.max(12,Math.min(x,window.innerWidth-w-12));
+  // 포스터(2:3)는 카드보다 1.3배 크게, 정보는 그 옆 패널에. 오른쪽 자리가 모자라면 정보 패널을 왼쪽에 붙인다
+  var mh=Math.max(rc.height*1.3,270),mw=Math.round(mh*2/3),bw=270,w=mw+bw;
+  var flip=rc.left+rc.width/2+mw/2+bw>window.innerWidth-12;
+  var x=flip?rc.left+rc.width/2+mw/2-w:rc.left+rc.width/2-mw/2;x=Math.max(12,Math.min(x,window.innerWidth-w-12));
   var el=_pop.el;if(!el){el=_pop.el=document.createElement('div');el.id='nx-pop';el.addEventListener('mouseleave',popHide);el.addEventListener('click',function(e){if(e.target.closest('button'))return;openDetail(el.dataset.action,el.dataset.id);popHide();});document.body.appendChild(el);}
-  el.dataset.action=action;el.dataset.id=id;
-  el.innerHTML='<div class="pop-media">'+(info.img?'<div class="pop-bg" style="background-image:url(\''+String(info.img).replace(/'/g,'%27')+'\')"></div><img src="'+escHtml(info.img)+'" alt="">':'<div class="pop-ph">'+phCover(action,info.title)+'</div>')+'</div>'
-    +'<div class="pop-body"><div class="pop-acts"><button type="button" class="pop-go" onclick="openDetail(\''+action+'\',\''+id+'\');popHide()"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>자세히 보기</button>'
+  el.dataset.action=action;el.dataset.id=id;el.classList.toggle('flip',flip);
+  el.innerHTML='<div class="pop-media" style="width:'+mw+'px">'+(info.img?'<img src="'+escHtml(info.img)+'" alt="">':'<div class="pop-ph">'+phCover(action,info.title)+'</div>')+'</div>'
+    +'<div class="pop-body" style="width:'+bw+'px"><div class="pop-acts"><button type="button" class="pop-go" onclick="openDetail(\''+action+'\',\''+id+'\');popHide()"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>자세히 보기</button>'
     +(typeof favBtnHtml==='function'&&action!=='role'?'<span class="pop-fav">'+favBtnHtml(action,id)+'</span>':'')+'</div>'
     +'<div class="pop-title">'+escHtml(info.title)+'</div>'
     +(info.meta.length?'<div class="pop-meta">'+info.meta.map(escHtml).join('<i>·</i>')+'</div>':'')
     +info.lines.map(function(l){return '<div class="pop-line">'+escHtml(l)+'</div>';}).join('')+'</div>';
-  el.style.width=w+'px';el.style.left=x+'px';
-  el.classList.remove('on','closing');el.style.transition='none';el.style.transform='none';el.style.top='0px';el.style.visibility='hidden';el.style.display='block';
-  var ph=el.offsetHeight,y=rc.top+rc.height/2-ph/2;y=Math.max(70,Math.min(y,window.innerHeight-ph-12));
-  el.style.top=y+'px';
-  // 넷플릭스식: 창이 카드 자리·크기에서 출발해 커진다 (FLIP). 카드는 동시에 빠지고, 자세한 정보는 커진 뒤에 드러난다
-  var sx=rc.width/w,from='translate('+(rc.left-x)+'px,'+(rc.top-y)+'px) scale('+sx+')';
-  el.style.transformOrigin='0 0';el.style.transform=from;el.dataset.from=from;el.style.visibility='';
+  el.style.width=w+'px';el.style.height=mh+'px';el.style.left=x+'px';
+  el.classList.remove('on','closing');el.style.transition='none';el.style.transform='none';
+  var y=rc.top+rc.height/2-mh/2;y=Math.max(70,Math.min(y,window.innerHeight-mh-12));
+  el.style.top=y+'px';el.style.display='flex';
+  // 넷플릭스식: 포스터가 카드 자리·크기에서 출발해 커진다 (FLIP). 카드는 동시에 빠지고, 정보 패널은 커진 뒤에 드러난다
+  var s=rc.height/mh,mx=flip?w-mw:0,from='translate('+(rc.left-x-s*mx)+'px,'+(rc.top-y)+'px) scale('+s+')';
+  el.style.transformOrigin='0 0';el.style.transform=from;el.dataset.from=from;
   if(_pop.faded&&_pop.faded!==card)_pop.faded.classList.remove('popping');
   card.classList.add('popping');_pop.faded=card;
   void el.offsetWidth;el.style.transition='';

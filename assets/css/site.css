@@ -1831,12 +1831,13 @@ body.sec-archive.show-chips .fbar{top:calc(64px + var(--chips-h))}
 /* 호버 미리보기 */
 #nx-pop{position:fixed;z-index:900;display:none;border-radius:10px;overflow:hidden;background:var(--bg2);box-shadow:0 18px 50px rgba(0,0,0,0.45),0 0 0 1px var(--line);opacity:0;transform:scale(0.72);transition:opacity .2s ease,transform .26s cubic-bezier(.2,.8,.2,1);cursor:pointer}
 #nx-pop.on{opacity:1;transform:scale(1)}
-.pop-media{position:relative;aspect-ratio:16/10;overflow:hidden;background:#141416}
-.pop-bg{position:absolute;inset:-30px;background-size:cover;background-position:center 25%;filter:blur(22px) brightness(0.55)}
-.pop-media img{position:relative;display:block;height:100%;margin:0 auto;aspect-ratio:2/3;object-fit:cover}
+.pop-media{position:relative;flex:none;height:100%;overflow:hidden;background:var(--ph);border-radius:10px}
+.pop-media img{display:block;width:100%;height:100%;object-fit:cover}
 .pop-ph{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:1rem;background:var(--ph);box-shadow:inset 0 0 0 1px var(--line)}
 .pop-ph .ph-name{font-size:1.1rem;font-weight:500;color:var(--text)}
-.pop-body{padding:0.85rem 1rem 1rem}
+.pop-body{flex:none;height:100%;box-sizing:border-box;overflow:hidden;padding:1rem 1.1rem;background:var(--bg2);border-radius:0 10px 10px 0;margin-left:-10px;padding-left:calc(1.1rem + 10px)}
+#nx-pop.flip{flex-direction:row-reverse}
+#nx-pop.flip .pop-body{border-radius:10px 0 0 10px;margin-left:0;margin-right:-10px;padding-left:1.1rem;padding-right:calc(1.1rem + 10px)}
 .pop-acts{display:flex;align-items:center;gap:0.5rem;margin-bottom:0.7rem}
 .pop-go{display:inline-flex;align-items:center;gap:0.4rem;height:34px;padding:0 0.9rem;border:none;border-radius:17px;background:var(--text);color:var(--bg);font-family:inherit;font-size:0.82rem;font-weight:500;cursor:pointer}
 .pop-go:hover{opacity:0.85}
@@ -1865,11 +1866,14 @@ body.sec-archive.show-chips .fbar{top:calc(64px + var(--chips-h))}
 #nx-pop.closing{transition:opacity .16s ease,transform .2s ease}
 
 /* 미리보기 창 (10/14 개정): 카드 크기에서 커지는 움직임. transform은 JS가 카드 자리 → 제자리로 */
-#nx-pop{opacity:0;transition:transform .34s cubic-bezier(.2,.8,.2,1),opacity .12s ease,box-shadow .34s ease;box-shadow:0 0 0 1px var(--line)}
-#nx-pop.on{opacity:1;box-shadow:0 22px 60px rgba(0,0,0,0.5),0 0 0 1px var(--line)}
-#nx-pop.closing{opacity:1;transition:transform .22s cubic-bezier(.4,0,.6,1),box-shadow .22s ease,opacity .1s ease .14s}
-.pop-body{opacity:0;transform:translateY(-8px);transition:opacity .2s ease,transform .26s ease}
-#nx-pop.on .pop-body{opacity:1;transform:none;transition-delay:.18s}
+#nx-pop{opacity:0;background:none;overflow:visible;transition:transform .34s cubic-bezier(.2,.8,.2,1),opacity .12s ease;box-shadow:none}
+#nx-pop.on{opacity:1}
+.pop-media{position:relative;z-index:1;box-shadow:0 0 0 1px var(--line);transition:box-shadow .34s ease}
+#nx-pop.on .pop-media,#nx-pop.on .pop-body{box-shadow:0 22px 60px rgba(0,0,0,0.5),0 0 0 1px var(--line)}
+#nx-pop.closing{opacity:1;transition:transform .22s cubic-bezier(.4,0,.6,1),opacity .1s ease .14s}
+.pop-body{opacity:0;transform:translateX(-14px);transition:opacity .2s ease,transform .26s ease,box-shadow .2s ease}
+#nx-pop.flip .pop-body{transform:translateX(14px)}
+#nx-pop.on .pop-body,#nx-pop.flip.on .pop-body{opacity:1;transform:none;transition-delay:.18s}
 #nx-pop.closing .pop-body{transition-duration:.08s;transition-delay:0s}
 .nx-card.popping,.result-card.popping{opacity:0;transition:opacity .08s ease}
 @media (prefers-reduced-motion:reduce){#nx-pop,.pop-body{transition:none!important}}
