@@ -42,12 +42,13 @@ assets/
     project-props.js       소품 큐시트: 장면×소품 큐(들어옴·무대에서·나감), 장면 순/소품별/인물별 보기, 동선 점검, CSV·인쇄
     bridges.js             둘러보기↔만들기 연결 버튼, 공통 선택 창 pickOne()
     project-wizard.js      프로젝트 위저드
+    licenses.js            라이선스 메뉴(#licenses): 오리가 관리하는 라이선스 목록 (license_catalog)
     project-browse.js      기회(넷플릭스식: 히어로·가로 줄·전체 자리)·지원, 프로젝트 공개 화면의 모집 중인 자리, 마이페이지 지원 현황
     pages.js               콘텐츠(준비중)·라이선스 문의·약관·개인정보처리방침
     home.js                첫 화면 (가운데 검색창 + 최근 공연 · 모집 중인 자리)
     make.js                만들기 모드 첫 화면(내 프로젝트)과 좌측 프로젝트 목록
     shows.js works.js roles.js people.js troupes.js venues.js   목록·상세 화면
-    peek.js                카드 클릭: 한 번 = 오른쪽 미리보기 패널, 두 번 = 전용 페이지
+    peek.js                카드 클릭: 한 번 = 누른 카드 옆에 붙는 곁 카드(그림 없이 연관 데이터), 두 번 = 전용 페이지
     router.js              해시 라우팅 + 앱 시작 (반드시 마지막)
 ```
 

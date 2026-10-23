@@ -132,12 +132,12 @@ function dvRender(m,keepScroll){
   if(tab!=='home'&&tabs.indexOf(tab)===-1)tab='home';
 
   var th=m.thumb||{};
-  // 오른쪽 패널: 대표 사진을 맨 위에 가장 크게, 글자는 그 아래 작게
-  var peekMedia=peek&&th.url;
-  var thumbH=peekMedia?'':th.url
+  // 곁 카드(10/23): 누른 카드의 그림을 다시 싣지 않는다 — 이름·정보·연관 데이터만
+  var peekMedia=false;
+  var thumbH=peek?'':th.url
     ?'<img class="dv-thumb dv-thumb-'+(th.shape||'square')+'" src="'+th.url+'" alt="">'
     :'<div class="dv-thumb dv-thumb-'+(th.shape||'square')+' dv-card-ph">'+(th.ph||'')+'</div>';
-  var headH='<header class="dv-head'+(peekMedia?' dv-head-nothumb':'')+'">'+thumbH+'<div class="dv-head-main">'
+  var headH='<header class="dv-head'+(peek?' dv-head-nothumb':'')+'">'+thumbH+'<div class="dv-head-main">'
     +(m.kicker?'<div class="dv-kicker">'+m.kicker+'</div>':'')
     +'<div class="dv-title-row"><h1 class="dv-title">'+escHtml(m.title||'')+'</h1>'+(m.favs||[]).join('')+'</div>'
     +(m.sub?'<div class="dv-sub">'+m.sub+'</div>':'')
