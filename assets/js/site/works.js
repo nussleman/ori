@@ -242,11 +242,13 @@ async function saveDemand(wid){
     ticket_type:tsSegVal('wd-ticket'),performers_paid:tsSegVal('wd-paid'),note:$('wd-note').value}});
   if(r.error){msg.textContent='남기지 못했어요: '+r.error.message;btn.disabled=false;return;}
   await renderDemandBox(wid);
+  if(typeof licAfterDemand==='function')licAfterDemand(wid);
   oriAlert('신청을 남겼어요. 같은 작품 신청이 모이면 오리가 권리자에게 물어볼게요.');
 }
 async function withdrawDemand(wid){
   if(!await oriConfirm('이 작품 정식 공연 신청을 취소할까요?'))return;
   var r=await sbClient.rpc('withdraw_license_demand',{p_work_id:wid});
   if(r.error){oriAlert('취소하지 못했어요: '+r.error.message);return;}
-  renderDemandBox(wid);
+  await renderDemandBox(wid);
+  if(typeof licAfterDemand==='function')licAfterDemand(wid);
 }

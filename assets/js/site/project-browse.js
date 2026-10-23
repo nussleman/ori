@@ -37,13 +37,16 @@ function oppWhen(d,short){
   return String(d).slice(5,10).replace('-','.')+(short?'':' 공연')+(dd!=null&&dd>=0?' · D-'+dd:'');
 }
 /* 자리를 프로젝트별로 묶는다 (히어로·프로젝트 줄) */
-function oppByProject(){
+function oppByProject(rows){
   var m={},order=[];
-  _opp.rows.forEach(function(r){if(!m[r.project_id]){m[r.project_id]={p:r,rows:[]};order.push(r.project_id);}m[r.project_id].rows.push(r);});
+  (rows||_opp.rows).forEach(function(r){if(!m[r.project_id]){m[r.project_id]={p:r,rows:[]};order.push(r.project_id);}m[r.project_id].rows.push(r);});
   return order.map(function(k){return m[k];});
 }
+/* 위 칩 (10/23, 아카이브처럼): 거르기(전체·배우·제작진) + 내 지원·받은 제안으로 가는 칩 */
+function oppChip(k){_opp.chip=k;_opp.f={type:k,role:''};renderOppPage();}
 function renderOppPage(){
-  var all=_opp.rows,groups=oppByProject();
+  var chip=_opp.chip||'';
+  var all=_opp.rows.filter(function(r){return !chip||(chip==='actor'?r.position_type==='actor':r.position_type!=='actor');}),groups=oppByProject(all);
   _oppHero.list=groups.slice().sort(function(a,b){return String(a.p.target_start_date||'9999').localeCompare(String(b.p.target_start_date||'9999'));}).slice(0,5);
   _oppHero.i=0;
   var soon=all.filter(function(r){var d=dashDaysUntil(r.target_start_date);return d!=null&&d>=0;}).sort(function(a,b){return String(a.target_start_date).localeCompare(String(b.target_start_date));});
@@ -51,15 +54,14 @@ function renderOppPage(){
   var recruitingIds={};groups.forEach(function(g){recruitingIds[g.p.project_id]=g.rows.length;});
   var projs=(_opp.projects||[]).filter(function(p){return p.status!=='completed'&&p.status!=='cancelled';});
   var offers=_opp.offers,waiting=_opp.mine.filter(function(r){return r.status==='pending';}).length;
-  var h='<div class="nx opp-nx">';
-  if(offers.length)h+='<button type="button" class="opp-offer-banner" onclick="goOffers()"><b>나한테 온 제안 '+offers.length+'개</b>'
-    +escHtml(offers.slice(0,2).map(function(o){return (o.project_title||'프로젝트')+' · '+(o.position_label||'');}).join(' / '))+'<span>답하기 ›</span></button>';
+  var nA=_opp.rows.filter(function(r){return r.position_type==='actor';}).length;
+  var h='<div class="nx opp-nx">'+pchipsHtml([['','전체',_opp.rows.length],['actor','배우',nA],['crew','제작진·스태프',_opp.rows.length-nA],'|',['goMyApply()','내 지원 현황','link',_opp.mine.length||null],['goOffers()','받은 제안','link',offers.length||null]],chip,'oppChip');
   h+='<section class="nx-hero opp-hero" id="opp-hero" aria-label="사람을 찾는 공연"></section>';
   h+=nxRow('공연이 가까운 자리','',soon.slice(0,16).map(oppCardHtml),'첫 공연이 얼마 안 남은 팀이에요. 빨리 답이 와요.');
-  h+=nxRow('배우를 찾아요','',acts.slice(0,16).map(oppCardHtml));
-  h+=nxRow('제작진·스태프를 찾아요','',crew.slice(0,16).map(oppCardHtml));
+  if(!chip){h+=nxRow('배우를 찾아요','',acts.slice(0,16).map(oppCardHtml));
+  h+=nxRow('제작진·스태프를 찾아요','',crew.slice(0,16).map(oppCardHtml));}
   if(all.length>3)h+=nxRow('새로 올라온 자리','',all.slice(0,16).map(oppCardHtml));
-  h+=nxRow('모집 중인 프로젝트','',projs.slice(0,16).map(function(p){return oppProjectCardHtml(p,recruitingIds[p.id]||0);}),'자리를 누르기 전에 어떤 팀인지 먼저 둘러봐요.');
+  if(!chip)h+=nxRow('모집 중인 프로젝트','',projs.slice(0,16).map(function(p){return oppProjectCardHtml(p,recruitingIds[p.id]||0);}),'자리를 누르기 전에 어떤 팀인지 먼저 둘러봐요.');
   h+='<section class="opp-all"><div class="opp-all-head"><h2 class="cat-all">전체 자리</h2>'
     +(_opp.mine.length?'<button type="button" class="opp-mine" onclick="goMyPageTab(\'apply\')">내 지원 <b>'+_opp.mine.length+'</b>건'+(waiting?' · 답을 기다리는 중 <b>'+waiting+'</b>':'')+' ›</button>':'')+'</div>'
     +'<div id="opp-bar"></div><div id="opp-list" class="opp-pgrid"></div></section>';

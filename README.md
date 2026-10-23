@@ -30,7 +30,7 @@ assets/
     detail.js              상세 화면 공통 틀 dvRender() — 같은 모델로 전용 페이지/오른쪽 패널을 그림
     account.js             구글 로그인, 선언 의식, 즐겨찾기, 사람/단체 클레임
     edit-request.js        정보 제보·수정요청 모달
-    mypage.js              마이페이지: 내 기록 · 지원 현황 · 저장한 것 · 내 정보 · 내 단체
+    mypage.js              마이페이지: 내 기록 · 내 정보 · 내 단체
     troupe-shows.js        내 단체 관리 안 "우리 공연 기록": 단체가 지난 공연 등록·조건 기록·출연진 붙여넣기, 사람들이 남긴 이력 확인
     my-history.js          마이페이지 "내 기록"의 내 이력: 참여한 공연을 직접 추가 → 공연 단체가 확인 (확인 전엔 비공개)
     reviews.js             후기·관극 기록 (공연·작품·극장·단체만, 긍정 키워드 칩 + 짧은 글, 신고)
@@ -42,7 +42,8 @@ assets/
     project-props.js       소품 큐시트: 장면×소품 큐(들어옴·무대에서·나감), 장면 순/소품별/인물별 보기, 동선 점검, CSV·인쇄
     bridges.js             둘러보기↔만들기 연결 버튼, 공통 선택 창 pickOne()
     project-wizard.js      프로젝트 위저드
-    licenses.js            라이선스 메뉴(#licenses): 오리가 관리하는 라이선스 목록 (license_catalog)
+    licenses.js            라이선스(#licenses 신청할 수 있는 작품 카드·원해요, #license-<id> 작품별 신청 단계) (license_catalog)
+    mine.js                받은 제안(#offers)·내 지원 현황(#apply)·저장한 것(#saved): 칩 + 카드 화면
     project-browse.js      기회(넷플릭스식: 히어로·가로 줄·전체 자리)·지원, 프로젝트 공개 화면의 모집 중인 자리, 마이페이지 지원 현황
     pages.js               콘텐츠(준비중)·라이선스 문의·약관·개인정보처리방침
     home.js                첫 화면 (가운데 검색창 + 최근 공연 · 모집 중인 자리)
