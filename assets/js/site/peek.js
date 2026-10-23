@@ -118,7 +118,7 @@ function handleCardClick(e,inPanel){
   if(!el||!PEEK_LABEL[el.dataset.action]){
     // 카드가 아닌 이미지(상세 화면의 포스터·갤러리)는 클릭하면 크게 본다
     var img=e.target.closest('img');
-    if(img&&img.src&&!e.target.closest('button,a'))openLightbox(img.src);
+    if(img&&img.src&&!e.target.closest('button,a,[onclick],.nx-card'))openLightbox(img.src);  // 카드 그림(기회·라이선스·제안 카드)은 카드 동작을 따른다
     return;
   }
   var action=el.dataset.action,id=el.dataset.id;

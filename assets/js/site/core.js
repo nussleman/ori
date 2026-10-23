@@ -29,6 +29,14 @@ function mn(h){
   // 새 화면이 들어왔다는 걸 짧게 알려준다 (사용성 3단계, 동작 줄이기 설정이면 CSS에서 꺼짐)
   el.classList.remove('ori-in');void el.offsetWidth;el.classList.add('ori-in');
 }
+/* 화면 위 칩 줄 (10/23): 아카이브 칩과 같은 모양. items=[[키,이름]] 또는 [키,이름,'link'(다른 화면으로 가는 칩)]. '|'는 구분선 */
+function pchipsHtml(items,cur,fn){
+  return '<div class="pchips" role="toolbar">'+items.map(function(it){
+    if(it==='|')return '<i class="pchips-sep" aria-hidden="true"></i>';
+    var go=it[2]==='link'?it[0]:fn+'(\''+it[0]+'\')';
+    return '<button type="button" class="'+(it[2]!=='link'&&it[0]===cur?'active':'')+'" onclick="'+go+'">'+escHtml(it[1])+(it[3]!=null?'<span class="pchips-n">'+it[3]+'</span>':'')+'</button>';
+  }).join('')+'</div>';
+}
 /* 목록 카드 통일 (10/14): 아카이브 홈과 같은 세로 포스터 카드. 사진 없는 카드는 이름을 크게 쓴 글자 표지 */
 var CARD_TONES=['#5A1C26','#1F2A44','#24463B','#4B2E52','#6A4A12','#2E4A5C','#3B3F48','#5B2A3E'];
 function cardTone(id){var h=0;String(id||'').split('').forEach(function(c){h=(h*31+c.charCodeAt(0))>>>0;});return CARD_TONES[h%CARD_TONES.length];}
@@ -337,7 +345,7 @@ var MAKE_MODE_VIEWS=['make','project'];
 /* 틀 (10/14): 위 막대 = 오리 · 주 메뉴(아카이브·기회·내 프로젝트) · 검색 · 알림 · 마이페이지.
    왼쪽 레일 = 나에게 온 것·내 것(홈·받은 제안·내 지원·저장·내 페이지 + 내 프로젝트 목록). 모바일은 아래 탭.
    아카이브 갈래 안에서는 위에 칩 줄(전체·작품·공연·사람·단체·극장·배역) */
-var SECTION_OF={projects:'match',offers:'match',apply:'match',licenses:'license',make:'mine',project:'mine',mypage:''};
+var SECTION_OF={projects:'match',offers:'me',apply:'me',saved:'me',licenses:'license',make:'mine',project:'mine',mypage:''};
 function setNav(v,projectId){
   if(PEEK.rendering)return; // 패널 미리보기는 현재 메뉴 상태를 바꾸지 않는다
   closePeek(true);
@@ -347,13 +355,13 @@ function setNav(v,projectId){
   document.body.classList.toggle('sec-match',sec==='match');
   document.body.classList.toggle('sec-archive',sec==='archive');
   document.body.classList.toggle('sec-license',sec==='license');
+  document.body.classList.toggle('sec-me',sec==='me');
   document.body.classList.toggle('is-home',v==='home');
   document.body.classList.remove('pj-fit');  // 프로젝트 보드(스크롤 없는 한 장)는 renderProjectShell이 다시 켠다
   document.body.classList.remove('search-open');
   ['home','works','shows','people','troupes','venues','roles'].forEach(function(n){var el=$('chip-'+n);if(el)el.classList.toggle('active',n===v);});
   // 레일·아래 탭: 마이페이지는 열린 탭(지원·저장·기록)으로 가린다
-  var tab=(v==='mypage'||v==='apply')?(window._myPageTab||'records'):'';
-  var on={home:sec==='archive',match:v==='projects',license:v==='licenses',offers:v==='offers',apply:tab==='apply',saved:tab==='saved',make:make};
+  var on={home:sec==='archive',match:v==='projects',license:v==='licenses',offers:v==='offers',apply:v==='apply',saved:v==='saved',make:make};
   Object.keys(on).forEach(function(n){var r=$('rail-'+n);if(r)r.classList.toggle('active',on[n]);var m=$('mobt-'+n);if(m)m.classList.toggle('active',on[n]);});
   window._currentProjectNav=v==='project'?projectId:null;
   document.querySelectorAll('#make-nav-projects button').forEach(function(b){b.classList.toggle('active',b.dataset.pid===window._currentProjectNav);});

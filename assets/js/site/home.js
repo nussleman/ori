@@ -133,51 +133,6 @@ function toggleBell(e){
 function closeBell(){var dd=$('bell-dd');if(dd)dd.classList.remove('open');}
 document.addEventListener('click',function(e){var w=e.target.closest&&e.target.closest('.bell-wrap');if(!w)closeBell();});
 
-/* ══ 나한테 온 제안 (#offers): 받은 제안을 보고 그 자리에서 수락·거절 ══ */
-var _homeOffers=[];
-async function goOffers(push){
-  if(!CURRENT_USER){loginWithGoogle();return;}
-  if(push!==false)history.pushState({view:'offers'},'','#offers');
-  setNav('offers');sb('');_sbContext='';
-  mn('<div class="tab-index"><div class="result-empty"><div class="hf-loading">불러오는 중…</div></div></div>');
-  var r=await sbClient.rpc('my_offers');
-  if(r.error){mn(loadFailHtml('제안'));return;}
-  _homeOffers=r.data||[];
-  renderOffers();
-}
-function renderOffers(){
-  var h='<div class="offers-page"><h1 class="dv-title">나한테 온 제안</h1>'
-    +'<p class="home-sec-sub">프로젝트에서 함께하자고 보낸 제안이에요. 함께하면 바로 그 프로젝트의 구성원이 돼요.</p>';
-  if(!_homeOffers.length)h+='<div class="dv-empty">아직 온 제안이 없어요. <button type="button" class="dv-all" onclick="goProjectBrowse()">열린 기회 둘러보기 ›</button></div>';
-  else h+='<div class="offer-grid">'+_homeOffers.map(function(o){
-      var from=[o.troupe_name,o.inviter_nickname&&o.inviter_nickname+'님'].filter(Boolean).join(' · ');
-      var meta=[o.work_name,o.target_start_date?String(o.target_start_date).slice(0,10).replace(/-/g,'.')+' 공연':''].filter(Boolean).join(' · ');
-      return '<div class="offer-card">'
-        +'<div class="opp-kind">제안'+(from?' · '+escHtml(from):'')+'</div>'
-        +'<div class="opp-title">'+escHtml(o.position_label||'함께해요')+'</div>'
-        +'<div class="opp-proj">'+escHtml(o.project_title||'새 프로젝트')+'</div>'
-        +(meta?'<div class="opp-meta">'+escHtml(meta)+'</div>':'')
-        +(o.message?'<div class="offer-msg">“'+escHtml(o.message)+'”</div>':'')
-        +(o.position_open===false?'<div class="opp-meta">그 사이 이 자리가 채워졌어요</div>':'')
-        +'<div class="offer-actions">'
-        +(o.position_open===false?'':'<button type="button" class="offer-yes" onclick="answerOffer(\''+o.id+'\',true)">함께할게요</button>')
-        +'<button type="button" class="offer-no" onclick="answerOffer(\''+o.id+'\',false)">'+(o.position_open===false?'목록에서 지우기':'이번엔 어려워요')+'</button></div></div>';
-    }).join('')+'</div>';
-  mn(h+'</div>');
-}
-async function answerOffer(id,accept){
-  var o=_homeOffers.find(function(x){return x.id===id;});if(!o)return;
-  if(!accept&&o.position_open!==false&&!(await oriConfirm('「'+(o.project_title||'이 프로젝트')+'」의 '+(o.position_label||'제안')+' 제안을 거절할까요?',{ok:'거절하기',cancel:'그대로 두기'})))return;
-  try{await sbOk(sbClient.rpc('respond_offer',{p_request_id:id,p_accept:accept}));}
-  catch(e){oriAlert('답하지 못했어요: '+e.message);goOffers(false);return;}
-  _homeOffers=_homeOffers.filter(function(x){return x.id!==id;});
-  renderOffers();loadBell();
-  if(accept){
-    loadMyProjectsCache();
-    oriAlert('「'+(o.project_title||'프로젝트')+'」에 합류했어요',{action:{label:'프로젝트 열기',fn:function(){goProject(o.project_id);}}});
-  }else oriAlert('제안을 거절했어요');
-}
-
 /* ══ 갈래별 줄 (10/14): 작품·공연·사람·단체·극장·배역 목록 맨 위에도 홈처럼 가로 줄 몇 개 → 그 아래 전체 목록(필터) ══
    숫자는 화면에 보이는 공개 공연(DB.shows)만으로 센다 */
 var _catRowsCache={};

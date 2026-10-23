@@ -7,7 +7,7 @@ function myCardHtml(type,id,listType){
   var imgH=imgUrl?'<img class="cast-img" src="'+imgUrl+'">':'<div class="cast-img-ph">&nbsp;</div>';
   return '<div class="cast-card" data-action="'+type+'" data-id="'+id+'" style="position:relative">'+favBtnHtml(type,id,listType)+imgH+'<div class="cast-name">'+name+'</div></div>';
 }
-var MYPAGE_TABS=[['records','내 기록'],['apply','지원 현황'],['saved','저장한 것'],['info','내 정보'],['troupes','내 단체']];
+var MYPAGE_TABS=[['records','내 기록'],['info','내 정보'],['troupes','내 단체']];  // 지원 현황·저장한 것은 레일의 따로 된 화면(mine.js)
 window._myPageTab='records';
 async function renderMyPage(){
   await loadFavorites();

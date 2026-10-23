@@ -13,6 +13,8 @@ function routeFromHash(hash){
   if(h==='#mypage'){goMyPage(false);return;}
   if(h==='#projects'){goProjectBrowse(false);return;}
   if(h==='#licenses'){goLicenses(false);return;}
+  if(h==='#apply'){goMyApply(false);return;}
+  if(h==='#saved'){goSaved(false);return;}
   if(h==='#offers'){goOffers(false);return;}
   if(h==='#make'||h==='#my'){goMake(false);return;}
   if(h==='#terms'){goTerms(false);return;}
@@ -25,6 +27,7 @@ function routeFromHash(hash){
   if(m=h.match(/^#venue-(.+)$/)){showVenue(m[1],false);return;}
   if(m=h.match(/^#troupe-(.+)$/)){showTroupe(m[1],false);return;}
   if(m=h.match(/^#project-(.+)$/)){goProject(m[1],false);return;}
+  if(m=h.match(/^#license-(.+)$/)){goLicense(m[1],false);return;}
   if(m=h.match(/^#mytroupe-(.+)$/)){goMyTroupe(m[1],false);return;}
   goHome(false);
 }

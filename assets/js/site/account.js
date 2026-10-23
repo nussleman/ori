@@ -48,6 +48,8 @@ document.addEventListener('click',function(e){
   if(!dd.contains(e.target)&&e.target.id!=='profile-fab'){dd.classList.remove('open');}
 });
 function goMyPageTab(tab){
+  if(tab==='apply'){goMyApply();return;}   // 지원 현황·저장한 것은 따로 된 카드 화면 (mine.js)
+  if(tab==='saved'){goSaved();return;}
   window._myPageTab=tab;
   goMyPage(true,true);
 }
