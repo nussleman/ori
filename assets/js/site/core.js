@@ -26,7 +26,6 @@ function mn(h){
   cardDecorate(el);
   // 아카이브 칩 줄은 목록·홈 화면에서만 (상세 화면에선 숨김)
   document.body.classList.toggle('show-chips',!!el.querySelector('.nx,.tab-index'));
-  if(typeof popHide==='function')popHide();
   // 새 화면이 들어왔다는 걸 짧게 알려준다 (사용성 3단계, 동작 줄이기 설정이면 CSS에서 꺼짐)
   el.classList.remove('ori-in');void el.offsetWidth;el.classList.add('ori-in');
 }
@@ -338,7 +337,7 @@ var MAKE_MODE_VIEWS=['make','project'];
 /* 틀 (10/14): 위 막대 = 오리 · 주 메뉴(아카이브·기회·내 프로젝트) · 검색 · 알림 · 마이페이지.
    왼쪽 레일 = 나에게 온 것·내 것(홈·받은 제안·내 지원·저장·내 페이지 + 내 프로젝트 목록). 모바일은 아래 탭.
    아카이브 갈래 안에서는 위에 칩 줄(전체·작품·공연·사람·단체·극장·배역) */
-var SECTION_OF={projects:'match',offers:'match',apply:'match',make:'mine',project:'mine',mypage:''};
+var SECTION_OF={projects:'match',offers:'match',apply:'match',licenses:'license',make:'mine',project:'mine',mypage:''};
 function setNav(v,projectId){
   if(PEEK.rendering)return; // 패널 미리보기는 현재 메뉴 상태를 바꾸지 않는다
   closePeek(true);
@@ -347,13 +346,14 @@ function setNav(v,projectId){
   document.body.classList.toggle('mode-make',make);
   document.body.classList.toggle('sec-match',sec==='match');
   document.body.classList.toggle('sec-archive',sec==='archive');
+  document.body.classList.toggle('sec-license',sec==='license');
   document.body.classList.toggle('is-home',v==='home');
   document.body.classList.remove('pj-fit');  // 프로젝트 보드(스크롤 없는 한 장)는 renderProjectShell이 다시 켠다
   document.body.classList.remove('search-open');
   ['home','works','shows','people','troupes','venues','roles'].forEach(function(n){var el=$('chip-'+n);if(el)el.classList.toggle('active',n===v);});
   // 레일·아래 탭: 마이페이지는 열린 탭(지원·저장·기록)으로 가린다
   var tab=(v==='mypage'||v==='apply')?(window._myPageTab||'records'):'';
-  var on={home:sec==='archive',match:v==='projects',offers:v==='offers',apply:tab==='apply',saved:tab==='saved',make:make};
+  var on={home:sec==='archive',match:v==='projects',license:v==='licenses',offers:v==='offers',apply:tab==='apply',saved:tab==='saved',make:make};
   Object.keys(on).forEach(function(n){var r=$('rail-'+n);if(r)r.classList.toggle('active',on[n]);var m=$('mobt-'+n);if(m)m.classList.toggle('active',on[n]);});
   window._currentProjectNav=v==='project'?projectId:null;
   document.querySelectorAll('#make-nav-projects button').forEach(function(b){b.classList.toggle('active',b.dataset.pid===window._currentProjectNav);});

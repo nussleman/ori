@@ -6,13 +6,15 @@
    상태는 제작 계기판(project-dashboard.js)과 같은 판정·마감 기준을 따른다 — 같은 것을 두 곳이 다르게 말하지 않게. */
 var PROJECT_STAGES=['기획','팀 꾸리기','공연 준비','공연','마무리'];
 var PJB_ST_LABEL={done:'해결',doing:'진행 중',todo:'시작 전',alert:'확인 필요',off:'해당 없음'};
+/* 상태 아이콘 = 빛나는 구슬 안의 기호 (CSS .pjb-orb가 입체감을 준다) */
 var PJB_ST_ICON={
-  done:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.8"/></svg>',
-  doing:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" stroke="none"/></svg>',
-  todo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3.2 3" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg>',
-  alert:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.4v.1"/></svg>',
-  off:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>'
+  done:'<path d="M7.5 12.5l3 3L16.5 9"/>',
+  doing:'<path d="M12 7v5l3.2 2"/>',
+  todo:'<path d="M8 12h.01M12 12h.01M16 12h.01"/>',
+  alert:'<path d="M12 7.5v5M12 16.2v.1"/>',
+  off:'<path d="M8.5 12h7"/>'
 };
+function pjbOrb(st){return '<span class="pjb-orb" title="'+PJB_ST_LABEL[st]+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+PJB_ST_ICON[st]+'</svg><span class="sr-only">'+PJB_ST_LABEL[st]+'</span></span>';}
 var _pjb={data:null};
 
 function projectStageIndex(pr){
@@ -100,11 +102,6 @@ function projectBoxes(){
       var l=pjbLight('promo',D),n=(pr.promo_links||[]).length;
       return{v:n?'링크 '+n+'개':(pr.promo_note?'문구 있음':'아직 없음'),d:pr.promo_note?String(pr.promo_note).replace(/\s+/g,' '):'소개 문구·포스터·예매 링크',st:pjbFromLight(l.light)};
     }},
-    {key:'dash',title:'제작 계기판',icon:'compass',view:function(el){el.innerHTML=dashboardSectionHtml();renderProdDash();},calc:function(D){
-      var ls=DASH_AREAS.map(function(a){return dashLight(a,D);}).filter(function(l){return l.light!=='off';});
-      var c=function(x){return ls.filter(function(l){return l.light===x;}).length;};
-      return{v:c('red')?'확인 필요 '+c('red'):'해결 '+c('green')+' / '+ls.length,d:'해결 '+c('green')+' · 진행 '+c('yellow')+' · 시작 전 '+c('gray')+' — 영역 '+ls.length+'개',st:c('red')?'alert':c('green')===ls.length?'done':c('green')||c('yellow')?'doing':'todo'};
-    }},
     {key:'settings',title:'상태·공개',icon:'settings',view:function(el){renderProjectSettings(el);},calc:function(){
       var bits=[pr.is_public?'공개':'비공개',pr.is_recruiting?'모집 중':'모집 꺼짐'];
       return{v:PROJECT_STATUS_LABEL[pr.status]||pr.status,d:PROJECT_STAGES[projectStageIndex(pr)]+' 단계 · '+bits.join(' · '),st:pr.published_show_id?'done':pr.status==='cancelled'?'off':'doing'};
@@ -125,27 +122,51 @@ async function loadBoardData(){
   ctx.positions=D.positions;ctx.memberDetail=D.members;ctx.pendingRequests=D.requests.length;
   return D;
 }
-function pjbBoxHtml(b,D){
+function pjbBoxInner(b,D){
   var c=D?b.calc(D):{v:'',d:'',st:'todo'};
-  var act=b.view?'openProjectBox(\''+b.key+'\')':(b.go||'');
-  return '<button type="button" class="pjb pjb-'+c.st+(D?'':' pjb-wait')+'"'+(act?' onclick="'+act+'"':' disabled')+'>'
-    +'<span class="pjb-top"><span class="pjb-t">'+ico(b.icon)+escHtml(b.title)+'</span>'
-    +'<span class="pjb-st" title="'+PJB_ST_LABEL[c.st]+'">'+PJB_ST_ICON[c.st]+'<span class="sr-only">'+PJB_ST_LABEL[c.st]+'</span></span></span>'
-    +'<span class="pjb-v">'+(D?escHtml(c.v):'<span class="hf-loading"></span>')+'</span>'
-    +'<span class="pjb-d">'+escHtml(c.d||'')+'</span></button>';
+  return {st:c.st,html:'<span class="pjb-top"><span class="pjb-t">'+ico(b.icon)+escHtml(b.title)+'</span>'+pjbOrb(c.st)+'</span>'
+    +'<span class="pjb-v" title="'+escHtml(c.v||'')+'">'+(D?escHtml(c.v):'<span class="hf-loading"></span>')+'</span>'
+    +'<span class="pjb-d">'+escHtml(c.d||'')+'</span>'};
 }
+function pjbBoxHtml(b,D){
+  var x=pjbBoxInner(b,D),act=b.view?'openProjectBox(\''+b.key+'\')':(b.go||'');
+  return '<button type="button" class="pjb pjb-'+x.st+(D?'':' pjb-wait')+'" data-box="'+b.key+'"'+(act?' onclick="'+act+'"':' disabled')+'>'+x.html+'</button>';
+}
+/* 보드: 프로젝트 이름(가장 크게, 상자 왼쪽 선에 맞춰) + 상자들. 열 때 카드를 나눠 주듯 가운데 더미에서 제자리로 펼쳐진다 */
 function renderProjectBoard(el){
   var ctx=window._projectCtx,boxes=projectBoxes();
   var cols=boxes.length>12?5:4,rows=Math.ceil(boxes.length/cols);
-  var draw=function(D){
-    el.innerHTML='<div class="pjb-board" style="--cols:'+cols+';--rows:'+rows+';--rows-m:'+Math.ceil(boxes.length/2)+'">'+boxes.map(function(b){return pjbBoxHtml(b,D);}).join('')+'</div>';
-  };
-  draw(_pjb.data&&_pjb.data.pid===ctx.pid?_pjb.data.D:null);  // 다시 그릴 땐 지난 값을 먼저 보여주고 새로 받아 바꾼다
+  var cached=_pjb.data&&_pjb.data.pid===ctx.pid?_pjb.data.D:null;  // 다시 그릴 땐 지난 값을 먼저 보여주고 새로 받아 바꾼다
+  el.innerHTML='<div class="pjb-stage" style="--cols:'+cols+';--rows:'+rows+';--rows-m:'+Math.ceil(boxes.length/2)+'">'
+    +'<h1 class="pjb-title">'+escHtml(ctx.pr.title||'새 프로젝트')+'</h1>'
+    +'<div class="pjb-board">'+boxes.map(function(b){return pjbBoxHtml(b,cached);}).join('')+'</div></div>';
+  pjbDeal(el);
   loadBoardData().then(function(D){
     _pjb.data={pid:ctx.pid,D:D};
     if(window._projectCtx!==ctx||window._projectBox||!$('project-tab-content'))return;
-    draw(D);
+    // 펼쳐지는 중에도 끊기지 않게 상자를 새로 만들지 않고 안만 바꾼다
+    boxes.forEach(function(b){
+      var btn=el.querySelector('.pjb[data-box="'+b.key+'"]');if(!btn)return;
+      var x=pjbBoxInner(b,D);btn.className='pjb pjb-'+x.st;btn.innerHTML=x.html;
+    });
   });
+}
+function pjbDeal(el){
+  if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  var board=el.querySelector('.pjb-board'),list=[].slice.call(el.querySelectorAll('.pjb'));if(!board||!list.length)return;
+  var br=board.getBoundingClientRect(),cx=br.left+br.width/2,cy=br.top+br.height/2;
+  list.forEach(function(b,i){
+    var r=b.getBoundingClientRect(),rot=((i*37)%13-6)*1.2;
+    b.style.transition='none';b.style.opacity='0';
+    b.style.transform='translate('+(cx-r.left-r.width/2)+'px,'+(cy-r.top-r.height/2)+'px) rotate('+rot+'deg) scale(0.55)';
+  });
+  void board.offsetWidth;
+  list.forEach(function(b,i){
+    b.style.transition='transform .62s cubic-bezier(.18,.9,.22,1.06) '+(i*42)+'ms, opacity .22s ease '+(i*42)+'ms';
+    b.style.opacity='';b.style.transform='';
+  });
+  // 끝나면 인라인 값을 지워 평소의 눌림·떠오름 반응이 돌아오게
+  setTimeout(function(){list.forEach(function(b){b.style.transition='';});},620+list.length*42);
 }
 /* 예전 "사람" 탭 배지 자리 — 이제 보드의 참여 요청 상자가 말해 준다 */
 function updatePeopleTabBadge(){}

@@ -14,7 +14,7 @@
 <script>try{var t=localStorage.getItem("ori-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap">
-<link rel="stylesheet" href="assets/css/site.css?v=20261023a">
+<link rel="stylesheet" href="assets/css/site.css?v=20261023b">
 </head>
 <body>
 
@@ -55,6 +55,7 @@
     <div class="rail-sec">
       <button type="button" class="rail-item" id="rail-home" onclick="goHome()"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span>아카이브</span></button>
       <button type="button" class="rail-item" id="rail-match" onclick="goProjectBrowse()"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10v4h4l9 5V5L7 10z"/><path d="M19 9a3 3 0 0 1 0 6"/></svg><span>기회</span></button>
+      <button type="button" class="rail-item" id="rail-license" onclick="goLicenses()"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3M15 8l2 2"/></svg><span>라이선스</span></button>
     </div>
     <div class="rail-sec">
       <button type="button" class="rail-item" id="rail-offers" onclick="goOffers()"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><span>받은 제안</span></button>
@@ -251,41 +252,43 @@
 <nav class="mobile-tab-bar" id="mob-nav" aria-label="메뉴">
   <button class="mob-tab" id="mobt-home" onclick="goHome()"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>아카이브</button>
   <button class="mob-tab" id="mobt-match" onclick="goProjectBrowse()"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10v4h4l9 5V5L7 10z"/><path d="M19 9a3 3 0 0 1 0 6"/></svg>기회</button>
+  <button class="mob-tab" id="mobt-license" onclick="goLicenses()"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3M15 8l2 2"/></svg>라이선스</button>
   <button class="mob-tab" id="mobt-make" onclick="goMake()"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h18M3 20h18M5 4v16M19 4v16"/><path d="M5 4c2.5 3.5 4.5 4.5 7 4.5S16.5 7.5 19 4"/></svg>내 프로젝트</button>
   <button class="mob-tab" id="mobt-offers" onclick="goOffers()"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>받은 제안</button>
   <button class="mob-tab" id="mobt-apply" onclick="goMyPageTab('apply')"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l16-8-6 16-3-7z"/></svg>내 지원</button>
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/config.js?v=20261023a"></script>
-<script src="assets/js/site/core.js?v=20261023a"></script>
-<script src="assets/js/site/filters.js?v=20261023a"></script>
-<script src="assets/js/site/detail.js?v=20261023a"></script>
-<script src="assets/js/site/account.js?v=20261023a"></script>
-<script src="assets/js/site/edit-request.js?v=20261023a"></script>
-<script src="assets/js/site/mypage.js?v=20261023a"></script>
-<script src="assets/js/site/troupe-shows.js?v=20261023a"></script>
-<script src="assets/js/site/my-history.js?v=20261023a"></script>
-<script src="assets/js/site/project.js?v=20261023a"></script>
-<script src="assets/js/site/project-home.js?v=20261023a"></script>
-<script src="assets/js/site/project-dashboard.js?v=20261023a"></script>
-<script src="assets/js/site/project-budget.js?v=20261023a"></script>
-<script src="assets/js/site/project-props.js?v=20261023a"></script>
-<script src="assets/js/site/project-schedule.js?v=20261023a"></script>
-<script src="assets/js/site/project-wizard.js?v=20261023a"></script>
-<script src="assets/js/site/project-browse.js?v=20261023a"></script>
-<script src="assets/js/site/pages.js?v=20261023a"></script>
-<script src="assets/js/site/home.js?v=20261023a"></script>
-<script src="assets/js/site/shows.js?v=20261023a"></script>
-<script src="assets/js/site/works.js?v=20261023a"></script>
-<script src="assets/js/site/roles.js?v=20261023a"></script>
-<script src="assets/js/site/people.js?v=20261023a"></script>
-<script src="assets/js/site/troupes.js?v=20261023a"></script>
-<script src="assets/js/site/venues.js?v=20261023a"></script>
-<script src="assets/js/site/peek.js?v=20261023a"></script>
-<script src="assets/js/site/make.js?v=20261023a"></script>
-<script src="assets/js/site/bridges.js?v=20261023a"></script>
-<script src="assets/js/site/reviews.js?v=20261023a"></script>
-<script src="assets/js/site/router.js?v=20261023a"></script>
+<script src="assets/js/config.js?v=20261023b"></script>
+<script src="assets/js/site/core.js?v=20261023b"></script>
+<script src="assets/js/site/filters.js?v=20261023b"></script>
+<script src="assets/js/site/detail.js?v=20261023b"></script>
+<script src="assets/js/site/account.js?v=20261023b"></script>
+<script src="assets/js/site/edit-request.js?v=20261023b"></script>
+<script src="assets/js/site/mypage.js?v=20261023b"></script>
+<script src="assets/js/site/troupe-shows.js?v=20261023b"></script>
+<script src="assets/js/site/my-history.js?v=20261023b"></script>
+<script src="assets/js/site/project.js?v=20261023b"></script>
+<script src="assets/js/site/project-home.js?v=20261023b"></script>
+<script src="assets/js/site/project-dashboard.js?v=20261023b"></script>
+<script src="assets/js/site/project-budget.js?v=20261023b"></script>
+<script src="assets/js/site/project-props.js?v=20261023b"></script>
+<script src="assets/js/site/project-schedule.js?v=20261023b"></script>
+<script src="assets/js/site/project-wizard.js?v=20261023b"></script>
+<script src="assets/js/site/project-browse.js?v=20261023b"></script>
+<script src="assets/js/site/licenses.js?v=20261023b"></script>
+<script src="assets/js/site/pages.js?v=20261023b"></script>
+<script src="assets/js/site/home.js?v=20261023b"></script>
+<script src="assets/js/site/shows.js?v=20261023b"></script>
+<script src="assets/js/site/works.js?v=20261023b"></script>
+<script src="assets/js/site/roles.js?v=20261023b"></script>
+<script src="assets/js/site/people.js?v=20261023b"></script>
+<script src="assets/js/site/troupes.js?v=20261023b"></script>
+<script src="assets/js/site/venues.js?v=20261023b"></script>
+<script src="assets/js/site/peek.js?v=20261023b"></script>
+<script src="assets/js/site/make.js?v=20261023b"></script>
+<script src="assets/js/site/bridges.js?v=20261023b"></script>
+<script src="assets/js/site/reviews.js?v=20261023b"></script>
+<script src="assets/js/site/router.js?v=20261023b"></script>
 </body>
 </html>
