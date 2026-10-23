@@ -348,6 +348,7 @@ function setNav(v,projectId){
   document.body.classList.toggle('sec-match',sec==='match');
   document.body.classList.toggle('sec-archive',sec==='archive');
   document.body.classList.toggle('is-home',v==='home');
+  document.body.classList.remove('pj-fit');  // 프로젝트 보드(스크롤 없는 한 장)는 renderProjectShell이 다시 켠다
   document.body.classList.remove('search-open');
   ['home','works','shows','people','troupes','venues','roles'].forEach(function(n){var el=$('chip-'+n);if(el)el.classList.toggle('active',n===v);});
   // 레일·아래 탭: 마이페이지는 열린 탭(지원·저장·기록)으로 가린다

@@ -59,7 +59,7 @@ async function addVenueToMyProject(vid){
     if(ex.data&&ex.data.length){oriAlert('이미 후보에 담겨 있어요.');return;}
     var r=await sbClient.from('project_venue_candidates').insert({project_id:pid,venue_id:vid,status:'considering'});if(r.error)throw r.error;
     var p=(MY_PROJECTS_CACHE||[]).find(function(x){return x.id===pid;});
-    if(await oriConfirm('"'+(p?p.title:'내 프로젝트')+'"의 극장 후보에 담았어요.\n후보 목록을 볼까요?',{ok:'후보 목록 보기',cancel:'계속 둘러보기'})){window._prepSub='venue';window._projectTabNext='prep';goProject(pid);}
+    if(await oriConfirm('"'+(p?p.title:'내 프로젝트')+'"의 극장 후보에 담았어요.\n후보 목록을 볼까요?',{ok:'후보 목록 보기',cancel:'계속 둘러보기'}))goProject(pid+'/venue');
   }catch(e){oriAlert('담지 못했어요: '+e.message);}
 }
 

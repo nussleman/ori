@@ -1,33 +1,113 @@
 /* 오리 사이트 — 기회 (#projects)
    둘러보기의 두 번째 흐름: "내가 지원할 수 있는 자리·기회를 찾는다".
-   모집 중인 자리(배역·제작진)를 한 목록으로 보여주고, 바로 지원한다. 자리를 누르면 프로젝트 공개 페이지로.
+   생김새는 아카이브 홈과 같은 넷플릭스식 (10/23): 큰 무대(히어로) = 사람을 찾는 공연 → 가로 줄(공연 가까운 자리·배우·제작진·새 자리·모집 중인 프로젝트) → 전체 자리(필터).
+   아카이브와 다른 점: 카드에 바로 [지원하기]가 있고 내 지원 상태가 붙는다. 카드를 누르면 프로젝트 공개 화면(모집 중인 자리 목록)으로.
    내가 보낸 지원의 상태는 마이페이지 "지원 현황"(renderMyApplications)에서 본다.
-   데이터: list_opportunities() (자리 + 프로젝트 + 내 지원 상태), my_join_requests(), list_public_projects(). */
-var _opp={rows:[],projects:[],f:{type:'',role:''},sort:'new'};
+   데이터: list_opportunities() (자리 + 프로젝트 + 내 지원 상태), my_join_requests(), list_public_projects(), my_offers(). */
+var _opp={rows:[],projects:[],mine:[],offers:[],f:{type:'',role:''},sort:'new'};
+var _oppHero={list:[],i:0,timer:null};
 
 async function goProjectBrowse(push){
   if(push!==false)history.pushState({view:'projects'},'','#projects');
   setNav('projects');sb('');_sbContext='';mobShowDetail();
   if(!CURRENT_USER){mn('<div class="tab-index"><div class="result-empty">로그인이 필요해요</div></div>');return;}
-  mn('<div class="tab-index opp-page"><div class="opp-head"><h1 class="dv-title">기회</h1><p class="opp-sub">지금 함께할 사람을 찾는 공연들이에요. 마음에 드는 자리에 지원해 보세요.</p><div id="opp-mine"></div></div>'
-    +'<div id="opp-bar"></div><div id="opp-list" class="opp-grid"><div class="hf-loading">불러오는 중…</div></div>'
-    +'<section class="dv-sec" id="opp-projects"></section></div>');
+  mn('<div class="nx opp-nx"><section class="nx-hero opp-hero" id="opp-hero"><div class="opp-hero-wait"><div class="hf-loading">불러오는 중…</div></div></section></div>');
   var res=await Promise.all([sbClient.rpc('list_opportunities'),sbClient.rpc('list_public_projects'),sbClient.rpc('my_join_requests'),sbClient.rpc('my_offers')]);
   if(location.hash!=='#projects')return;
-  // 답을 기다리는 제안이 있으면 기회 첫 화면 맨 위에 (10/14)
-  var offers=res[3].error?[]:(res[3].data||[]);
-  if(offers.length&&$('opp-mine'))$('opp-mine').insertAdjacentHTML('beforebegin','<button type="button" class="opp-offer-banner" onclick="goOffers()"><b>나한테 온 제안 '+offers.length+'개</b>'
-    +escHtml(offers.slice(0,2).map(function(o){return (o.project_title||'프로젝트')+' · '+(o.position_label||'');}).join(' / '))+'<span>답하기 ›</span></button>');
-  _opp.rows=res[0].data||[];_opp.projects=res[1].data||[];
-  var mine=res[2].data||[],waiting=mine.filter(function(r){return r.status==='pending';}).length;
-  var m=$('opp-mine');
-  if(m&&mine.length)m.innerHTML='<button type="button" class="opp-mine" onclick="goMyPageTab(\'apply\')">내 지원 <b>'+mine.length+'</b>건'+(waiting?' · 답을 기다리는 중 <b>'+waiting+'</b>':'')+' ›</button>';
-  renderOpportunities();
+  if(res[0].error){mn('<div class="nx opp-nx">'+loadFailHtml('기회')+'</div>');return;}
+  _opp.rows=res[0].data||[];_opp.projects=res[1].data||[];_opp.mine=res[2].data||[];_opp.offers=res[3].error?[]:(res[3].data||[]);
+  renderOppPage();
 }
 function oppKind(r){
   if(r.position_type==='actor'){var role=r.role_id&&DB.roles.find(function(x){return x.id===r.role_id;});var g=role&&fld(role,'성별');return '배우'+(g?' · '+g:'');}
   if(r.position_type==='staff')return '제작진'+(r.staff_role_id&&nm(r.staff_role_id)?' · '+nm(r.staff_role_id):'');
   return '함께할 사람';
+}
+/* 프로젝트 그림: 같은 작품의 공연 포스터(가장 최근) → 작품 사진. 없으면 빈 표지 */
+function oppImage(wid){
+  if(!wid)return '';
+  var ss=sortShows(DB.shows.filter(function(s){return ids(fld(s,'작품')).indexOf(wid)>-1&&POSTER[s.id];}));
+  if(ss[0])return POSTER[ss[0].id];
+  var w=DB.works.find(function(x){return x.id===wid;});
+  return w?iurl(fld(w,'사진'))||'':'';
+}
+function oppWhen(d,short){
+  if(!d)return short?'날짜 미정':'공연 날짜 미정';
+  var dd=dashDaysUntil(d);
+  return String(d).slice(5,10).replace('-','.')+(short?'':' 공연')+(dd!=null&&dd>=0?' · D-'+dd:'');
+}
+/* 자리를 프로젝트별로 묶는다 (히어로·프로젝트 줄) */
+function oppByProject(){
+  var m={},order=[];
+  _opp.rows.forEach(function(r){if(!m[r.project_id]){m[r.project_id]={p:r,rows:[]};order.push(r.project_id);}m[r.project_id].rows.push(r);});
+  return order.map(function(k){return m[k];});
+}
+function renderOppPage(){
+  var all=_opp.rows,groups=oppByProject();
+  _oppHero.list=groups.slice().sort(function(a,b){return String(a.p.target_start_date||'9999').localeCompare(String(b.p.target_start_date||'9999'));}).slice(0,5);
+  _oppHero.i=0;
+  var soon=all.filter(function(r){var d=dashDaysUntil(r.target_start_date);return d!=null&&d>=0;}).sort(function(a,b){return String(a.target_start_date).localeCompare(String(b.target_start_date));});
+  var acts=all.filter(function(r){return r.position_type==='actor';}),crew=all.filter(function(r){return r.position_type!=='actor';});
+  var recruitingIds={};groups.forEach(function(g){recruitingIds[g.p.project_id]=g.rows.length;});
+  var projs=(_opp.projects||[]).filter(function(p){return p.status!=='completed'&&p.status!=='cancelled';});
+  var offers=_opp.offers,waiting=_opp.mine.filter(function(r){return r.status==='pending';}).length;
+  var h='<div class="nx opp-nx">';
+  if(offers.length)h+='<button type="button" class="opp-offer-banner" onclick="goOffers()"><b>나한테 온 제안 '+offers.length+'개</b>'
+    +escHtml(offers.slice(0,2).map(function(o){return (o.project_title||'프로젝트')+' · '+(o.position_label||'');}).join(' / '))+'<span>답하기 ›</span></button>';
+  h+='<section class="nx-hero opp-hero" id="opp-hero" aria-label="사람을 찾는 공연"></section>';
+  h+=nxRow('공연이 가까운 자리','',soon.slice(0,16).map(oppCardHtml),'첫 공연이 얼마 안 남은 팀이에요. 빨리 답이 와요.');
+  h+=nxRow('배우를 찾아요','',acts.slice(0,16).map(oppCardHtml));
+  h+=nxRow('제작진·스태프를 찾아요','',crew.slice(0,16).map(oppCardHtml));
+  if(all.length>3)h+=nxRow('새로 올라온 자리','',all.slice(0,16).map(oppCardHtml));
+  h+=nxRow('모집 중인 프로젝트','',projs.slice(0,16).map(function(p){return oppProjectCardHtml(p,recruitingIds[p.id]||0);}),'자리를 누르기 전에 어떤 팀인지 먼저 둘러봐요.');
+  h+='<section class="opp-all"><div class="opp-all-head"><h2 class="cat-all">전체 자리</h2>'
+    +(_opp.mine.length?'<button type="button" class="opp-mine" onclick="goMyPageTab(\'apply\')">내 지원 <b>'+_opp.mine.length+'</b>건'+(waiting?' · 답을 기다리는 중 <b>'+waiting+'</b>':'')+' ›</button>':'')+'</div>'
+    +'<div id="opp-bar"></div><div id="opp-list" class="opp-pgrid"></div></section>';
+  mn(h+'</div>');
+  renderOppHero();nxArrows();
+  clearInterval(_oppHero.timer);
+  if(_oppHero.list.length>1)_oppHero.timer=setInterval(function(){if(!$('opp-hero')){clearInterval(_oppHero.timer);return;}if(document.hidden)return;oppHeroGo(_oppHero.i+1);},8000);
+  renderOpportunities();
+}
+/* 큰 무대: 사람을 찾는 공연 하나씩 (공연이 가까운 순) */
+function renderOppHero(){
+  var el=$('opp-hero');if(!el)return;
+  var g=_oppHero.list[_oppHero.i];
+  if(!g){
+    el.innerHTML='<div class="nx-hero-bg" style="background:#1c1c20"></div><div class="nx-hero-shade"></div><div class="nx-hero-text">'
+      +'<div class="nx-hero-kicker">기회</div><h1 class="nx-hero-title">지금은 모집 중인 자리가 없어요</h1>'
+      +'<div class="nx-hero-meta">프로젝트에서 빈 배역·제작진 자리를 열면 여기 맨 앞에 걸려요.</div>'
+      +'<div class="nx-hero-btns"><button type="button" class="nx-btn nx-btn-main" onclick="goMake()">내 프로젝트에서 자리 열기</button><button type="button" class="nx-btn" onclick="goHome()">아카이브 둘러보기</button></div></div>';
+    return;
+  }
+  var p=g.p,img=oppImage(p.work_id),work=p.work_id?nm(p.work_id):'';
+  var nA=g.rows.filter(function(r){return r.position_type==='actor';}).length,nC=g.rows.length-nA;
+  var meta=[p.troupe_id&&nm(p.troupe_id),p.venue_id&&nm(p.venue_id),oppWhen(p.target_start_date,true)].filter(Boolean).map(escHtml).join('<i>•</i>');
+  var canApply=g.rows.filter(function(r){return !r.my_status;}).length;
+  var past=troupePastShows(p.troupe_id);
+  el.innerHTML=(img?'<div class="nx-hero-bg" style="background-image:url(\''+img.replace(/'/g,'%27')+'\')"></div>':'<div class="nx-hero-bg" style="background:#1c1c20"></div>')
+    +'<div class="nx-hero-shade"></div>'
+    +(img?'<img class="nx-hero-poster" src="'+escHtml(img)+'" alt="">':'')
+    +'<div class="nx-hero-text">'
+    +'<div class="nx-hero-kicker"><span class="opp-live">모집 중</span>'+(work&&work!==p.project_title?'〈'+escHtml(work)+'〉':'')+'</div>'
+    +'<h1 class="nx-hero-title">'+escHtml(p.project_title||'새 프로젝트')+'</h1>'
+    +'<div class="nx-hero-meta">'+meta+'</div>'
+    +'<div class="opp-hero-seats">'+g.rows.slice(0,5).map(function(r){return '<span class="opp-seat'+(r.my_status?' mine':'')+'">'+escHtml(r.position_label||'자리')+(r.my_status?' · '+(r.my_status==='pending'?'지원함':r.my_status==='approved'?'합류':'이번엔 어려움'):'')+'</span>';}).join('')
+    +(g.rows.length>5?'<span class="opp-seat more">+'+(g.rows.length-5)+'</span>':'')+'</div>'
+    +'<div class="opp-hero-sub">'+escHtml(['찾는 자리 '+g.rows.length+'개',nA?'배우 '+nA:'',nC?'제작진 '+nC:'',past.length?nm(p.troupe_id)+' 지난 공연 '+past.length+'편':''].filter(Boolean).join(' · '))+'</div>'
+    +'<div class="nx-hero-btns">'
+    +(canApply?'<button type="button" class="nx-btn nx-btn-main" onclick="oppHeroApply()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>지원하기</button>':'<span class="nx-btn opp-done">모든 자리에 지원했어요</span>')
+    +'<button type="button" class="nx-btn" onclick="goProject(\''+p.project_id+'\')">프로젝트 보기</button></div></div>'
+    +(_oppHero.list.length>1?'<div class="nx-dots">'+_oppHero.list.map(function(x,i){return '<button type="button" aria-label="'+(i+1)+'번째 공연" class="'+(i===_oppHero.i?'on':'')+'" onclick="oppHeroGo('+i+',true)"></button>';}).join('')+'</div>':'');
+}
+function oppHeroGo(i,user){var n=_oppHero.list.length;if(!n)return;_oppHero.i=(i+n)%n;renderOppHero();if(user)clearInterval(_oppHero.timer);}
+/* 히어로 [지원하기]: 자리가 하나면 바로, 여럿이면 고르게 */
+async function oppHeroApply(){
+  var g=_oppHero.list[_oppHero.i];if(!g)return;
+  clearInterval(_oppHero.timer);
+  var free=g.rows.filter(function(r){return !r.my_status;});if(!free.length)return;
+  var posId=free.length===1?free[0].position_id:await pickOne('어느 자리에 지원할까요?',free.map(function(r){return{value:r.position_id,label:r.position_label||'자리',sub:oppKind(r)};}));
+  if(posId)requestJoinPosition(g.p.project_id,posId);
 }
 function renderOpportunities(){
   var all=_opp.rows,f=_opp.f;
@@ -40,7 +120,7 @@ function renderOpportunities(){
   });
   if(_opp.sort==='soon')rows=rows.slice().sort(function(a,b){return String(a.target_start_date||'9999').localeCompare(String(b.target_start_date||'9999'));});
   var bar=$('opp-bar');
-  if(bar)bar.innerHTML=filterBar('opp',[
+  if(bar)bar.innerHTML=all.length?filterBar('opp',[
     {key:'type',label:'자리',type:'single',value:f.type,options:[{v:'actor',l:'배우',n:all.filter(function(r){return r.position_type==='actor';}).length},{v:'crew',l:'제작진·스태프',n:all.filter(function(r){return r.position_type!=='actor';}).length}]},
     {key:'role',label:'분야',type:'single',value:f.role,options:f.type==='actor'?[]:Object.keys(staffSet).map(function(k){return{v:k,l:staffSet[k]};})}
   ],{
@@ -48,11 +128,10 @@ function renderOpportunities(){
     sort:{value:_opp.sort,options:[{v:'new',l:'최근 올라온 순'},{v:'soon',l:'공연 가까운 순'}],onChange:function(v){_opp.sort=v;renderOpportunities();}},
     onChange:function(k,v){_opp.f[k]=v;if(k==='type'&&v==='actor')_opp.f.role='';renderOpportunities();},
     onReset:function(){_opp.f={type:'',role:''};renderOpportunities();}
-  });
+  }):'';
   var el=$('opp-list');if(!el)return;
-  if(!rows.length){el.innerHTML='<div class="result-empty"><div class="result-empty-icon">'+ico('megaphone')+'</div>'+(all.length?'조건에 맞는 자리가 없어요.':'지금은 모집 중인 자리가 없어요.<br><span style="font-size:0.8rem;color:var(--muted)">새 자리가 올라오면 여기에 보여요.</span>')+'</div>';}
+  if(!rows.length){el.innerHTML='<div class="result-empty"><div class="result-empty-icon">'+ico('megaphone')+'</div>'+(all.length?'조건에 맞는 자리가 없어요. <button type="button" class="dv-all" onclick="_opp.f={type:\'\',role:\'\'};renderOpportunities()">필터 지우기</button>':'지금은 모집 중인 자리가 없어요.<br><span style="font-size:0.8rem;color:var(--muted)">새 자리가 올라오면 여기에 보여요.</span>')+'</div>';}
   else el.innerHTML=rows.map(oppCardHtml).join('');
-  renderOppProjects();
 }
 /* 단체의 지난 공연(공개 공연): 모집 공고를 볼 때 "이 단체는 어떤 공연을 해왔나"를 같이 보여준다 */
 function troupePastShows(tid){
@@ -63,30 +142,28 @@ function troupeTrackLine(tid){
   var ps=troupePastShows(tid);if(!ps.length)return '';
   return '<div class="opp-track">지난 공연 '+ps.length+'편 · 최근 〈'+escHtml(fld(ps[0],'공연명')||'')+'〉</div>';
 }
+/* 자리 카드: 아카이브와 같은 세로 포스터(2:3). 위엔 자리 종류, 아래엔 자리 이름·프로젝트·날짜와 [지원하기] */
 function oppCardHtml(r){
-  var dd=r.target_start_date?dashDaysUntil(r.target_start_date):null;
-  var when=r.target_start_date?String(r.target_start_date).slice(5).replace('-','.')+' 공연'+(dd!=null&&dd>=0?' · D-'+dd:''):'공연 날짜 미정';
-  var meta=[r.work_id&&nm(r.work_id),r.troupe_id&&nm(r.troupe_id),r.venue_id&&nm(r.venue_id)].filter(Boolean).map(escHtml).join(' · ');
-  var st=r.my_status;
-  var btn=st==='pending'?'<span class="opp-st">지원함 · 답 기다리는 중</span>'
+  var img=oppImage(r.work_id),st=r.my_status;
+  var btn=st==='pending'?'<span class="opp-st">지원함</span>'
     :st==='approved'?'<span class="opp-st ok">합류했어요</span>'
-    :st==='rejected'?'<span class="opp-st">이번엔 함께하지 못해요</span>'
+    :st==='rejected'?'<span class="opp-st">이번엔 함께 못 해요</span>'
     :'<button type="button" class="opp-apply" onclick="event.stopPropagation();requestJoinPosition(\''+r.project_id+'\',\''+r.position_id+'\')">지원하기</button>';
-  return '<div class="opp-card" onclick="goProject(\''+r.project_id+'\')">'
-    +'<div class="opp-kind">'+escHtml(oppKind(r))+'</div>'
-    +'<div class="opp-title">'+escHtml(r.position_label||'자리')+'</div>'
-    +'<div class="opp-proj">'+escHtml(r.project_title||'새 프로젝트')+'</div>'
-    +(meta?'<div class="opp-meta">'+meta+'</div>':'')
-    +troupeTrackLine(r.troupe_id)
-    +'<div class="opp-foot"><span class="opp-when">'+escHtml(when)+'</span>'+btn+'</div></div>';
+  var sub=[r.project_title||'새 프로젝트',r.troupe_id&&nm(r.troupe_id)].filter(Boolean).join(' · ');
+  return '<div class="nx-card opp-pc'+(img?'':' opp-pc-ph')+'" role="button" tabindex="0" onclick="goProject(\''+r.project_id+'\')" onkeydown="if(event.key===\'Enter\')goProject(\''+r.project_id+'\')" style="--tone:'+cardTone(r.project_id)+'">'
+    +(img?'<img src="'+escHtml(img)+'" alt="" loading="lazy">':'<div class="nx-card-type"><span class="ph-icon">'+ico(r.position_type==='actor'?'mask':'clapper')+'</span></div>')
+    +'<span class="opp-pc-kind">'+escHtml(oppKind(r))+'</span>'
+    +'<div class="opp-pc-cap"><b>'+escHtml(r.position_label||'자리')+'</b><span>'+escHtml(sub)+'</span>'
+    +'<div class="opp-pc-foot"><span class="opp-pc-when">'+escHtml(oppWhen(r.target_start_date,true))+'</span>'+btn+'</div></div></div>';
 }
-function renderOppProjects(){
-  var el=$('opp-projects');if(!el)return;
-  var ps=(_opp.projects||[]).filter(function(p){return p.status!=='completed'&&p.status!=='cancelled';});
-  if(!ps.length){el.innerHTML='';return;}
-  el.innerHTML=dvSection('모집 중인 프로젝트',ps.length)+'<div class="opp-proj-list">'+ps.map(function(p){
-    return '<button type="button" class="opp-proj-row" onclick="goProject(\''+p.id+'\')"><b>'+escHtml(p.title||'새 프로젝트')+'</b><span>'+escHtml([p.work_name,p.troupe_name,PROJECT_STATUS_LABEL[p.status]].filter(Boolean).join(' · '))+'</span></button>';
-  }).join('')+'</div>';
+function oppProjectCardHtml(p,n){
+  var g=_opp.rows.find(function(r){return r.project_id===p.id;}),img=g?oppImage(g.work_id):'';
+  var sub=[p.troupe_name,n?'자리 '+n+'개':PROJECT_STATUS_LABEL[p.status]].filter(Boolean).join(' · ');
+  return '<div class="nx-card opp-pc'+(img?'':' opp-pc-ph')+'" role="button" tabindex="0" onclick="goProject(\''+p.id+'\')" onkeydown="if(event.key===\'Enter\')goProject(\''+p.id+'\')" style="--tone:'+cardTone(p.id)+'">'
+    +(img?'<img src="'+escHtml(img)+'" alt="" loading="lazy">':'<div class="nx-card-type"><span class="ph-icon">'+ico('stage')+'</span></div>')
+    +(n?'<span class="opp-pc-kind">모집 중</span>':'')
+    +'<div class="opp-pc-cap"><b>'+escHtml(p.title||'새 프로젝트')+'</b><span>'+escHtml(p.work_name||'작품 미정')+'</span>'
+    +'<div class="opp-pc-foot"><span class="opp-pc-when">'+escHtml(sub)+'</span></div></div></div>';
 }
 async function requestJoinPosition(projectId,positionId){
   if(!CURRENT_USER){loginWithGoogle();return;}
@@ -96,7 +173,9 @@ async function requestJoinPosition(projectId,positionId){
   var r=await sbClient.from('project_join_requests').insert({project_id:projectId,position_id:positionId,user_id:CURRENT_USER.id,message:msg||null});
   if(r.error){oriAlert(r.error.code==='23505'?'이미 지원한 자리예요.':'지원하지 못했어요: '+r.error.message);return;}
   var row=_opp.rows.find(function(x){return x.position_id===positionId;});if(row)row.my_status='pending';
-  if(location.hash==='#projects')renderOpportunities();
+  _opp.mine.push({status:'pending'});
+  if(location.hash==='#projects')renderOppPage();
+  if($('pub-open-pos'))loadPublicOpenPositions(projectId);
   oriAlert('지원했어요! 프로젝트에서 답하면 마이페이지 "지원 현황"에서 볼 수 있어요.',{action:{label:'지원 현황 보기',fn:function(){goMyPageTab('apply');}}});
 }
 
@@ -114,4 +193,20 @@ async function renderMyApplications(el){
       +'<span class="apply-st st-'+x.status+'">'+(label[x.status]||x.status)+'</span></div>';
   }).join('')+'</div>'
   +(rows.some(function(x){return x.status==='approved';})?'<p class="opp-sub" style="margin-top:1rem">합류한 프로젝트는 프로필 메뉴의 "만들기 모드"에서 함께 준비해요.</p>':'');
+}
+
+/* 프로젝트 공개 화면의 "모집 중인 자리": 기회 카드를 눌러 들어온 사람이 그 자리에서 지원한다 */
+async function loadPublicOpenPositions(pid){
+  var el=$('pub-open-pos');if(!el)return;
+  var r=await sbClient.rpc('list_opportunities');
+  if(!$('pub-open-pos'))return;
+  if(r.error){el.innerHTML=loadFailHtml('모집 중인 자리');return;}
+  var rows=(r.data||[]).filter(function(x){return x.project_id===pid;});
+  if(!rows.length){el.innerHTML='';return;}
+  el.innerHTML=dvSection('모집 중인 자리',rows.length)+'<div class="pub-pos">'+rows.map(function(x){
+    var st=x.my_status;
+    var btn=st==='pending'?'<span class="opp-st">지원함 · 답 기다리는 중</span>':st==='approved'?'<span class="opp-st ok">합류했어요</span>':st==='rejected'?'<span class="opp-st">이번엔 함께 못 해요</span>'
+      :'<button type="button" class="opp-apply" onclick="requestJoinPosition(\''+pid+'\',\''+x.position_id+'\')">지원하기</button>';
+    return '<div class="pub-pos-row"><div><div class="pub-pos-t">'+escHtml(x.position_label||'자리')+'</div><div class="pub-pos-s">'+escHtml(oppKind(x))+'</div></div>'+btn+'</div>';
+  }).join('')+'</div>';
 }
