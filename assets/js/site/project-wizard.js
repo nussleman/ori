@@ -260,20 +260,19 @@ async function submitAddPosition(pid){
   }catch(e){oriAlert('추가 중 문제가 생겼어요: '+e.message);}
 }
 async function editProjectTitle(pid){
-  var el=$('project-title-display');
-  var current=el?el.firstChild.textContent:'';
+  var ctx=window._projectCtx,current=ctx&&ctx.pid===pid?(ctx.pr.title||''):'';
   var t= await oriPrompt('프로젝트 제목을 입력하세요',current);
   if(!t||!t.trim())return;
   try{
     await sbOk(sbClient.from('projects').update({title:t.trim()}).eq('id',pid));
     loadMyProjectsCache();
-    goProject(pid);
+    if(ctx&&ctx.pid===pid){ctx.pr.title=t.trim();renderProjectShell();}else goProject(pid);
   }catch(e){oriAlert('수정 실패: '+e.message);}
 }
 async function toggleRecruiting(pid,on){
   try{
     await sbOk(sbClient.from('projects').update({is_recruiting:on}).eq('id',pid));
-    if(window._projectCtx&&window._projectCtx.pid===pid){window._projectCtx.pr.is_recruiting=on;if(window._projectTab==='home')renderProjectTabContent();}
+    if(window._projectCtx&&window._projectCtx.pid===pid){window._projectCtx.pr.is_recruiting=on;renderProjectTabContent();}
   }
   catch(e){oriAlert('변경 중 문제가 생겼어요: '+e.message);}
 }

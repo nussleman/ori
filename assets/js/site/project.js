@@ -50,10 +50,14 @@ async function startNewProject(){
   }catch(e){oriAlert('프로젝트를 시작하는 중 문제가 생겼어요: '+e.message);}
   finally{_startingProject=false;}
 }
+/* 프로젝트 화면 (10/23): 탭 없이 "상자 보드" 한 장 — 상자를 누르면 그 부분만 열리고, 왼쪽 위 탐색 경로로 돌아온다.
+   주소: #project-<id> = 보드, #project-<id>/<상자> = 그 상자 (뒤로가기·공유 링크가 그대로 통한다). 상자 정의는 project-home.js */
 async function goProject(pid,push){
-  if(push!==false)history.pushState({view:'project',id:pid},'','#project-'+pid);
+  var parts=String(pid).split('/');pid=parts[0];var box=parts[1]||'';
+  if(push!==false)history.pushState({view:'project',id:pid},'','#project-'+pid+(box?'/'+box:''));
   setNav('project',pid);sb('');_sbContext='';mobShowDetail();
-  mn('<div class="tab-index"><div class="result-empty"><div class="hf-loading">불러오는 중…</div></div></div>');
+  document.body.classList.remove('pj-fit');
+  mn('<div class="pj-shell"><div class="result-empty"><div class="hf-loading">불러오는 중…</div></div></div>');
   try{
     var pr=await sbClient.from('projects').select('*').eq('id',pid).single();
     if(pr.error)throw pr.error;
@@ -82,55 +86,52 @@ async function goProject(pid,push){
       openProjectWizard(pid,steps,myMember.id);
       return;
     }
-
-    if(!window._projectTab||window._projectCtxPid!==pid){window._projectTab='home';window._peopleSub=null;window._prepSub=null;}
-    window._projectCtxPid=pid;
-    if(window._projectTabNext){window._projectTab=window._projectTabNext;window._projectTabNext=null;}
-    var tabs=currentProjectTabs();
-    if(!tabs.some(function(t){return t[0]===window._projectTab;}))window._projectTab='home';
-    var dd=projectDday(pr.data.target_start_date,pr.data.target_end_date,pr.data.status);
-    var marquee='<div class="pj-marquee pj-mq-'+dd.cls+'" title="'+escHtml(dd.small||'')+'"><span class="pj-mq-d">'+dd.big+'</span>'+(dd.small?'<span class="pj-mq-s">'+dd.small+'</span>':'')+'</div>';
-    var h='<div class="mypage-sticky-header pj-header">'+marquee+'<div class="dv-kicker">프로젝트 · '+escHtml(PROJECT_STATUS_LABEL[pr.data.status]||'')+(!isAdmin?' · 팀원으로 보는 중':'')+'</div>'
-      +'<div class="detail-title" id="project-title-display" style="margin-bottom:0.8rem;display:flex;align-items:center;gap:0.6rem"><span>'+escHtml(pr.data.title||'새 프로젝트')+'</span>'+(isAdmin?'<button class="myinfo-edit-toggle" style="flex-shrink:0" onclick="editProjectTitle(\''+pid+'\')" title="제목 수정">✎</button>':'')+'</div>'
-      +'<div class="mypage-tabs">'+tabs.map(function(t){
-        var badge=t[0]==='people'?'<span class="nav-badge-dot"></span>':'';
-        return '<button class="mypage-tab-btn'+(window._projectTab===t[0]?' active':'')+'" data-ptab="'+t[0]+'" onclick="switchProjectTab(\''+t[0]+'\')">'+t[1]+badge+'</button>';
-      }).join('')+'</div></div>';
-    h+='<div class="mypage-sticky-spacer"></div>';
-    h+='<div id="project-tab-content"></div>';
-    mn(h);
-    injectBackBtn('← 내 프로젝트',function(){goMake();});
-    renderProjectTabContent();
-    requestAnimationFrame(function(){
-      var hdr=document.querySelector('.mypage-sticky-header');
-      var spacer=document.querySelector('.mypage-sticky-spacer');
-      if(hdr&&spacer)spacer.style.height=hdr.offsetHeight+'px';
-    });
+    window._projectBox=projectBoxes().some(function(b){return b.key===box&&b.view;})?box:'';
+    renderProjectShell();
   }catch(e){
-    mn('<div class="tab-index"><div class="result-empty">프로젝트를 불러올 수 없어요. 접근 권한이 없거나 삭제되었을 수 있어요.</div></div>');
+    mn('<div class="pj-shell"><div class="result-empty">프로젝트를 불러올 수 없어요. 접근 권한이 없거나 삭제되었을 수 있어요.</div></div>');
   }
 }
-var PROJECT_TABS_ALL=[['home','홈'],['people','사람'],['schedule','일정'],['prep','준비'],['budget','예산']];  // 탭 구성은 project-home.js
-function currentProjectTabs(){
-  var ctx=window._projectCtx;if(!ctx)return PROJECT_TABS_ALL;
-  return PROJECT_TABS_ALL.filter(function(t){
-    if(t[0]==='budget')return ctx.isAdmin||(ctx.pr.budget_visible_to_members);
-    return true;
-  });
+/* 상자 하나 열기 / 보드로 돌아가기 (box='') */
+function openProjectBox(box,push){
+  var ctx=window._projectCtx;if(!ctx)return;
+  window._projectBox=box||'';
+  if(push!==false)history.pushState({view:'project',id:ctx.pid},'','#project-'+ctx.pid+(box?'/'+box:''));
+  renderProjectShell();
 }
-function switchProjectTab(tab){
-  window._projectTab=tab;
-  document.querySelectorAll('.mypage-tab-btn[data-ptab]').forEach(function(b){b.classList.toggle('active',b.dataset.ptab===tab);});
+/* 왼쪽 위 탐색 경로 (노션식): 내 프로젝트 / 프로젝트 이름 / 지금 연 상자. 앞의 것은 눌러서 간다 */
+function projectCrumbHtml(){
+  var ctx=window._projectCtx,box=window._projectBox,b=box&&projectBoxes().find(function(x){return x.key===box;});
+  var items=[['내 프로젝트','goMake()'],[ctx.pr.title||'새 프로젝트',box?'openProjectBox(\'\')':'']];
+  if(b)items.push([b.title,'']);
+  return '<div class="pj-crumb" role="navigation" aria-label="탐색 경로">'+items.map(function(it,i){
+    return (i?'<span class="pj-crumb-sep">/</span>':'')
+      +(it[1]?'<button type="button" class="pj-crumb-i" onclick="'+it[1]+'">'+(i===1?ico('stage'):'')+escHtml(it[0])+'</button>'
+        :'<span class="pj-crumb-i now" aria-current="page">'+(i===1?ico('stage'):'')+escHtml(it[0])+'</span>');
+  }).join('')+'</div>';
+}
+function renderProjectShell(){
+  var box=window._projectBox;
+  window._projectTab=box||'home';  // 일정·예산 화면이 "지금 내 화면인지" 확인할 때 쓴다
+  document.body.classList.toggle('pj-fit',!box);
+  mn('<div class="pj-shell'+(box?' pj-shell-view':'')+'">'+projectCrumbHtml()+'<div id="project-tab-content" class="'+(box?'pj-view':'pj-board-wrap')+'"></div></div>');
   renderProjectTabContent();
+}
+/* 예전 탭 이름으로 부르던 곳(일정·예산 등)을 상자로 잇는다 */
+function switchProjectTab(tab){
+  var map={home:'',people:window._peopleSub||'actor',prep:window._prepSub||'venue'};
+  openProjectBox(map[tab]!==undefined?map[tab]:tab);
 }
 function renderProjectTabContent(){
   var el=$('project-tab-content');if(!el)return;
-  var tab=window._projectTab;
-  if(tab==='home')renderProjectHome(el);
-  else if(tab==='people')renderProjectPeople(el);
-  else if(tab==='schedule')renderProjectSchedule(el);
-  else if(tab==='prep')renderProjectPrep(el);
-  else if(tab==='budget')renderProjectBudget(el);
+  var box=window._projectBox,b=box&&projectBoxes().find(function(x){return x.key===box;});
+  if(!b){renderProjectBoard(el);return;}
+  b.view(el);
+}
+/* 자리·초대·모집을 바꾼 뒤 지금 화면을 새로 그린다 */
+function loadProjectMembersDetail(pid){
+  if(!window._projectCtx||window._projectCtx.pid!==pid)return;
+  renderProjectTabContent();
 }
 async function updateProjectStatus(pid,status){
   var ctx=window._projectCtx;
@@ -162,12 +163,14 @@ function renderPublicProjectView(pr){
   h+='<div class="person-side-card"><div class="person-side-title">단체</div><div style="font-size:0.85rem">'+(pr.troupe_id?('<span class="link" data-action="troupe" data-id="'+pr.troupe_id+'">'+escHtml(nm(pr.troupe_id))+'</span>'):'<span style="color:var(--muted)">미정</span>')+'</div></div>';
   h+='<div class="person-side-card"><div class="person-side-title">극장</div><div style="font-size:0.85rem">'+(pr.venue_id?('<span class="link" data-action="venue" data-id="'+pr.venue_id+'">'+escHtml(nm(pr.venue_id))+'</span>'):'<span style="color:var(--muted)">미정</span>')+'</div></div>';
   h+='</div>';
+  h+='<section class="dv-sec" id="pub-open-pos"></section>';
   var past=troupePastShows(pr.troupe_id);
   if(past.length)h+='<section class="dv-sec">'+dvSection(escHtml(nm(pr.troupe_id))+'의 지난 공연',past.length)
     +'<div class="dv-list dv-list-film">'+past.slice(0,6).map(function(s){return dvShowFilm(s);}).join('')+'</div>'
     +(past.length>6?'<button type="button" class="dv-all" data-action="troupe" data-id="'+pr.troupe_id+'">단체 페이지에서 모두 보기 ›</button>':'')+'</section>';
   h+='<div style="text-align:center;margin-top:1.5rem;font-size:0.8rem;color:var(--muted)">이 프로젝트의 구성원만 자세한 내용(팀·예산·참여요청)을 볼 수 있어요.</div>';
   mn(h);
+  loadPublicOpenPositions(pr.id);
 }
 function overviewFieldCard(label,value,wizardStep,ctaLabel,canEdit,linkTo){
   var valueH=value?(linkTo?('<span class="link" data-action="'+linkTo.action+'" data-id="'+linkTo.id+'">'+escHtml(value)+'</span>'):escHtml(value))
