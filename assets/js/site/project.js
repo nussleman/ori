@@ -116,9 +116,9 @@ function renderProjectShell(){
   var box=window._projectBox;
   window._projectTab=box||'home';  // 일정·예산 화면이 "지금 내 화면인지" 확인할 때 쓴다
   document.body.classList.toggle('pj-fit',!box);
-  mn('<div class="pj-shell'+(box?' pj-shell-view':'')+'">'+projectCrumbHtml()+(box?opsLinksBarHtml(box):'')+'<div id="project-tab-content" class="'+(box?'pj-view':'pj-board-wrap')+'"></div></div>');
+  mn('<div class="pj-shell'+(box?' pj-shell-view':'')+'">'+projectCrumbHtml()+(box&&box!=='settings'?opsLinksBarHtml(box):'')+'<div id="project-tab-content" class="'+(box?'pj-view':'pj-board-wrap')+'"></div></div>');
   renderProjectTabContent();
-  if(box)renderOpsLinks(box);  // 상자마다 꽂아 둔 바깥 도구 (project-ops.js)
+  if(box&&box!=='settings')renderOpsLinks(box);  // 상자마다 꽂아 둔 바깥 도구 (project-ops.js)
 }
 /* 예전 탭 이름으로 부르던 곳(일정·예산 등)을 상자로 잇는다 */
 function switchProjectTab(tab){

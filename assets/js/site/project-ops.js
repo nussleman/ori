@@ -261,3 +261,66 @@ function renderProjectSettle(el){
   renderProjectBudget(el);
   el.classList.add('bg-settle-mode');
 }
+
+/* ══ 제작진 화면 (10/24): 담당 영역마다 타일 (계기판과 같은 판정·마감). 누르면 아래에 담당자·추천·모집 ══ */
+var CREW_AREAS=['director','music','choreo','lighting','sound','stage','costume','props','makeup','photo','promo'];
+var _crew={open:null};
+async function renderCrewBoard(el){
+  var ctx=window._projectCtx;
+  el.innerHTML='<div id="crew-board"><div class="hf-loading">불러오는 중…</div></div>';
+  var D=await loadProdDashData();
+  _dash.data=D;_dash.pid=ctx.pid;   // 계기판 동작(초대·상태 정하기)이 이 데이터를 쓴다
+  ctx.positions=D.positions;
+  crewDraw();
+}
+function crewDraw(){
+  var el=$('crew-board'),D=_dash.data;if(!el||!D)return;
+  var ctx=window._projectCtx;
+  var areas=CREW_AREAS.map(function(k){return dashArea(k);}).filter(Boolean);
+  var tiles=areas.map(function(a){
+    var l=dashLight(a,D),st=pjbFromLight(l.light),ps=dashPositionsFor(a,D.positions),filled=ps.filter(dashFilled);
+    var who=filled.map(function(p){return dashMemberName(p,D);}).filter(Boolean);
+    var openPos=ps.filter(function(p){return p.status==='open'&&!dashFilled(p);}).length;
+    var v=l.light==='off'?'해당 없음':who.length?who.join(', '):openPos?'모집 중':l.light==='green'?l.text:'미정';  // 사람 없이 해결된 영역(예: 홍보 링크)은 그 이유를
+    return '<button type="button" class="crew-tile pjb-'+st+(_crew.open===a[0]?' open':'')+'" onclick="crewOpen(\''+a[0]+'\')">'
+      +'<span class="crew-t">'+escHtml(a[1])+pjbOrb(st)+'</span><span class="crew-v">'+escHtml(v)+'</span>'
+      +'<span class="crew-d">'+escHtml(l.light==='off'?'':(l.why&&l.light==='red'?l.why:(l.due||'')))+'</span></button>';
+  });
+  var others=D.positions.filter(function(p){return p.position_type==='other';});
+  tiles.push('<button type="button" class="crew-tile pjb-'+(others.length?'done':'todo')+(_crew.open==='other'?' open':'')+'" onclick="crewOpen(\'other\')"><span class="crew-t">그 밖의 스태프'+pjbOrb(others.length?'done':'todo')+'</span><span class="crew-v">'+(others.length?others.length+'자리':'없음')+'</span><span class="crew-d"></span></button>');
+  el.innerHTML='<div class="crew-grid">'+tiles.join('')+'</div><div id="crew-detail"></div>';
+  if(_crew.open)crewDetail(_crew.open);
+}
+function crewOpen(key){_crew.open=_crew.open===key?null:key;crewDraw();var d=$('crew-detail');if(d&&_crew.open)d.scrollIntoView({behavior:'smooth',block:'nearest'});}
+function crewDetail(key){
+  var el=$('crew-detail'),D=_dash.data,ctx=window._projectCtx,admin=ctx.isAdmin,pid=ctx.pid;if(!el)return;
+  if(key==='other'){
+    var others=D.positions.filter(function(p){return p.position_type==='other';});
+    el.innerHTML='<div class="crew-panel"><div class="crew-ph"><b>그 밖의 스태프</b></div>'
+      +(others.length?others.map(function(p){return '<div class="crew-row"><span>'+escHtml(p.position_label||'스태프')+'</span><span class="crew-who">'+escHtml(dashFilled(p)?dashMemberName(p,D)||'확정':p.status==='open'?'모집 중':'비어 있음')+'</span></div>';}).join(''):'')
+      +(admin?'<button class="pf-btn" onclick="showAddPositionForm(\''+pid+'\')">+ 자리 추가</button><div id="add-position-form" style="margin-top:0.5rem"></div>':'')+'</div>';
+    return;
+  }
+  var a=dashArea(key),l=dashLight(a,D),ps=dashPositionsFor(a,D.positions),man=D.areas[key]||{};
+  var openP=ps.find(function(p){return p.status==='open'&&!dashFilled(p);});
+  var rid=dashStaffRoleIds(a[4]||[])[0];
+  var h='<div class="crew-panel"><div class="crew-ph"><span class="dash-dot '+l.light+'"></span><b>'+escHtml(a[1])+'</b><span>'+escHtml([l.light==='off'?'해당 없음':l.text,l.due,l.why].filter(Boolean).join(' · '))+'</span><button type="button" class="dash-x" onclick="crewOpen(\''+key+'\')">✕</button></div>';
+  h+=ps.length?ps.map(function(p){return '<div class="crew-row"><span>'+escHtml(p.position_label||a[1])+'</span><span class="crew-who">'+escHtml(dashFilled(p)?dashMemberName(p,D)||'확정':p.status==='open'?'모집 중':'비어 있음')+'</span>'
+      +(admin&&!dashFilled(p)?'<button type="button" class="pf-btn" onclick="crewRecruit(\''+p.id+'\','+(p.status!=='open')+')">'+(p.status==='open'?'모집 닫기':'모집 열기')+'</button>':'')+'</div>';}).join('')
+    :'<div class="crew-row"><span>'+escHtml(a[1])+'</span><span class="crew-who">자리 없음</span>'+(admin?'<button type="button" class="pf-btn" onclick="crewNewSlot(\''+key+'\')">모집 열기</button>':'')+'</div>';
+  if(admin)h+='<div class="dash-man-row crew-man"><span class="dash-lbl">상태</span><div class="dash-seg">'+[['','자동'],['done','해결'],['off','해당 없음']].map(function(o){return '<button type="button" class="'+((man.status||'')===o[0]?'on':'')+'" onclick="crewStatus(\''+key+'\',\''+o[0]+'\')">'+o[1]+'</button>';}).join('')+'</div></div>';
+  h+=(l.light==='green'||l.light==='off')?'':dashStaffRecs(a,D);
+  el.innerHTML=h+'</div>';
+}
+async function crewRecruit(posId,open){
+  var r=await sbClient.rpc('set_position_recruiting',{p_position_id:posId,p_open:open});
+  if(r.error){oriAlert('바꾸지 못했어요: '+r.error.message);return;}
+  if(open)try{await sbOk(sbClient.from('projects').update({is_recruiting:true}).eq('id',window._projectCtx.pid));window._projectCtx.pr.is_recruiting=true;}catch(e){}
+  renderCrewBoard($('project-tab-content'));
+}
+async function crewNewSlot(key){
+  var a=dashArea(key),rid=dashStaffRoleIds(a[4]||[])[0];
+  await recruitProjectSlot(window._projectCtx.pid,rid?'staff':'other',rid||null,a[1]);
+  renderCrewBoard($('project-tab-content'));
+}
+async function crewStatus(key,status){await dashSetStatus(key,status);renderCrewBoard($('project-tab-content'));}
