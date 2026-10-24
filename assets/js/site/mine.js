@@ -66,14 +66,15 @@ async function answerOffer(id,accept){
 }
 
 /* ══ 내 지원 현황 ══ */
-var _apply={rows:[],f:''};
+var _apply={rows:[],f:'',aud:{}};
 var APPLY_LABEL={pending:'답 기다리는 중',approved:'합류했어요',rejected:'이번엔 함께 못 해요'};
 async function goMyApply(push){
   if(!CURRENT_USER){loginWithGoogle();return;}
   if(push!==false)history.pushState({view:'apply'},'','#apply');
   window._myPageTab='apply';setNav('apply');sb('');_sbContext='';mobShowDetail();
   mn(mineShell('내 지원 현황','',mineChips('goMyApply',[],'',''),'<div class="hf-loading">불러오는 중…</div>'));
-  var r=await sbClient.rpc('my_join_requests');
+  var res=await Promise.all([sbClient.rpc('my_join_requests'),sbClient.rpc('my_auditions')]),r=res[0];
+  _apply.aud={};(res[1].data||[]).forEach(function(a){if(a.join_request_id)_apply.aud[a.join_request_id]=a;});  // 오디션 시간·장소
   if(location.hash!=='#apply')return;
   if(r.error){mn(mineShell('내 지원 현황','',mineChips('goMyApply',[],'',''),loadFailHtml('지원 현황')));return;}
   _apply.rows=r.data||[];renderMyApply();
@@ -88,7 +89,7 @@ function renderMyApply(){
     :'<div class="opp-pgrid">'+rows.map(function(x){
       return minePoster({id:x.project_id,icon:'send',kind:APPLY_LABEL[x.status]||x.status,kindCls:'mine-k-'+x.status,
         title:x.position_label||'자리',sub:x.project_title||'',
-        when:md(x.created_at)+' 지원'+(x.reviewed_at?' · '+md(x.reviewed_at)+' 답':''),
+        when:(function(){var a=_apply.aud&&_apply.aud[x.id];if(a&&a.starts_at&&x.status==='pending'){var t=new Date(a.starts_at);return '오디션 '+evDate(t)+' '+evTime(t)+(a.location?' · '+a.location:'');}return md(x.created_at)+' 지원'+(x.reviewed_at?' · '+md(x.reviewed_at)+' 답':'');})(),
         btn:x.status==='approved'?'<span class="opp-st ok">팀으로 ›</span>':'',
         go:'goProject(\''+x.project_id+'\')'});
     }).join('')+'</div>';
