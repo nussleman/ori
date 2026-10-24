@@ -43,7 +43,7 @@ async function loadProjectBudget(){
     sbClient.rpc('budget_shares'),
     sbClient.rpc('list_project_members_detail',{p_project_id:pid})
   ]);
-  if(window._projectCtx!==ctx||window._projectTab!=='budget')return;
+  if(window._projectCtx!==ctx||['budget','settle'].indexOf(window._projectTab)<0)return;  // 예산·정산 상자가 같은 화면을 쓴다
   if(res[0].error){var e=$('bg');if(e)e.innerHTML=loadFailHtml('예산');return;}
   _bg.rows=res[0].data||[];
   var sh=(res[1].data||[]).filter(function(s){return s.median_share>0;});

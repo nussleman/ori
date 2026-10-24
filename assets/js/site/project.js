@@ -86,7 +86,8 @@ async function goProject(pid,push){
       openProjectWizard(pid,steps,myMember.id);
       return;
     }
-    window._projectBox=projectBoxes().some(function(b){return b.key===box&&b.view;})?box:'';
+    box=pjbResolve(box);
+    window._projectBox=projectBoxes().some(function(b){return b.key===box;})?box:'';
     renderProjectShell();
   }catch(e){
     mn('<div class="pj-shell"><div class="result-empty">프로젝트를 불러올 수 없어요. 접근 권한이 없거나 삭제되었을 수 있어요.</div></div>');
@@ -95,7 +96,8 @@ async function goProject(pid,push){
 /* 상자 하나 열기 / 보드로 돌아가기 (box='') */
 function openProjectBox(box,push){
   var ctx=window._projectCtx;if(!ctx)return;
-  window._projectBox=box||'';
+  box=pjbResolve(box||'');
+  window._projectBox=box;
   if(push!==false)history.pushState({view:'project',id:ctx.pid},'','#project-'+ctx.pid+(box?'/'+box:''));
   renderProjectShell();
 }
