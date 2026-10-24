@@ -57,11 +57,11 @@ function renderOppPage(){
   var nA=_opp.rows.filter(function(r){return r.position_type==='actor';}).length;
   var h='<div class="nx opp-nx">'+pchipsHtml([['','전체',_opp.rows.length],['actor','배우',nA],['crew','제작진·스태프',_opp.rows.length-nA],'|',['goMyApply()','내 지원 현황','link',_opp.mine.length||null],['goOffers()','받은 제안','link',offers.length||null]],chip,'oppChip');
   h+='<section class="nx-hero opp-hero" id="opp-hero" aria-label="사람을 찾는 공연"></section>';
-  h+=nxRow('공연이 가까운 자리','',soon.slice(0,16).map(oppCardHtml),'첫 공연이 얼마 안 남은 팀이에요. 빨리 답이 와요.');
+  h+=nxRow('공연이 가까운 자리','',soon.slice(0,16).map(oppCardHtml));
   if(!chip){h+=nxRow('배우를 찾아요','',acts.slice(0,16).map(oppCardHtml));
   h+=nxRow('제작진·스태프를 찾아요','',crew.slice(0,16).map(oppCardHtml));}
   if(all.length>3)h+=nxRow('새로 올라온 자리','',all.slice(0,16).map(oppCardHtml));
-  if(!chip)h+=nxRow('모집 중인 프로젝트','',projs.slice(0,16).map(function(p){return oppProjectCardHtml(p,recruitingIds[p.id]||0);}),'자리를 누르기 전에 어떤 팀인지 먼저 둘러봐요.');
+  if(!chip)h+=nxRow('모집 중인 프로젝트','',projs.slice(0,16).map(function(p){return oppProjectCardHtml(p,recruitingIds[p.id]||0);}));
   h+='<section class="opp-all"><div class="opp-all-head"><h2 class="cat-all">전체 자리</h2>'
     +(_opp.mine.length?'<button type="button" class="opp-mine" onclick="goMyPageTab(\'apply\')">내 지원 <b>'+_opp.mine.length+'</b>건'+(waiting?' · 답을 기다리는 중 <b>'+waiting+'</b>':'')+' ›</button>':'')+'</div>'
     +'<div id="opp-bar"></div><div id="opp-list" class="opp-pgrid"></div></section>';
