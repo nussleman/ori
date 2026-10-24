@@ -1,21 +1,18 @@
 /* 오리 사이트 — 나에게 온 것·내 것 (10/23): 받은 제안(#offers) · 내 지원 현황(#apply) · 저장한 것(#saved)
    아카이브·기회와 같은 카드 화면. 히어로는 없고, 맨 위 칩 줄이 메뉴(세 화면 오가기)와 거르기를 함께 한다.
    카드는 세로 포스터(2:3) — 같은 작품의 공연 포스터가 있으면 그림, 없으면 빈 표지. */
-var MINE_MENU=[['goOffers()','받은 제안','link'],['goMyApply()','내 지원 현황','link'],['goSaved()','저장한 것','link']];
-function mineMenu(cur){return MINE_MENU.map(function(m){return m[0].indexOf(cur)===0?[m[0],m[1],'here']:m;});}
+/* 위 칩 = 이 화면의 거르기만 (화면끼리 오가는 건 왼쪽 레일) */
 function mineChips(cur,filters,fcur,fn){
-  var menu=mineMenu(cur).map(function(m){return m[2]==='here'?['',m[1],'here']:m;});
-  return '<div class="pchips" role="toolbar">'+menu.map(function(m){
-    return m[2]==='here'?'<button type="button" class="active" aria-current="page">'+escHtml(m[1])+'</button>':'<button type="button" onclick="'+m[0]+'">'+escHtml(m[1])+'</button>';
-  }).join('')+'<i class="pchips-sep" aria-hidden="true"></i>'+filters.map(function(f){
-    return '<button type="button" class="pchips-f'+(f[0]===fcur?' on':'')+'" onclick="'+fn+'(\''+f[0]+'\')">'+escHtml(f[1])+(f[2]!=null?'<span class="pchips-n">'+f[2]+'</span>':'')+'</button>';
+  if(!filters.length)return '';
+  return '<div class="pchips" role="toolbar">'+filters.map(function(f){
+    return '<button type="button" class="'+(f[0]===fcur?'active':'')+'" onclick="'+fn+'(\''+f[0]+'\')">'+escHtml(f[1])+(f[2]!=null?'<span class="pchips-n">'+f[2]+'</span>':'')+'</button>';
   }).join('')+'</div>';
 }
 function mineWorkId(name){if(!name)return '';var w=DB.works.find(function(x){return fld(x,'작품명')===name;});return w?w.id:'';}
 function mineShell(title,sub,chips,body){
-  return '<div class="nx mine-nx"><div class="mine-head"><h1 class="mine-title">'+title+'</h1>'+(sub?'<p class="mine-sub">'+sub+'</p>':'')+'</div>'+chips+body+'</div>';
+  return '<div class="nx mine-nx"><div class="mine-head"><h1 class="mine-title">'+title+'</h1></div>'+chips+body+'</div>';
 }
-function mineEmpty(icon,t,s,btn){return '<div class="result-empty mine-empty"><div class="result-empty-icon">'+ico(icon)+'</div><div class="mine-empty-t">'+t+'</div><div class="mine-empty-s">'+s+'</div>'+(btn||'')+'</div>';}
+function mineEmpty(icon,t,btn){return '<div class="result-empty mine-empty"><div class="result-empty-icon">'+ico(icon)+'</div><div class="mine-empty-t">'+t+'</div>'+(btn||'')+'</div>';}
 /* 포스터 카드 하나 (자리·제안 공용) */
 function minePoster(o){
   return '<div class="nx-card opp-pc'+(o.img?'':' opp-pc-ph')+'"'+(o.go?' role="button" tabindex="0" onclick="'+o.go+'" onkeydown="if(event.key===\'Enter\'){'+o.go+'}"':'')+' style="--tone:'+cardTone(o.id)+'">'
@@ -43,7 +40,7 @@ function renderOffers(){
   var all=_offers.rows,open=all.filter(function(o){return o.position_open!==false;});
   var rows=_offers.f==='open'?open:_offers.f==='closed'?all.filter(function(o){return o.position_open===false;}):all;
   var chips=mineChips('goOffers',[['','전체',all.length],['open','답할 수 있는',open.length],['closed','이미 채워진',all.length-open.length]].filter(function(f){return !f[0]||f[2];}),_offers.f,'offersFilter');
-  var body=!all.length?mineEmpty('mail','아직 온 제안이 없어요','프로젝트에서 함께하자고 보내면 여기에 와요. 그동안 열린 자리를 둘러보세요.','<button class="pf-btn pf-active" onclick="goProjectBrowse()">기회 둘러보기</button>')
+  var body=!all.length?mineEmpty('mail','아직 온 제안이 없어요','<button class="pf-btn pf-active" onclick="goProjectBrowse()">기회 둘러보기</button>')
     :'<div class="opp-pgrid">'+rows.map(function(o){
       var wid=mineWorkId(o.work_name),closed=o.position_open===false;
       return minePoster({id:o.project_id,img:oppImage(wid),icon:'mail',kind:'제안'+(o.troupe_name?' · '+o.troupe_name:''),kindCls:'mine-k-offer',
@@ -53,7 +50,7 @@ function renderOffers(){
         btn2:closed?'':'<button type="button" class="mine-decline" onclick="event.stopPropagation();answerOffer(\''+o.id+'\',false)">이번엔 어려워요</button>',
         go:'goProject(\''+o.project_id+'\')'});
     }).join('')+'</div>';
-  mn(mineShell('받은 제안','프로젝트에서 함께하자고 보낸 제안이에요. 함께하면 바로 그 프로젝트의 구성원이 돼요.',chips,body));
+  mn(mineShell('받은 제안','',chips,body));
 }
 async function answerOffer(id,accept){
   var o=_offers.rows.find(function(x){return x.id===id;});if(!o)return;
@@ -87,7 +84,7 @@ function renderMyApply(){
   var rows=_apply.f?all.filter(function(x){return x.status===_apply.f;}):all;
   var chips=mineChips('goMyApply',[['','전체',all.length],['pending','답 기다리는 중',cnt('pending')],['approved','합류',cnt('approved')],['rejected','아쉬움',cnt('rejected')]].filter(function(f){return !f[0]||f[2];}),_apply.f,'applyFilter');
   var md=function(d){return d?new Date(d).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'}):'';};
-  var body=!all.length?mineEmpty('send','아직 지원한 자리가 없어요','기회에서 함께할 공연을 찾아보세요.','<button class="pf-btn pf-active" onclick="goProjectBrowse()">기회 보기</button>')
+  var body=!all.length?mineEmpty('send','아직 지원한 자리가 없어요','<button class="pf-btn pf-active" onclick="goProjectBrowse()">기회 보기</button>')
     :'<div class="opp-pgrid">'+rows.map(function(x){
       return minePoster({id:x.project_id,icon:'send',kind:APPLY_LABEL[x.status]||x.status,kindCls:'mine-k-'+x.status,
         title:x.position_label||'자리',sub:x.project_title||'',
@@ -95,7 +92,7 @@ function renderMyApply(){
         btn:x.status==='approved'?'<span class="opp-st ok">팀으로 ›</span>':'',
         go:'goProject(\''+x.project_id+'\')'});
     }).join('')+'</div>';
-  mn(mineShell('내 지원 현황','내가 지원한 자리와 답이에요. 합류한 프로젝트는 "내 프로젝트"에서 함께 준비해요.',chips,body));
+  mn(mineShell('내 지원 현황','',chips,body));
 }
 /* ══ 저장한 것 ══ */
 var _saved={f:''};
@@ -125,7 +122,7 @@ function renderSaved(){
   var filters=[['','전체',all.length]].concat(SAVED_KIND.map(function(k){return [k[0],k[1],cnt(k[0])];}),[['wish','해보고 싶어요',cnt('wish')]]).filter(function(x){return !x[0]||x[2];});
   var rows=all.filter(function(x){return !f||(f==='wish'?x.list_type==='wishlist':x.target_type===f);});
   var cards=rows.map(savedCard).filter(Boolean);
-  var body=!all.length?mineEmpty('bookmark','아직 저장한 게 없어요','공연·작품·사람 페이지의 오리 아이콘으로 저장하고, 작품·배역은 깃발로 "해보고 싶어요"를 남길 수 있어요.','<button class="pf-btn pf-active" onclick="goHome()">아카이브 둘러보기</button>')
+  var body=!all.length?mineEmpty('bookmark','아직 저장한 게 없어요','<button class="pf-btn pf-active" onclick="goHome()">아카이브 둘러보기</button>')
     :'<div class="opp-pgrid">'+cards.join('')+'</div>';
-  mn(mineShell('저장한 것','즐겨찾기한 기록과 해보고 싶은 작품·배역이에요.',mineChips('goSaved',filters,f,'savedFilter'),body));
+  mn(mineShell('저장한 것','',mineChips('goSaved',filters,f,'savedFilter'),body));
 }

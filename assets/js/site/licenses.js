@@ -46,11 +46,11 @@ function renderLicenses(){
   var chips=LIC_CHIPS.filter(function(c){return !c[0]||open.some(function(x){return licChipMatch(x,c[0]);});});
   if(!chips.some(function(c){return c[0]===_lic.chip;}))_lic.chip='';
   var list=open.filter(function(x){return licChipMatch(x,_lic.chip);}).sort(function(a,b){return (b.c.amateur==='제공'?1:0)-(a.c.amateur==='제공'?1:0)||String(fld(a.w,'작품명')).localeCompare(String(fld(b.w,'작품명')),'ko');});
-  var h='<div class="nx lic-nx"><div class="mine-head"><h1 class="mine-title">라이선스</h1><p class="mine-sub">오리가 권리자와 이어드리는 작품이에요. 작품을 골라 정식으로 신청하세요.</p></div>'
+  var h='<div class="nx lic-nx"><div class="mine-head"><h1 class="mine-title">라이선스</h1></div>'
     +(open.length?pchipsHtml(chips,_lic.chip,'licChip'):'')
-    +'<ol class="lic-steps" aria-label="라이선스 진행 단계">'+LIC_STEPS.map(function(s,i){return '<li><b>'+(i+1)+'</b><span>'+s[0]+'</span></li>';}).join('')+'</ol>';
+;
   if(open.length)h+='<div class="opp-pgrid lic-grid">'+list.map(licCardHtml).join('')+'</div>';
-  else h+='<div class="lic-empty"><div class="lic-empty-t">아직 문이 열린 작품이 없어요</div><div class="lic-empty-s">오리가 권리자들과 이야기하고 있어요. 아래에서 원하는 작품에 "원해요"를 남겨 주세요. 원하는 사람이 모인 작품부터 문을 두드려요.</div></div>';
+  else h+='<div class="lic-empty"><div class="lic-empty-t">아직 문이 열린 작품이 없어요</div></div>';
   h+='<section class="lic-want" id="lic-want"></section></div>';
   mn(h);
   renderLicenseWant();
@@ -70,7 +70,7 @@ function licCardHtml(x){
 function licWantCount(x){var base=x.c.wish_count||0,adj=_lic.want[x.w.id]||0;return Math.max(0,base+adj);}
 function renderLicenseWant(){
   var el=$('lic-want');if(!el)return;
-  el.innerHTML='<div class="lic-want-head"><h2 class="cat-all">이 작품도 열어 주세요</h2><p class="mine-sub">찾는 작품이 목록에 없나요? "원해요"를 누르면 오리가 그 숫자를 들고 권리자를 만나요.</p></div>'
+  el.innerHTML='<div class="lic-want-head"><h2 class="cat-all">이 작품도 열어 주세요</h2></div>'
     +'<div class="lic-search"><input type="text" id="lic-q" placeholder="작품 이름으로 찾기" value="'+escHtml(_lic.q)+'" oninput="_lic.q=this.value;renderLicenseWantList()"></div>'
     +'<div id="lic-want-list"></div>';
   renderLicenseWantList();
@@ -132,9 +132,8 @@ async function goLicense(wid,push){
     +'<button type="button" class="dv-textlink" onclick="openDetail(\'work\',\''+wid+'\')">작품 페이지 보기 ›</button></div></div>'
     +'<section class="lic-apply"><h2 class="lic-h">라이선스 신청</h2>'
     +'<ol class="lic-track" id="lic-track-'+wid+'"></ol>'
-    +(licOpen(c)?'':'<div class="lic-note">이 작품은 아직 오리가 라이선스를 내줄 수 없어요. 신청을 남기면 원하는 단체가 있다는 근거가 되어 권리자와 이야기할 때 쓰여요.</div>')
     +'<div id="wh-demand-'+wid+'" class="lic-form"><div class="hf-loading">불러오는 중…</div></div>'
-    +'<p class="lic-fine">신청은 계약이 아니에요. 오리가 조건을 확인해 견적과 다음 단계를 알려드려요. 티켓을 팔거나 출연료를 주는 공연은 라이선스가 꼭 필요해요.</p></section></div>';
+    +'</section></div>';
   mn(h);
   await renderDemandBox(wid);
   if(!_wd[wid])openDemandForm(wid);   // 처음이면 ① 공연 정보 칸을 바로 펼친다

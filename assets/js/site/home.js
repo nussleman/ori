@@ -59,11 +59,10 @@ function nxHeroGo(i,user){
   if(user){clearInterval(_nxHero.timer);}
 }
 /* 가로로 넘기는 줄 하나 */
-function nxRow(title,more,cards,sub){
+function nxRow(title,more,cards){
   if(!cards.length)return '';
   var id='nxr'+Math.random().toString(36).slice(2,8);
   return '<section class="nx-row"><div class="nx-row-head"><h2>'+escHtml(title)+'</h2>'+(more?'<button type="button" class="nx-more" onclick="'+more+'">모두 보기 ›</button>':'')+'</div>'
-    +(sub?'<p class="nx-row-sub">'+escHtml(sub)+'</p>':'')
     +'<div class="nx-track-wrap"><button type="button" class="nx-arrow nx-prev" aria-label="앞으로" onclick="nxScroll(\''+id+'\',-1)"><span class="nx-arrow-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></span></button>'
     +'<div class="nx-track" id="'+id+'">'+cards.join('')+'</div>'
     +'<button type="button" class="nx-arrow nx-next" aria-label="뒤로" onclick="nxScroll(\''+id+'\',1)"><span class="nx-arrow-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></span></button></div></section>';
@@ -104,7 +103,7 @@ async function loadNxWorks(){
   el.outerHTML=nxRow('여러 단체가 올린 작품','goWorks()',rows.map(function(w){
     var st=WORK_STATS[w.id];
     return nxTextCard('work',w.id,fld(w,'작품명'),[st.troupe_count?'단체 '+st.troupe_count+'곳':'',st.show_count?st.show_count+'번 올라감':'',st.wish_count?st.wish_count+'명이 올리고 싶어해요':''].filter(Boolean).join(' · '),iurl(fld(w,'사진')));
-  }),'다음 공연 작품을 고를 때 참고해 보세요.');
+  }));
   nxArrows();
 }
 
@@ -163,7 +162,7 @@ function catRows(v){
   var st=nxStats();
   if(_catRowsCache[v]!==undefined)return _catRowsCache[v];
   var yr=String(new Date().getFullYear()),h='';
-  var row=function(title,cards,sub){return cards.length>=3?nxRow(title,'',cards,sub):'';};
+  var row=function(title,cards){return cards.length>=3?nxRow(title,'',cards):'';};
   var showCard=function(s){return nxShowCard(s);};
   if(v==='shows'){
     h+=row('최근 무대에 오른 공연',st.shows.slice(0,16).map(showCard));
@@ -171,11 +170,11 @@ function catRows(v){
     h+=row('많은 사람이 함께한 공연',topBy(st.shows,function(s){return nKeys(st.castOf[s.id]);},2).map(showCard));
   }else if(v==='works'){
     var wcard=function(w,sub){return nxTextCard('work',w.id,fld(w,'작품명'),sub,iurl(fld(w,'사진')));};
-    h+=row('여러 단체가 올린 작품',topBy(DB.works,function(w){return nKeys(st.wTroupes[w.id]);},2).map(function(w){return wcard(w,'단체 '+nKeys(st.wTroupes[w.id])+'곳 · '+st.showsOf[w.id].length+'번 올라감');}),'다음 공연 작품을 고를 때 참고해 보세요.');
+    h+=row('여러 단체가 올린 작품',topBy(DB.works,function(w){return nKeys(st.wTroupes[w.id]);},2).map(function(w){return wcard(w,'단체 '+nKeys(st.wTroupes[w.id])+'곳 · '+st.showsOf[w.id].length+'번 올라감');}));
     var seen={},recent=[];st.shows.forEach(function(s){var w=ids(fld(s,'작품'))[0];if(w&&!seen[w]){seen[w]=1;var ww=DB.works.find(function(x){return x.id===w;});if(ww)recent.push(ww);}});
     h+=row('최근 무대에 오른 작품',recent.slice(0,16).map(function(w){var s=st.showsOf[w.id][0];return wcard(w,[nm(ids(fld(s,'극단'))[0]),String(fld(s,'공연 날짜')||'').slice(0,4)].filter(Boolean).join(' · '));}));
     var rc={};DB.roles.forEach(function(r){var w=ids(fld(r,'작품'))[0];if(w)rc[w]=(rc[w]||0)+1;});
-    h+=row('배역이 많은 작품',topBy(DB.works,function(w){return rc[w.id]||0;},8).map(function(w){return wcard(w,'배역 '+rc[w.id]+'명');}),'출연진이 많은 단체에 맞는 작품이에요.');
+    h+=row('배역이 많은 작품',topBy(DB.works,function(w){return rc[w.id]||0;},8).map(function(w){return wcard(w,'배역 '+rc[w.id]+'명');}));
   }else if(v==='people'){
     var pc=function(p,o){return nxPersonCard(p,nKeys(o[p.id]));};
     h+=row('무대에 많이 선 사람',topBy(DB.people,function(p){return nKeys(st.pShows[p.id]);},2).map(function(p){return pc(p,st.pShows);}));
