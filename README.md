@@ -41,6 +41,7 @@ assets/
     project-budget.js      예산: 총 예산·분류별 추천 분배·예상/실제·사용 알림·부족금/잔금 제안·시트 링크·CSV·붙여넣기
     project-props.js       소품 큐시트: 장면×소품 큐(들어옴·무대에서·나감), 장면 순/소품별/인물별 보기, 동선 점검, CSV·인쇄
     bridges.js             둘러보기↔만들기 연결 버튼, 공통 선택 창 pickOne()
+    project-ops.js         프로젝트 운영: 할 일·연습 출결·바깥 도구 연결·.ics 내보내기·공연 주간·회고·기록 보강·정산
     project-wizard.js      프로젝트 위저드
     licenses.js            라이선스(#licenses 신청할 수 있는 작품 카드·원해요, #license-<id> 작품별 신청 단계) (license_catalog)
     talk.js                이야기(작품·배역 페이지 탭: 종류별 글·도움됐어요·답글·신고)와 게시판(#board)

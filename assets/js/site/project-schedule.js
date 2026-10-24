@@ -23,7 +23,7 @@ function eventRowHtml(ev,canEdit){
   var s=new Date(ev.starts_at),e=ev.ends_at?new Date(ev.ends_at):null;
   var k=EVENT_KIND[ev.kind]||EVENT_KIND.etc;
   var past=(e||s)<new Date();
-  return '<div class="ev-row'+(past?' past':'')+'">'
+  return '<div class="ev-row'+(past?' past':'')+'" data-ev="'+ev.id+'">'
     +'<div class="ev-date"><b>'+evDate(s)+'</b><span>'+evTime(s)+(e?' – '+evTime(e):'')+'</span></div>'
     +'<div class="ev-main"><div class="ev-title"><span class="ev-kind '+k.c+'">'+k.l+'</span>'+escHtml(ev.title)+'</div>'
     +((ev.location||ev.note)?'<div class="ev-sub">'+(ev.location?''+ico('pin')+' '+escHtml(ev.location):'')+(ev.location&&ev.note?' · ':'')+(ev.note?escHtml(ev.note):'')+'</div>':'')+'</div>'
@@ -73,6 +73,7 @@ async function loadScheduleList(){
     };
     el.innerHTML='<section class="dv-sec">'+dvSection('다가오는 일정',upcoming.length)+(upcoming.length?byMonth(upcoming):'<div class="dv-empty">예정된 일정이 없어요.</div>')+'</section>'
       +(past.length?'<details class="dv-sec ev-past"><summary>'+dvSection('지난 일정',past.length)+'</summary>'+byMonth(past)+'</details>':'');
+    if(typeof opsRsvpDecorate==='function')opsRsvpDecorate(upcoming);  // 다가오는 일정마다 출결 (project-ops.js)
   }catch(e){el.innerHTML=loadFailHtml('일정');}
 }
 
