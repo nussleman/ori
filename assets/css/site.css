@@ -2277,3 +2277,27 @@ button.talk-kind.on{background:var(--k);color:#16161a}
 .aud-decide>span{margin-right:0.3rem;font-size:0.78rem;color:var(--muted)}
 .aud-decide .talk-link{margin-left:auto}
 @media(max-width:768px){.aud-c-top{flex-wrap:wrap}.aud-c-sum{justify-content:flex-start}.aud-crit>span:first-child{width:64px}}
+
+/* ══ 제작진 화면: 담당별 타일 (10/24) ══ */
+.crew-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.crew-tile{display:flex;flex-direction:column;gap:0.35rem;min-height:104px;padding:0.8rem 0.85rem;border:none;border-radius:12px;color:var(--text);font-family:inherit;text-align:left;cursor:pointer;transition:transform var(--dur-fast,150ms),box-shadow var(--dur-fast,150ms)}
+.crew-tile.pjb-todo,.crew-tile.pjb-off{--c:var(--faint);background:var(--bg2)}
+.crew-tile:hover{transform:translateY(-2px)}
+.crew-tile.open{box-shadow:0 0 0 2px var(--accent)}
+.crew-t{display:flex;align-items:center;justify-content:space-between;gap:0.4rem;font-size:0.82rem;font-weight:500;color:var(--muted)}
+.crew-t .pjb-orb{width:22px;height:22px}.crew-t .pjb-orb svg{width:16px;height:16px}
+.crew-v{margin-top:auto;font-size:1rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crew-tile.pjb-done .crew-v,.crew-tile.pjb-doing .crew-v,.crew-tile.pjb-alert .crew-v{color:color-mix(in srgb,var(--c) 35%,var(--text))}
+.crew-d{min-height:1em;font-size:0.72rem;color:var(--muted)}
+.crew-tile.pjb-alert .crew-d{color:var(--st-alert)}
+.crew-panel{margin-top:1rem;padding:1rem 1.1rem;border-radius:14px;background:var(--bg2)}
+.crew-ph{display:flex;align-items:center;gap:0.55rem;margin-bottom:0.6rem}
+.crew-ph b{font-size:1rem}
+.crew-ph span:not(.dash-dot){font-size:0.8rem;color:var(--muted)}
+.crew-ph .dash-x{margin-left:auto}
+.crew-row{display:flex;align-items:center;gap:0.8rem;padding:0.5rem 0;border-bottom:1px solid var(--line);font-size:0.88rem}
+.crew-row>span:first-child{min-width:110px;color:var(--text)}
+.crew-who{flex:1;color:var(--muted)}
+.crew-man{margin:0.8rem 0 0.4rem}
+.set-danger{color:var(--st-alert);border-color:color-mix(in srgb,var(--st-alert) 50%,transparent)}
+.set-danger:hover{background:color-mix(in srgb,var(--st-alert) 12%,transparent)}
