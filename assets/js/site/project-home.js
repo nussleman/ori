@@ -73,11 +73,12 @@ function projectBoxes(all){
       var l=pjbLight('budget',D);
       return{v:l.text&&l.text.indexOf('예산 없음')<0?l.text.replace(/ 사용$/,''):'아직 없음',d:'총 예산 '+(Number(pr.budget_total)?dashWon(Number(pr.budget_total)):'미정'),st:pjbFromLight(l.light)};
     }},
-    {key:'actor',phase:'pre',title:'오디션·캐스팅',icon:'mask',view:function(el){el.innerHTML='<div id="actor-tab-body"><div class="hf-loading">불러오는 중…</div></div>';loadProjectPositionsData(pid,renderActorTabBody);},calc:function(D){
+    {key:'actor',phase:'pre',title:'오디션·캐스팅',icon:'mask',view:function(el){renderActorBox(el);},calc:function(D){
       var acts=D.positions.filter(function(p){return p.position_type==='actor';}),f=acts.filter(dashFilled).length,l=pjbLight('casting',D);
       if(!acts.length)return{v:'배역 없음',d:pr.work_id?'배역 자리 만들기':'작품을 정하면 배역이 생겨요',st:pjbFromLight(l.light)};
       var openN=acts.filter(function(p){return p.status==='open'&&!dashFilled(p);}).length;
-      return{v:f+' / '+acts.length+' 확정',d:(acts.length-f?'빈 배역 '+(acts.length-f):'모두 확정')+(openN?' · 모집 중 '+openN:''),st:pjbFromLight(l.light)};
+      var au=D.aud||[],cb=au.filter(function(c){return c.status==='callback';}).length;
+      return{v:f+' / '+acts.length+' 확정',d:au.length?'오디션 '+au.length+'명'+(cb?' · 콜백 '+cb:''):(acts.length-f?'빈 배역 '+(acts.length-f):'모두 확정')+(openN?' · 모집 중 '+openN:''),st:pjbFromLight(l.light)};
     }},
     {key:'crew',phase:'pre',title:'제작진',icon:'clapper',view:function(el){el.innerHTML='<div id="crew-tab-body"><div class="hf-loading">불러오는 중…</div></div>';loadProjectPositionsData(pid,renderCrewTabBody);},calc:function(D){
       var st=D.positions.filter(function(p){return p.position_type!=='actor';}),f=st.filter(dashFilled);
@@ -174,9 +175,10 @@ async function loadBoardData(){
     ctx.isAdmin?q(sbClient.rpc('list_project_join_requests',{p_project_id:pid})):Promise.resolve([]),
     q(sbClient.from('project_tasks').select('id,box_key,done,due_date,assignee_member_id').eq('project_id',pid)),
     opsLoadLinks(pid,true),
-    q(sbClient.from('project_retro_items').select('id').eq('project_id',pid))
+    q(sbClient.from('project_retro_items').select('id').eq('project_id',pid)),
+    ctx.isAdmin?q(sbClient.from('audition_candidates').select('status').eq('project_id',pid)):Promise.resolve([])
   ]);
-  var D=res[0];D.notices=res[1];D.requests=res[2];D.tasks=res[3];D.links=res[4]||{};D.retro=res[5].length;
+  var D=res[0];D.notices=res[1];D.requests=res[2];D.tasks=res[3];D.links=res[4]||{};D.retro=res[5].length;D.aud=res[6];
   ctx.positions=D.positions;ctx.memberDetail=D.members;ctx.pendingRequests=D.requests.length;
   return D;
 }
