@@ -44,23 +44,32 @@ function renderSide() {
   const reqN = Object.values(COUNTS).reduce((a, b) => a + (b || 0), 0);
   const unlic = S.shows.filter(s => !s.is_licensed).length, unrights = S.works.filter(w => !w.rights_type).length;
   const n = x => x ? `<b class="n">${x}</b>` : '';
+  // 묶음 제목을 누르면 접었다 폈다 (기억: localStorage ori-admin-nav). 접혀 있어도 처리할 수는 제목 옆에
+  let closed = {}; try { closed = JSON.parse(localStorage.getItem('ori-admin-nav') || '{}'); } catch (e) {}
+  const grp = (key, label, items, badge) => `<div class="side-grp${closed[key] ? ' closed' : ''}" data-g="${key}">
+    <button type="button" class="side-lbl" aria-expanded="${!closed[key]}" onclick="toggleSideGrp('${key}')"><span>${label}</span>${badge ? `<b class="n soft">${badge}</b>` : ''}<i class="side-caret">▾</i></button>
+    <div class="side-grp-in">${items}</div></div>`;
+  const reqSum = Object.keys(REQ).reduce((a, k) => a + (COUNTS[k] || 0), 0);
   $('#side-nav').innerHTML = `
     <a href="#/inbox" data-r="inbox">✅ 할 일 ${n(reqN + unlic)}</a>
-    <div class="side-lbl">데이터</div>
-    ${ENT_ORDER.map(t => `<a href="#/data/${t}" data-r="data/${t}">${ENT[t].icon} ${ENT[t].label}<small>${S[t].length}</small></a>`).join('')}
-    <div class="side-lbl">요청</div>
-    ${Object.entries(REQ).map(([k, d]) => `<a href="#/requests/${k}" data-r="requests/${k}">${d.label} ${n(COUNTS[k])}</a>`).join('')}
-    <div class="side-lbl">분류·점검</div>
-    <a href="#/queue/license" data-r="queue/license">공개 분류 ${unlic ? `<b class="n soft">${unlic}</b>` : ''}</a>
+    ${grp('data', '데이터', ENT_ORDER.map(t => `<a href="#/data/${t}" data-r="data/${t}">${ENT[t].icon} ${ENT[t].label}<small>${S[t].length}</small></a>`).join(''))}
+    ${grp('req', '요청', Object.entries(REQ).map(([k, d]) => `<a href="#/requests/${k}" data-r="requests/${k}">${d.label} ${n(COUNTS[k])}</a>`).join(''), reqSum)}
+    ${grp('check', '분류·점검', `<a href="#/queue/license" data-r="queue/license">공개 분류 ${unlic ? `<b class="n soft">${unlic}</b>` : ''}</a>
     <a href="#/queue/rights" data-r="queue/rights">권리 분류 ${unrights ? `<b class="n soft">${unrights}</b>` : ''}</a>
     <a href="#/demand" data-r="demand">수요 보드</a>
-    <a href="#/health" data-r="health">데이터 현황</a>
-    <div class="side-lbl">설정</div>
-    <a href="#/lists" data-r="lists">선택지 관리</a>
+    <a href="#/health" data-r="health">데이터 현황</a>`)}
+    ${grp('set', '설정', `<a href="#/lists" data-r="lists">선택지 관리</a>
     <a href="#/users" data-r="users">유저</a>
-    <a href="#/admins" data-r="admins">관리자</a>`;
+    <a href="#/admins" data-r="admins">관리자</a>`)}`;
   markSide();
 }
+window.toggleSideGrp = function (key) {
+  const g = document.querySelector(`.side-grp[data-g="${key}"]`); if (!g) return;
+  const shut = !g.classList.contains('closed');
+  g.classList.toggle('closed', shut); g.querySelector('.side-lbl').setAttribute('aria-expanded', String(!shut));
+  let closed = {}; try { closed = JSON.parse(localStorage.getItem('ori-admin-nav') || '{}'); } catch (e) {}
+  closed[key] = shut; try { localStorage.setItem('ori-admin-nav', JSON.stringify(closed)); } catch (e) {}
+};
 function markSide() {
   const h = location.hash.replace(/^#\//, '').split('?')[0];
   $$('#side-nav a').forEach(a => { const r = a.dataset.r; a.classList.toggle('on', h === r || h.startsWith(r + '/')); });

@@ -80,6 +80,12 @@ async function loadFavorites(){
 }
 
 /* ── 게이트 표시 제어 ── */
+/* 운영자(user_profiles.is_admin)만 위 막대에 톱니 → 어드민. 링크일 뿐이고 실제 권한은 어드민·DB가 다시 확인한다 */
+async function loadAdminGear(){
+  var g=$('tb-admin');if(!g)return;
+  var r=await sbClient.rpc('is_admin');
+  g.hidden=!(CURRENT_USER&&!r.error&&r.data===true);
+}
 function showAuthGate(){$('auth-gate').classList.add('open');$('oath-gate').classList.remove('open');}
 function hideAuthGate(){$('auth-gate').classList.remove('open');}
 function hasDeclaredThisSession(){try{return localStorage.getItem('oridb_declared')==='1'||sessionStorage.getItem('oridb_declared')==='1';}catch(e){return false;}}
@@ -143,6 +149,7 @@ async function handleAuthSession(session){
     await loadFavorites();
     await loadMyTroupesCache();
     loadMyProjectsCache();
+    loadAdminGear();
     renderProfileFab();
     refreshFavoriteButtons();
     if(!_entered){
@@ -153,6 +160,7 @@ async function handleAuthSession(session){
   }else{
     CURRENT_USER=null;FAVORITES_LIST=[];FAVORITES_SET=new Set();MY_PROJECTS_CACHE=[];MY_TROUPE_ADMIN=new Set();
     _entered=false;
+    var g=$('tb-admin');if(g)g.hidden=true;
     renderProfileFab();
     showAuthGate();
   }
