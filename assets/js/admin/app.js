@@ -44,10 +44,11 @@ function renderSide() {
   const reqN = Object.values(COUNTS).reduce((a, b) => a + (b || 0), 0);
   const unlic = S.shows.filter(s => !s.is_licensed).length, unrights = S.works.filter(w => !w.rights_type).length;
   const n = x => x ? `<b class="n">${x}</b>` : '';
-  // 묶음 제목을 누르면 접었다 폈다 (기억: localStorage ori-admin-nav). 접혀 있어도 처리할 수는 제목 옆에
+  // 묶음 제목을 누르면 접었다 폈다 (처음엔 접힘, 기억: localStorage ori-admin-nav). 접혀 있어도 처리할 수는 제목 옆에
   let closed = {}; try { closed = JSON.parse(localStorage.getItem('ori-admin-nav') || '{}'); } catch (e) {}
-  const grp = (key, label, items, badge) => `<div class="side-grp${closed[key] ? ' closed' : ''}" data-g="${key}">
-    <button type="button" class="side-lbl" aria-expanded="${!closed[key]}" onclick="toggleSideGrp('${key}')"><span>${label}</span>${badge ? `<b class="n soft">${badge}</b>` : ''}<i class="side-caret">▾</i></button>
+  const shut = k => closed[k] !== false;   // 처음엔 모두 접힘. 편 묶음만 기억한다
+  const grp = (key, label, items, badge) => `<div class="side-grp${shut(key) ? ' closed' : ''}" data-g="${key}">
+    <button type="button" class="side-lbl" aria-expanded="${!shut(key)}" onclick="toggleSideGrp('${key}')"><span>${label}</span>${badge ? `<b class="n soft">${badge}</b>` : ''}<i class="side-caret">▾</i></button>
     <div class="side-grp-in">${items}</div></div>`;
   const reqSum = Object.keys(REQ).reduce((a, k) => a + (COUNTS[k] || 0), 0);
   $('#side-nav').innerHTML = `

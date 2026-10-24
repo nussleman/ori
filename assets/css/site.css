@@ -2133,3 +2133,82 @@ button.talk-kind.on{background:var(--k);color:#16161a}
 .talk-mini-h{flex-shrink:0;font-size:0.72rem;color:var(--muted)}
 .talk-more{align-self:flex-start;margin-top:0.2rem}
 @media(max-width:768px){.talk-write{padding:0.75rem}.talk-replies{margin-left:0.2rem;padding-left:0.7rem}}
+
+/* ══ 프로젝트 운영 도구 (10/24): 연결 · 할 일 · 출결 · 회고 · 기록 ══ */
+.pjb-lk{display:inline-flex;align-items:center;gap:2px;margin-left:0.35rem;font-size:0.7rem;color:var(--muted)}
+.pjb-lk .ico{width:12px;height:12px}
+/* 바깥 도구 연결 줄 */
+.ops-links{display:flex;flex-wrap:wrap;align-items:center;gap:0.45rem;margin:0 0 1.2rem}
+.ops-link{display:inline-flex;align-items:center;border-radius:10px;background:var(--bg2);box-shadow:inset 0 0 0 1px var(--line)}
+.ops-link a{display:inline-flex;align-items:center;gap:0.4rem;padding:0.45rem 0.4rem 0.45rem 0.7rem;color:var(--text);text-decoration:none;font-size:0.84rem}
+.ops-link a:hover b{text-decoration:underline}
+.ops-link b{font-weight:500}
+.ops-link small{font-size:0.7rem;color:var(--muted)}
+.ops-link .ico{width:14px;height:14px;color:var(--accent)}
+.ops-link.k-sheet .ico{color:#34a853}.ops-link.k-drive .ico{color:#4285f4}.ops-link.k-notion .ico{color:var(--text)}.ops-link.k-kakao .ico{color:#e5c100}.ops-link.k-qlab .ico{color:#a78bfa}.ops-link.k-ticket .ico{color:#ef6f6f}
+.ops-link-x{width:26px;height:26px;margin-right:0.2rem;border:none;border-radius:6px;background:none;color:var(--faint);font-size:0.72rem;cursor:pointer}
+.ops-link-x:hover{background:rgba(var(--ink),0.08);color:var(--text)}
+.ops-link-add{height:32px;padding:0 0.75rem;border:1px dashed var(--line-strong);border-radius:10px;background:none;color:var(--muted);font-family:inherit;font-size:0.8rem;cursor:pointer}
+.ops-link-add:hover{border-color:var(--accent);color:var(--accent)}
+.ops-link-add.hint{border-style:dotted}
+#ops-link-form{flex-basis:100%}
+.ops-link-f{display:flex;flex-wrap:wrap;gap:0.45rem;margin-top:0.2rem}
+.ops-link-f input{flex:1;min-width:180px;height:36px;padding:0 0.75rem;border:1px solid var(--line-strong);border-radius:8px;background:var(--field);color:var(--text);font-family:inherit;font-size:0.84rem}
+.ops-link-f input:focus{outline:none;border-color:var(--accent)}
+.pj-ics{display:inline-flex;align-items:center;gap:0.3rem;margin-left:auto}
+.pj-ics .ico{width:14px;height:14px}
+/* 할 일 */
+.task-add{display:flex;flex-wrap:wrap;gap:0.45rem;margin-bottom:0.8rem}
+.task-add input[type=text]{flex:1;min-width:200px}
+.task-add input,.task-add select{height:38px;padding:0 0.7rem;border:1px solid var(--line-strong);border-radius:9px;background:var(--field);color:var(--text);font-family:inherit;font-size:0.86rem}
+.task-add input:focus,.task-add select:focus{outline:none;border-color:var(--accent)}
+.task-chips{position:static;margin:0 0 0.6rem;padding:0}
+.task-g{margin-top:1rem}
+.task-g h3{display:flex;align-items:center;gap:0.4rem;margin:0 0 0.35rem;font-size:0.8rem;font-weight:500;color:var(--muted)}
+.task-g h3 span{font-size:0.72rem;color:var(--faint)}
+.task-g.late h3{color:var(--st-alert)}
+.task-done summary{list-style:none;cursor:pointer}
+.task-done summary::-webkit-details-marker{display:none}
+.task{display:flex;align-items:center;gap:0.6rem;padding:0.5rem 0.2rem;border-bottom:1px solid var(--line)}
+.task-check{flex-shrink:0;display:grid;place-items:center;width:22px;height:22px;border:1.5px solid var(--line-strong);border-radius:6px;background:none;color:#fff;font-size:0.8rem;cursor:pointer}
+.task-check:hover{border-color:var(--accent)}
+.task.done .task-check{background:var(--st-done);border-color:var(--st-done)}
+.task-t{flex:1;min-width:0;font-size:0.9rem;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.task.done .task-t{color:var(--muted);text-decoration:line-through}
+.task-box{flex-shrink:0;padding:0.1rem 0.45rem;border-radius:5px;background:rgba(var(--ink),0.08);font-size:0.7rem;color:var(--muted)}
+.task-who,.task-due{flex-shrink:0;height:30px;padding:0 0.4rem;border:1px solid transparent;border-radius:7px;background:none;color:var(--muted);font-family:inherit;font-size:0.78rem}
+.task-who:hover,.task-due:hover{border-color:var(--line-strong)}
+.task-due{width:128px}
+.task-when{flex-shrink:0;min-width:64px;text-align:right;font-size:0.74rem;color:var(--muted)}
+.task.late .task-when{color:var(--st-alert);font-weight:500}
+.task-x{flex-shrink:0;width:26px;height:26px;border:none;border-radius:6px;background:none;color:var(--faint);font-size:0.72rem;cursor:pointer;opacity:0;transition:opacity var(--dur-fast,150ms)}
+.task:hover .task-x,.retro-i:hover .task-x{opacity:1}
+.task-x:hover{background:rgba(var(--ink),0.08);color:var(--text)}
+.task-sugg .task{border-bottom-style:dashed}
+.task-sugg .pf-btn{flex-shrink:0;padding:0.25rem 0.6rem;font-size:0.74rem}
+@media(max-width:768px){.task{flex-wrap:wrap}.task-t{flex-basis:calc(100% - 40px);white-space:normal}.task-who,.task-due{margin-left:32px}.task-x{opacity:1}}
+/* 연습 출결 */
+.ev-rsvp{display:flex;align-items:center;flex-wrap:wrap;gap:0.35rem;margin:-0.2rem 0 0.6rem;padding:0 0.2rem 0 6.8rem}
+.ev-rsvp button{height:26px;padding:0 0.65rem;border:1px solid var(--line-strong);border-radius:13px;background:none;color:var(--muted);font-family:inherit;font-size:0.74rem;cursor:pointer}
+.ev-rsvp button:hover{color:var(--text);border-color:var(--text)}
+.ev-rsvp button.on.r-yes{background:var(--st-done);border-color:var(--st-done);color:#fff}
+.ev-rsvp button.on.r-no{background:var(--st-alert);border-color:var(--st-alert);color:#fff}
+.ev-rsvp button.on.r-maybe{background:var(--st-doing);border-color:var(--st-doing);color:#16161a}
+.ev-rsvp-n{margin-left:0.4rem;font-size:0.74rem;color:var(--muted)}
+@media(max-width:768px){.ev-rsvp{padding-left:0}}
+/* 회고 */
+.retro{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+.retro-col{padding:0.9rem;border-radius:12px;background:var(--bg2)}
+.retro-col h3{display:flex;align-items:center;gap:0.4rem;margin:0 0 0.6rem;font-size:0.92rem;font-weight:700;color:var(--text)}
+.retro-col h3 span{font-size:0.74rem;font-weight:400;color:var(--muted)}
+.retro-col.r-good h3{color:var(--st-done)}.retro-col.r-bad h3{color:var(--st-alert)}.retro-col.r-next h3{color:var(--st-doing)}
+.retro-i{display:flex;align-items:flex-start;gap:0.4rem;margin-bottom:0.4rem;padding:0.55rem 0.65rem;border-radius:8px;background:var(--bg);font-size:0.86rem;line-height:1.5;color:var(--text)}
+.retro-i .task-x{margin-left:auto}
+.retro-in{width:100%;box-sizing:border-box;height:36px;padding:0 0.7rem;border:1px dashed var(--line-strong);border-radius:8px;background:none;color:var(--text);font-family:inherit;font-size:0.84rem}
+.retro-in:focus{outline:none;border-style:solid;border-color:var(--accent)}
+@media(max-width:768px){.retro{grid-template-columns:1fr}}
+.rec-grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+/* 정산: 예산 화면에서 정산 칸을 맨 위로, 추천 분배는 숨김 */
+.bg-settle-mode .bg{display:flex;flex-direction:column}
+.bg-settle-mode .bg-settle{order:-1}
+.bg-settle-mode .bg-tips{display:none}
