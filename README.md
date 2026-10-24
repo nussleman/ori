@@ -43,6 +43,7 @@ assets/
     bridges.js             둘러보기↔만들기 연결 버튼, 공통 선택 창 pickOne()
     project-wizard.js      프로젝트 위저드
     licenses.js            라이선스(#licenses 신청할 수 있는 작품 카드·원해요, #license-<id> 작품별 신청 단계) (license_catalog)
+    talk.js                이야기(작품·배역 페이지 탭: 종류별 글·도움됐어요·답글·신고)와 게시판(#board)
     mine.js                받은 제안(#offers)·내 지원 현황(#apply)·저장한 것(#saved): 칩 + 카드 화면
     project-browse.js      기회(넷플릭스식: 히어로·가로 줄·전체 자리)·지원, 프로젝트 공개 화면의 모집 중인 자리, 마이페이지 지원 현황
     pages.js               콘텐츠(준비중)·라이선스 문의·약관·개인정보처리방침

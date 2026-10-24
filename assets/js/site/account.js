@@ -84,7 +84,8 @@ async function loadFavorites(){
 async function loadAdminGear(){
   var g=$('tb-admin');if(!g)return;
   var r=await sbClient.rpc('is_admin');
-  g.hidden=!(CURRENT_USER&&!r.error&&r.data===true);
+  window.IS_ADMIN=!!(CURRENT_USER&&!r.error&&r.data===true);  // 이야기 숨기기 버튼도 이걸 본다 (실제 권한은 서버 talk_hide)
+  g.hidden=!window.IS_ADMIN;
 }
 function showAuthGate(){$('auth-gate').classList.add('open');$('oath-gate').classList.remove('open');}
 function hideAuthGate(){$('auth-gate').classList.remove('open');}

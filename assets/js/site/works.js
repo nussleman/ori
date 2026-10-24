@@ -149,9 +149,9 @@ function showWork(wid,push){
       {title:'해보고 싶어하는 사람들',body:'<div id="wish-interest-work"></div>'},
       reviewSection('work',wid),
       {title:'사진',tab:'사진',body:buildPhotoGalleryHtml(photos,fld(work,'작품명'))}
-    ],
+    ].concat(talkSections('work',wid)),
     empty:'아직 연결된 공연이나 배역이 없어요.',
-    after:function(){renderWishlistInterest('work',wid,'wish-interest-work');loadReviews('work',wid);renderWorkHub(wid,roles,shows);}
+    after:function(){renderWishlistInterest('work',wid,'wish-interest-work');loadReviews('work',wid);renderWorkHub(wid,roles,shows);talkAfter('work',wid);}
   });
 }
 var WH_AMATEUR={'제공':'아마추어 공연 라이선스를 내주고 있어요','협의가능':'아마추어 공연도 협의할 수 있어요','미제공':'아마추어 공연 라이선스는 아직 내주지 않아요','확인불가':''};
