@@ -31,7 +31,7 @@ function wizardFinish(){
 }
 function wizardNext(){
   _wizardStepIdx++;
-  if(_wizardStepIdx>=_wizardSteps.length){wizardShowDone();return;}
+  if(_wizardStepIdx>=_wizardSteps.length){if(_wizardIsCreation){_wizardCompleted=true;wizardFinish();}else wizardShowDone();return;}  // 새 프로젝트는 끝나면 바로 보드로
   renderWizardStep();
 }
 function wizardBack(){
@@ -79,8 +79,7 @@ function buildWizardStepHtml(step){
 }
 function wizardNameStepHtml(){
   return '<div class="wizard-question">프로젝트 이름을 정해주세요</div>'
-    +'<div style="font-size:0.78rem;color:var(--muted);margin-bottom:1rem">작품이나 공연명을 적어주세요. 나중에 언제든 바꿀 수 있어요.</div>'
-    +'<input type="text" class="wizard-search" id="wizard-name-input" placeholder="예: 지킬앤하이드">'
+    +'<input type="text" class="wizard-search" id="wizard-name-input" placeholder="예: 지킬앤하이드" onkeydown="if(event.key===\'Enter\'&&!event.isComposing)wizardSubmitName()">'
     +'<button class="pf-btn pf-active" style="width:100%" onclick="wizardSubmitName()">다음</button>';
 }
 async function wizardSubmitName(){
@@ -172,7 +171,7 @@ async function wizardSelect(id){
 }
 async function wizardSkip(){
   var step=_wizardSteps[_wizardStepIdx];
-  if(step==='date'||step==='license'||step==='members'){wizardNext();return;}
+  if(_wizardIsCreation||step==='date'||step==='license'||step==='members'){wizardNext();return;}
   try{await sbOk(sbClient.from('project_positions').insert({project_id:_wizardPid,position_type:'other',position_label:WIZARD_STEP_LABEL[step]+' 미정',status:'open'}));}catch(e){}
   wizardNext();
 }
