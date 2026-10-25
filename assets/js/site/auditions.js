@@ -12,7 +12,7 @@ var _aud={slots:[],cands:[],scores:[],pending:0,f:'',open:{}};
 /* 상자 화면: 배역 자리 | 오디션 */
 function renderActorBox(el){
   var sub=window._actorSub||'roles';
-  el.innerHTML='<div class="pjb-tabs aud-switch" role="tablist">'
+  el.innerHTML='<div class="pchips aud-switch" role="tablist">'
     +[['roles','배역 자리'],['aud','오디션']].map(function(t){return '<button type="button" role="tab" class="'+(sub===t[0]?'active':'')+'" onclick="window._actorSub=\''+t[0]+'\';renderActorBox($(\'project-tab-content\'))">'+t[1]+'</button>';}).join('')
     +'</div><div id="actor-sub"></div>';
   var body=$('actor-sub'),pid=window._projectCtx.pid;
@@ -190,9 +190,25 @@ async function audDecide(candId,status){
     await sbOk(sbClient.from('audition_candidates').update({status:status}).eq('id',candId));
     if(c.join_request_id&&status==='passed')await sbOk(sbClient.rpc('approve_join_request',{request_id:c.join_request_id}));
     if(c.join_request_id&&status==='failed')await sbOk(sbClient.rpc('reject_join_request',{request_id:c.join_request_id}));
+    if(!c.join_request_id&&c.position_id&&(status==='passed'||c.status==='passed'))await audFillByName(c,status==='passed');
   }catch(e){oriAlert('정하지 못했어요: '+e.message);return;}
   c.status=status;audDraw();
-  if(status==='passed')oriAlert(c.name+'님 합격'+(c.join_request_id?' · 팀에 들어왔어요':''));
+  if(status==='passed')oriAlert(c.name+'님 합격'+(c.join_request_id?' · 팀에 들어왔어요':c.position_id?' · '+audPosLabel(c.position_id)+' 자리 확정':''));
+}
+/* 직접 추가한 지원자(오리 계정 없음): 합격하면 희망 배역 자리를 이름으로 채운다. 이미 누가 있으면 같은 배역 자리를 하나 더. 합격을 거두면 비운다 */
+async function audFillByName(c,on){
+  var ps=window._projectCtx.positions||[],p=ps.find(function(x){return x.id===c.position_id;});if(!p)return;
+  var same=ps.filter(function(x){return x.position_type===p.position_type&&(x.role_id||null)===(p.role_id||null)&&(x.position_label||'')===(p.position_label||'');});
+  if(!on){
+    var mine=same.find(function(x){return !x.assigned_member_id&&x.assigned_name===c.name;});
+    if(mine){await sbOk(sbClient.from('project_positions').update({status:'closed',assigned_name:null}).eq('id',mine.id));mine.status='closed';mine.assigned_name=null;}
+    return;
+  }
+  if(same.some(function(x){return !x.assigned_member_id&&x.assigned_name===c.name;}))return;
+  var empty=same.find(function(x){return !dashFilled(x);});
+  if(empty){await sbOk(sbClient.from('project_positions').update({status:'filled',assigned_name:c.name}).eq('id',empty.id));empty.status='filled';empty.assigned_name=c.name;return;}
+  var r=await sbClient.from('project_positions').insert({project_id:p.project_id,position_type:p.position_type,role_id:p.role_id,staff_role_id:p.staff_role_id,position_label:p.position_label,status:'filled',assigned_name:c.name}).select().single();
+  if(r.error)throw r.error;ps.push(r.data);
 }
 async function audCandDel(candId){
   if(!await oriConfirm('이 지원자와 평가를 지울까요?',{ok:'지우기',cancel:'그대로 두기'}))return;

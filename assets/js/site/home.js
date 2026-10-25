@@ -107,27 +107,61 @@ async function loadNxWorks(){
   nxArrows();
 }
 
-/* ══ 알림 (위 막대 종): 답을 기다리는 제안 + 최근 2주 안에 답이 온 내 지원 ══ */
-var _bell={offers:[],decided:[]};
+/* ══ 알림 (위 막대 종): 답을 기다리는 제안 + 최근 2주 안에 답이 온 내 지원
+   + 프로젝트 소식 (10/25): 나에게 맡겨진 할 일 · 내 오디션 시간 · 새 공지. 새 것만 숫자로 세고, 종을 열면 본 것으로 (이 기기 기준) ══ */
+var _bell={offers:[],decided:[],updates:[]};
+function bellSeen(){try{return JSON.parse(localStorage.getItem('ori_bell_seen')||'[]');}catch(e){return [];}}
+function bellMarkSeen(){try{localStorage.setItem('ori_bell_seen',JSON.stringify(_bell.updates.map(function(u){return u.key;}).slice(-300)));}catch(e){}}
+async function bellProjectUpdates(){
+  var me=CURRENT_USER.id,q=function(p){return p.then(function(r){return r.error?[]:(r.data||[]);},function(){return [];});};
+  var mem=await q(sbClient.from('project_members').select('id,project_id').eq('user_id',me));
+  if(!mem.length)return [];
+  var pids=mem.map(function(x){return x.project_id;}),mids=mem.map(function(x){return x.id;}),since=new Date(Date.now()-14*864e5).toISOString();
+  var title=function(pid){var p=(window.MY_PROJECTS_CACHE||[]).find(function(x){return x.id===pid;});return p&&p.title||'프로젝트';};
+  var r=await Promise.all([
+    q(sbClient.from('project_tasks').select('id,project_id,title,due_date,created_by').in('assignee_member_id',mids).eq('done',false)),
+    q(sbClient.from('project_notices').select('id,project_id,body,created_at,created_by').in('project_id',pids).gte('created_at',since).order('created_at',{ascending:false})),
+    q(sbClient.rpc('my_auditions'))
+  ]);
+  var out=[];
+  r[2].filter(function(a){return a.starts_at&&new Date(a.starts_at)>new Date()&&a.status!=='failed';}).forEach(function(a){
+    var t=new Date(a.starts_at);
+    out.push({key:'aud:'+a.project_id+':'+a.starts_at,t:'오디션 '+evDate(t)+' '+evTime(t)+(a.location?' · '+a.location:''),s:a.project_title||title(a.project_id),go:'goMyApply()'});
+  });
+  r[0].filter(function(x){return x.created_by!==me;}).forEach(function(x){
+    out.push({key:'task:'+x.id,t:'할 일 · '+x.title,s:title(x.project_id)+(x.due_date?' · '+x.due_date.slice(5).replace('-','.')+'까지':''),go:'goProject(\''+x.project_id+'/tasks\')'});
+  });
+  r[1].filter(function(x){return x.created_by!==me;}).slice(0,10).forEach(function(x){
+    out.push({key:'notice:'+x.id,t:'공지 · '+String(x.body||'').replace(/\s+/g,' ').slice(0,60),s:title(x.project_id),go:'goProject(\''+x.project_id+'/notices\')'});
+  });
+  return out;
+}
 async function loadBell(){
   if(!CURRENT_USER)return;
   window._bellLoaded=true;
-  var res=await Promise.all([sbClient.rpc('my_offers'),sbClient.rpc('my_join_requests')]);
+  var res=await Promise.all([sbClient.rpc('my_offers'),sbClient.rpc('my_join_requests'),bellProjectUpdates().catch(function(){return [];})]);
   _bell.offers=res[0].error?[]:(res[0].data||[]);
   var since=Date.now()-14*86400000;
   _bell.decided=(res[1].error?[]:(res[1].data||[])).filter(function(r){return r.status!=='pending'&&r.reviewed_at&&new Date(r.reviewed_at).getTime()>since;});
-  var n=_bell.offers.length;
-  [['bell-n',n+_bell.decided.length],['rail-offers-n',n]].forEach(function(x){var b=$(x[0]);if(!b)return;b.hidden=!x[1];b.textContent=x[1]>9?'9+':x[1];});
+  _bell.updates=res[2];
+  bellBadges();
+}
+function bellBadges(){
+  var n=_bell.offers.length,seen=bellSeen(),fresh=_bell.updates.filter(function(u){return seen.indexOf(u.key)<0;}).length;
+  [['bell-n',n+_bell.decided.length+fresh],['rail-offers-n',n],['mobt-more-n',n],['mobm-offers-n',n]].forEach(function(x){var b=$(x[0]);if(!b)return;b.hidden=!x[1];b.textContent=x[1]>9?'9+':x[1];});
 }
 function toggleBell(e){
   e.stopPropagation();
   var dd=$('bell-dd');if(!dd)return;
   if(dd.classList.contains('open')){dd.classList.remove('open');return;}
   if(!CURRENT_USER){loginWithGoogle();return;}
+  var seen=bellSeen();
   var items=_bell.offers.map(function(o){return '<button type="button" class="bell-item" onclick="closeBell();goOffers()"><b>'+escHtml((o.inviter_nickname?o.inviter_nickname+'님이 ':'')+(o.position_label||'함께')+' 자리로 제안했어요')+'</b><span>'+escHtml(o.project_title||'')+' · 답하기</span></button>';})
-    .concat(_bell.decided.map(function(r){return '<button type="button" class="bell-item" onclick="closeBell();goMyPageTab(\'apply\')"><b>'+escHtml((r.project_title||'프로젝트')+(r.status==='approved'?'에 합류했어요':' 지원 결과가 나왔어요'))+'</b><span>'+escHtml(r.position_label||'')+'</span></button>';}));
+    .concat(_bell.decided.map(function(r){return '<button type="button" class="bell-item" onclick="closeBell();goMyPageTab(\'apply\')"><b>'+escHtml((r.project_title||'프로젝트')+(r.status==='approved'?'에 합류했어요':' 지원 결과가 나왔어요'))+'</b><span>'+escHtml(r.position_label||'')+'</span></button>';}))
+    .concat(_bell.updates.map(function(u){return '<button type="button" class="bell-item'+(seen.indexOf(u.key)<0?' new':'')+'" onclick="closeBell();'+u.go+'"><b>'+escHtml(u.t)+'</b><span>'+escHtml(u.s)+'</span></button>';}));
   dd.innerHTML='<div class="bell-h">알림</div>'+(items.length?items.join(''):'<div class="bell-empty">새 알림이 없어요</div>');
   dd.classList.add('open');
+  bellMarkSeen();bellBadges();
 }
 function closeBell(){var dd=$('bell-dd');if(dd)dd.classList.remove('open');}
 document.addEventListener('click',function(e){var w=e.target.closest&&e.target.closest('.bell-wrap');if(!w)closeBell();});

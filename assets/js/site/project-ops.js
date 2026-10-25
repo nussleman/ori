@@ -29,25 +29,28 @@ async function opsLoadLinks(pid,force){
   (r.data||[]).forEach(function(l){(_ops.links[l.box_key]=_ops.links[l.box_key]||[]).push(l);});
   return _ops.links;
 }
-/* 상자 화면 맨 위 "연결" 줄: 꽂아 둔 도구 + 연결하기 */
+/* 상자 화면 머리 오른쪽 "연결": 꽂아 둔 도구 + [+ 연결] (누르면 아래에 칸, 이 상자에 맞는 이름 추천) */
 function opsLinksBarHtml(box){return '<div class="ops-links" id="ops-links"></div>';}
 async function renderOpsLinks(box){
   var el=$('ops-links');if(!el)return;
   var ctx=window._projectCtx,links=(await opsLoadLinks(ctx.pid))[box]||[];
   el=$('ops-links');if(!el)return;
-  var hints=(OPS_LINK_HINTS[box]||[]).filter(function(h){return !links.some(function(l){return (l.label||'')===h;});});
-  el.innerHTML=links.map(function(l){
+  el.innerHTML=(box==='files'?[]:links).map(function(l){  // 자료함은 본문 칸이 곧 연결 목록
     var k=opsLinkKind(l.url);
-    return '<span class="ops-link k-'+k[1]+'"><a href="'+escHtml(l.url)+'" target="_blank" rel="noopener noreferrer">'+ico('link')+'<b>'+escHtml(l.label||k[2])+'</b><small>'+escHtml(k[2])+'</small></a>'
+    return '<span class="ops-link k-'+k[1]+'"><a href="'+escHtml(l.url)+'" target="_blank" rel="noopener noreferrer" title="'+escHtml(k[2])+'">'+ico('link')+'<b>'+escHtml(l.label||k[2])+'</b></a>'
       +'<button type="button" class="ops-link-x" title="연결 끊기" onclick="opsLinkDelete(\''+l.id+'\',\''+box+'\')">✕</button></span>';
   }).join('')
-  +hints.slice(0,3).map(function(h){return '<button type="button" class="ops-link-add hint" onclick="opsLinkForm(\''+box+'\',\''+h+'\')">+ '+escHtml(h)+'</button>';}).join('')
-  +'<button type="button" class="ops-link-add" onclick="opsLinkForm(\''+box+'\',\'\')">+ 연결</button><div id="ops-link-form"></div>';
+  +'<button type="button" class="ops-link-add" onclick="opsLinkForm(\''+box+'\',\'\')">+ 연결</button>';
 }
 function opsLinkForm(box,label){
   var f=$('ops-link-form');if(!f)return;
-  f.innerHTML='<div class="ops-link-f"><input type="text" id="ops-l-label" maxlength="80" placeholder="이름 (예: 조명 큐 시트)" value="'+escHtml(label)+'">'
-    +'<input type="url" id="ops-l-url" placeholder="https:// 구글 시트·드라이브·노션·큐랩 파일 공유 링크">'
+  if(f.innerHTML&&!label){f.innerHTML='';return;}
+  var have=((_ops.links||{})[box]||[]).map(function(l){return l.label||'';});
+  var hints=(OPS_LINK_HINTS[box]||[]).filter(function(h){return have.indexOf(h)<0;});
+  f.innerHTML='<div class="ops-link-f">'
+    +(hints.length?'<div class="pchips ops-hints">'+hints.map(function(h){return '<button type="button" class="'+(h===label?'active':'')+'" onclick="opsLinkForm(\''+box+'\',\''+h+'\')">'+escHtml(h)+'</button>';}).join('')+'</div>':'')
+    +'<input type="text" id="ops-l-label" maxlength="80" placeholder="이름" value="'+escHtml(label)+'">'
+    +'<input type="url" id="ops-l-url" placeholder="https:// 공유 링크 (시트·드라이브·노션·큐랩…)">'
     +'<button type="button" class="pf-btn pf-active" onclick="opsLinkSave(\''+box+'\')">연결</button><button type="button" class="pf-btn" onclick="$(\'ops-link-form\').innerHTML=\'\'">닫기</button></div>';
   ($(label?'ops-l-url':'ops-l-label')||{}).focus&&$(label?'ops-l-url':'ops-l-label').focus();
 }
@@ -58,12 +61,27 @@ async function opsLinkSave(box){
   var k=opsLinkKind(url);
   try{await sbOk(sbClient.from('project_links').insert({project_id:window._projectCtx.pid,box_key:box,kind:k[1],label:label||k[2],url:url}));}
   catch(e){oriAlert('연결하지 못했어요: '+e.message);return;}
-  await opsLoadLinks(window._projectCtx.pid,true);renderOpsLinks(box);
+  await opsLoadLinks(window._projectCtx.pid,true);$('ops-link-form').innerHTML='';renderOpsLinks(box);if(box==='files')renderProjectFiles($('project-tab-content'));
 }
 async function opsLinkDelete(id,box){
   if(!await oriConfirm('이 연결을 끊을까요? 원래 문서는 그대로 남아요.',{ok:'연결 끊기',cancel:'그대로 두기'}))return;
   try{await sbOk(sbClient.from('project_links').delete().eq('id',id));}catch(e){oriAlert('끊지 못했어요: '+e.message);return;}
-  await opsLoadLinks(window._projectCtx.pid,true);renderOpsLinks(box);
+  await opsLoadLinks(window._projectCtx.pid,true);renderOpsLinks(box);if(box==='files')renderProjectFiles($('project-tab-content'));
+}
+
+/* ══ 자료함: 자주 찾는 자료를 칸으로. 칸을 누르면 열리고, 빈 칸은 바로 연결 ══ */
+var OPS_FILE_SLOTS=[['대본','book'],['악보·MR','music'],['무대 도면 폴더','stage'],['포스터 원본','megaphone'],['계약서','note'],['사진·영상','camera']];
+async function renderProjectFiles(el){
+  if(!el)return;
+  var links=((await opsLoadLinks(window._projectCtx.pid))||{}).files||[];
+  var used={};
+  var tiles=OPS_FILE_SLOTS.map(function(sl){
+    var l=links.find(function(x){return (x.label||'')===sl[0];});if(l)used[l.id]=1;
+    return l?'<a class="fl-tile on" href="'+escHtml(l.url)+'" target="_blank" rel="noopener noreferrer">'+ico(sl[1])+'<b>'+escHtml(sl[0])+'</b><small>'+escHtml(opsLinkKind(l.url)[2])+'</small></a>'
+      :'<button type="button" class="fl-tile" onclick="opsLinkForm(\'files\',\''+sl[0]+'\')">'+ico(sl[1])+'<b>'+escHtml(sl[0])+'</b><small>+ 연결</small></button>';
+  });
+  links.filter(function(l){return !used[l.id];}).forEach(function(l){var k=opsLinkKind(l.url);tiles.push('<a class="fl-tile on" href="'+escHtml(l.url)+'" target="_blank" rel="noopener noreferrer">'+ico('link')+'<b>'+escHtml(l.label||k[2])+'</b><small>'+escHtml(k[2])+'</small></a>');});
+  el.innerHTML='<div class="fl-grid">'+tiles.join('')+'</div>';
 }
 
 /* ══ 할 일 ══ */
@@ -97,10 +115,11 @@ function opsTasksDraw(){
     return '<div class="task'+(t.done?' done':'')+(t.due_date&&!t.done&&dashDaysUntil(t.due_date)<0?' late':'')+'">'
       +'<button type="button" class="task-check" role="checkbox" aria-checked="'+t.done+'" onclick="opsTaskToggle(\''+t.id+'\')">'+(t.done?'✓':'')+'</button>'
       +'<span class="task-t">'+escHtml(t.title)+'</span>'
+      +'<span class="task-meta">'
       +(t.box_key&&!_tasks.box?'<span class="task-box">'+escHtml(boxTitle(t.box_key))+'</span>':'')
       +'<select class="task-who" onchange="opsTaskSet(\''+t.id+'\',\'assignee_member_id\',this.value||null)"><option value="">담당 없음</option>'+members.map(function(m){return '<option value="'+m.id+'"'+(m.id===t.assignee_member_id?' selected':'')+'>'+escHtml(m.name)+'</option>';}).join('')+'</select>'
       +'<input type="date" class="task-due" value="'+(t.due_date||'')+'" onchange="opsTaskSet(\''+t.id+'\',\'due_date\',this.value||null)" title="'+escHtml(opsDue(t.due_date))+'">'
-      +'<span class="task-when">'+escHtml(t.done?'':opsDue(t.due_date))+'</span>'
+      +'<span class="task-when">'+escHtml(t.done?'':opsDue(t.due_date))+'</span></span>'
       +'<button type="button" class="task-x" title="지우기" onclick="opsTaskDelete(\''+t.id+'\')">✕</button></div>';
   };
   var group=function(title,list,cls){return list.length?'<section class="task-g '+(cls||'')+'"><h3>'+title+'<span>'+list.length+'</span></h3>'+list.map(row).join('')+'</section>':'';};
@@ -256,11 +275,8 @@ async function opsRecSave(){
   oriAlert(pr.published_show_id?'저장했고 아카이브 공연에도 반영했어요':'저장했어요');
 }
 
-/* ══ 정산: 예산 화면의 실제 금액 쪽만 (예산과 같은 데이터, 다른 질문) ══ */
-function renderProjectSettle(el){
-  renderProjectBudget(el);
-  el.classList.add('bg-settle-mode');
-}
+/* ══ 정산: 예산과 같은 데이터, 다른 질문 (project-budget.js bgSettleView) ══ */
+function renderProjectSettle(el){renderProjectBudget(el,'settle');}
 
 /* ══ 제작진 화면 (10/24): 담당 영역마다 타일 (계기판과 같은 판정·마감). 누르면 아래에 담당자·추천·모집 ══ */
 var CREW_AREAS=['director','music','choreo','lighting','sound','stage','costume','props','makeup','photo','promo'];

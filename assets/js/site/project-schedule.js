@@ -62,6 +62,7 @@ async function loadScheduleList(){
   var ctx=window._projectCtx,el=$('ev-list');if(!el)return;
   try{
     var evs=await fetchProjectEvents(ctx.pid);
+    if(typeof pjSyncDates==='function')pjSyncDates(evs).then(pjDateBandRefresh);  // '공연' 일정이 첫 공연 날짜를 정한다 (project-home.js)
     if(!evs.length){el.innerHTML='<div class="dv-empty">아직 일정이 없어요.'+(ctx.isAdmin?' 위의 "+ 일정 추가"로 연습·공연 일정을 넣어보세요.':' 관리자가 일정을 올리면 여기에 보여요.')+'</div>';return;}
     var now=new Date();
     var upcoming=evs.filter(function(e){return new Date(e.ends_at||e.starts_at)>=now;});

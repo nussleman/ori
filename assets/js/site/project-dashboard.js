@@ -88,7 +88,8 @@ function dashAuto(a,D){
   if(kind==='staff'||kind==='promo'){
     var ps=dashPositionsFor(a,D.positions);
     var filled=ps.filter(dashFilled);
-    if(kind==='promo'&&(pr.promo_links||[]).length)return{s:'done',t:'홍보 링크 '+pr.promo_links.length+'개'};
+    var pl=(D.links&&D.links.promo)||[];
+    if(kind==='promo'&&pl.length)return{s:'done',t:'홍보 링크 '+pl.length+'개'};
     if(filled.length)return{s:'done',t:filled.map(function(p){return dashMemberName(p,D);}).filter(Boolean).join(', ')||'확정'};
     if(ps.length)return{s:'doing',t:'자리 있음 · '+(pr.is_recruiting?'모집 중':'미확정')};
     if(kind==='promo'&&pr.promo_note)return{s:'doing',t:'계획 메모 있음'};
@@ -98,7 +99,7 @@ function dashAuto(a,D){
 }
 function dashMemberName(p,D){
   var m=(D.members||[]).find(function(x){return x.member_id===p.assigned_member_id;});
-  return m?((m.person_id&&nm(m.person_id))||m.nickname||''):'';
+  return m?((m.person_id&&nm(m.person_id))||m.nickname||''):(p.assigned_name||'');
 }
 function dashWon(n){n=Math.round(n);return n>=10000?(Math.round(n/1000)/10)+'만원':n.toLocaleString()+'원';}
 
@@ -130,14 +131,14 @@ async function loadProdDashData(){
     q(sbClient.from('project_events').select('kind,starts_at').eq('project_id',pid)),
     q(sbClient.rpc('list_project_members_detail',{p_project_id:pid})),
     ctx.isAdmin||ctx.pr.budget_visible_to_members?q(sbClient.from('project_budget_items').select('item_type,category,planned_amount,actual_amount').eq('project_id',pid)):Promise.resolve(null),
-    q(sbClient.from('project_props').select('status').eq('project_id',pid))
+    q(sbClient.from('project_props').select('status').eq('project_id',pid)),
+    opsLoadLinks(pid,true).catch(function(){return {};})
   ]);
   var areas={};res[1].forEach(function(a){areas[a.area_key]=a;});
-  // 첫 공연 날짜: 전광판(D-day)과 같은 기준 — 앞으로 있을 '공연' 일정이 있으면 그 날, 없으면 프로젝트 목표일
-  var now=new Date(),perf=res[3].filter(function(e){return e.kind==='performance'&&e.starts_at&&new Date(e.starts_at)>=now;}).sort(function(a,b){return a.starts_at<b.starts_at?-1:1;})[0];
-  var start=ctx.pr.target_start_date;
-  if(perf){var d=new Date(perf.starts_at);start=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-  return{pr:ctx.pr,start:start,positions:res[0],areas:areas,venueCands:res[2],events:res[3],members:res[4],budget:res[5],props:res[6]};
+  // 첫 공연 날짜는 한 곳에서: '공연' 일정이 있으면 그 첫날(프로젝트 날짜도 맞춘다), 없으면 프로젝트 날짜 (project-home.js pjSyncDates)
+  pjSyncDates(res[3]);
+  var range=pjPerfRange(res[3]),start=range?range.start:ctx.pr.target_start_date;
+  return{pr:ctx.pr,start:start,positions:res[0],areas:areas,venueCands:res[2],events:res[3],members:res[4],budget:res[5],props:res[6],links:res[7]||{}};
 }
 
 /* ── 그리기 ── */

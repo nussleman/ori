@@ -362,7 +362,9 @@ function setNav(v,projectId){
   document.body.classList.remove('search-open');
   ['home','works','shows','people','troupes','venues','roles'].forEach(function(n){var el=$('chip-'+n);if(el)el.classList.toggle('active',n===v);});
   // 레일·아래 탭: 마이페이지는 열린 탭(지원·저장·기록)으로 가린다
-  var on={home:sec==='archive',match:v==='projects',license:v==='licenses',board:v==='board',offers:v==='offers',apply:v==='apply',saved:v==='saved',make:make};
+  var on={home:sec==='archive',match:v==='projects',license:v==='licenses',board:v==='board',offers:v==='offers',apply:v==='apply',saved:v==='saved',make:make,
+    more:['board','offers','apply','saved'].indexOf(v)>-1};  // 아래 탭(모바일)은 다섯 칸: 받은 제안·내 지원·저장·게시판은 "더보기"
+  if(typeof closeMobMore==='function')closeMobMore();
   Object.keys(on).forEach(function(n){var r=$('rail-'+n);if(r)r.classList.toggle('active',on[n]);var m=$('mobt-'+n);if(m)m.classList.toggle('active',on[n]);});
   window._currentProjectNav=v==='project'?projectId:null;
   document.querySelectorAll('#make-nav-projects button').forEach(function(b){b.classList.toggle('active',b.dataset.pid===window._currentProjectNav);});
@@ -519,3 +521,8 @@ function goPrivacy(push){
     +'<p>개인정보 관련 문의는 <a href="mailto:gksxowns@gmail.com">gksxowns@gmail.com</a>으로 연락 주세요.</p>'
     +'</div></div>');
 }
+
+/* 모바일 아래 탭 "더보기": 받은 제안 · 내 지원 · 저장한 것 · 게시판 */
+function toggleMobMore(e){if(e)e.stopPropagation();var m=$('mob-more');if(m)m.hidden=!m.hidden;}
+function closeMobMore(){var m=$('mob-more');if(m)m.hidden=true;}
+document.addEventListener('click',function(e){if(!e.target.closest||!e.target.closest('#mob-more,#mobt-more'))closeMobMore();});

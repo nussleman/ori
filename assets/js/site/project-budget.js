@@ -2,7 +2,8 @@
    흐름: 총 예산 → 분류별 추천 분배 → 항목마다 예상·실제 금액 → 사용 알림 → 잔금·부족금 처리 제안.
    - 추천 분배: budget_shares()가 3개 이상 프로젝트의 기록이 모인 분류를 돌려주면 그 비율(데이터 기반),
      아니면 일반적인 소규모 공연 비율(BUDGET_SHARE_DEFAULT)로. 어느 쪽인지 화면에 밝힌다.
-   - 시트 연동: 연결된 시트 링크(projects.budget_sheet_url) + CSV 내보내기 + 시트에서 복사해 붙여넣기.
+   - 시트 연동: 시트 링크는 화면 위 "연결"(project_links) + CSV 내보내기 + 시트에서 복사해 붙여넣기.
+   - 정산 상자는 같은 데이터로 결과·안 적은 실제 금액만 (bgSettleView).
    - 쓰기는 프로젝트 관리자만(RLS). 예산 함께 보기를 켜면 팀원은 읽기만. */
 var BUDGET_PRESETS={
   expense:{
@@ -31,8 +32,8 @@ function bgWon(n){return Math.round(n||0).toLocaleString()+'원';}
 function bgRound(n){return Math.round(n/10000)*10000;}
 function bgCanEdit(){return !!(window._projectCtx&&window._projectCtx.isAdmin);}
 
-function renderProjectBudget(el){
-  var ctx=window._projectCtx;_bg.pid=ctx.pid;
+function renderProjectBudget(el,mode){
+  var ctx=window._projectCtx;_bg.pid=ctx.pid;_bg.mode=mode||'';
   el.innerHTML='<div class="bg" id="bg"><div class="hf-loading">불러오는 중…</div></div>';
   loadProjectBudget();
 }
@@ -137,6 +138,7 @@ function bgDraw(){
   var ae=document.activeElement,keep=null;
   if(ae&&ae.closest&&ae.closest('.bg-table tr[data-id]')){var tr=ae.closest('tr');keep=[tr.dataset.id,[].indexOf.call(tr.querySelectorAll('input,button'),ae)];}
   var ctx=window._projectCtx,pr=ctx.pr,ed=bgCanEdit(),c=bgCalc(),recs=bgRecs(c);
+  if(_bg.mode==='settle'){el.innerHTML=bgSettleView(c,ed);return;}
   var h='';
   // 머리: 총 예산 + 시트
   h+='<div class="bg-head"><div class="bg-total"><span class="bg-lbl">총 예산</span>'
@@ -152,14 +154,13 @@ function bgDraw(){
     +bgKpi('실제 수입',c.ai,'')+'</div>';
   if(base)h+='<div class="bg-usage"><div class="bg-usage-bar"><i style="width:'+usePct+'%" class="'+(c.ae>base?'over':usePct>=80?'warn':'')+'"></i></div>'
     +'<div class="bg-usage-t"><span>'+(c.total?'총 예산':'예상 지출')+'의 <b>'+Math.round(c.ae/base*100)+'%</b> 사용</span><span>'+(c.ae<=base?'남은 돈 <b>'+bgWon(base-c.ae)+'</b>':'<b class="neg">'+bgWon(c.ae-base)+' 초과</b>')+'</span></div></div>';
-  else if(ed)h+='<p class="bg-hint">총 예산을 적으면 분류별로 얼마씩 쓰면 좋을지 추천하고, 쓰는 만큼 알려드려요.</p>';
   // 확인할 것
   var al=bgAlerts(c);
   if(al.length)h+='<section class="dv-sec">'+dvSection('확인할 것',al.length)+'<div class="bg-alerts">'+al.map(function(a){return '<div class="bg-alert '+a[0]+'"><span class="dash-dot '+a[0]+'"></span>'+escHtml(a[1])+'</div>';}).join('')+'</div></section>';
   // 잔금·부족금
   var st=bgSettle(c);
   if(st)h+='<section class="dv-sec">'+dvSection(st.kind==='short'?'부족금 메우기':st.kind==='left'?'남는 돈 쓰기':'정산')
-    +'<div class="bg-settle '+st.kind+'"><div class="bg-settle-t">'+escHtml(st.title)+'</div><div class="bg-settle-s">수입 '+bgWon(c.fi)+' − 지출 '+bgWon(c.fe)+' <small>(실제 금액이 있으면 실제, 없으면 예상으로 계산)</small></div>'
+    +'<div class="bg-settle '+st.kind+'"><div class="bg-settle-t">'+escHtml(st.title)+'</div><div class="bg-settle-s">수입 '+bgWon(c.fi)+' − 지출 '+bgWon(c.fe)+'</div>'
     +(st.tips.length?'<ol class="bg-tips">'+st.tips.map(function(t){return '<li><b>'+escHtml(t[0])+'</b><span>'+escHtml(t[1])+'</span></li>';}).join('')+'</ol>':'')+'</div></section>';
   // 분류별 · 추천 분배
   var cats=Object.keys(Object.assign({},recs||{},c.cats));
@@ -168,8 +169,7 @@ function bgDraw(){
   if(cats.length){
     var maxV=Math.max.apply(null,cats.map(function(k){var g=c.cats[k]||{};return Math.max(g.p||0,g.a||0,recs&&recs[k]||0);}).concat([1]));
     h+='<section class="dv-sec">'+dvSection('분류별')
-      +(recs?'<p class="bg-hint">추천은 총 예산 '+bgWon(c.total)+'을 <b>'+escHtml(_bg.shareSrc)+'</b>로 나눈 금액이에요.</p>':'')
-      +'<div class="bg-legend"><span><i class="p"></i>예상</span><span><i class="a"></i>실제</span>'+(recs?'<span><i class="r"></i>추천</span>':'')+'</div>'
+      +'<div class="bg-legend"><span><i class="p"></i>예상</span><span><i class="a"></i>실제</span>'+(recs?'<span title="'+escHtml(_bg.shareSrc)+'"><i class="r"></i>추천</span>':'')+'</div>'
       +'<div class="bg-cats"><div class="bg-cat bg-cat-h"><span>분류</span><span></span><span>예상</span><span>실제</span>'+(recs?'<span>추천</span>':'')+'</div>'
       +cats.map(function(k){
         var g=c.cats[k]||{p:0,a:0,hasA:false},r=recs&&recs[k];
@@ -200,7 +200,7 @@ function bgTable(type){
   var ro=ed?'':' readonly';
   var h='<datalist id="bg-cat-'+type+'">'+cats.map(function(c){return '<option value="'+escHtml(c)+'">';}).join('')+'</datalist>'
     +'<datalist id="bg-item-'+type+'">'+items.map(function(c){return '<option value="'+escHtml(c)+'">';}).join('')+'</datalist>';
-  if(!rows.length)h+='<div class="bg-empty">'+(ed?'아직 없어요. 아래 "+ '+(type==='income'?'수입':'지출')+' 항목"으로 첫 줄을 적어보세요.':'아직 없어요. 관리자가 적으면 여기에 보여요.')+'</div>';
+  if(!rows.length)h+='<div class="bg-empty">아직 없어요</div>';
   else h+='<div class="bg-table-wrap"><table class="bg-table"><thead><tr><th>분류</th><th>항목</th><th>내용</th><th class="num">예상</th><th class="num">실제</th>'+(ed?'<th></th>':'')+'</tr></thead><tbody>'
     +rows.map(function(b){
       var p=bgNum(b.planned_amount),a=bgNum(b.actual_amount);
@@ -280,23 +280,9 @@ async function bgApplyRecs(){
 
 /* ── 시트 연동: 링크 · CSV · 붙여넣기 ── */
 function sheetBarHtml(field,prefix){
-  var pr=window._projectCtx.pr,url=pr[field],ed=window._projectCtx.isAdmin;
-  var kind=!url?'':/docs\.google\.com\/spreadsheets/.test(url)?'Google 시트':/sharepoint|onedrive|office/.test(url)?'Excel 온라인':/notion/.test(url)?'Notion':'연결된 시트';
+  // 시트 링크는 화면 위 "연결"(project_links) 한 곳에서 꽂는다 — 여기엔 내보내기만
   return '<div class="sheet-bar">'
-    +(url?'<a class="sheet-link" href="'+escHtml(url)+'" target="_blank" rel="noopener">📄 '+kind+' 열기 ↗</a>':'')
-    +(ed?'<button type="button" class="sheet-btn" onclick="setSheetLink(\''+field+'\')">'+(url?'링크 바꾸기':''+ico('link')+' 시트 연결')+'</button>':'')
     +'<button type="button" class="sheet-btn" onclick="'+(prefix==='bg'?'bgExportCsv()':'propsExportMenu()')+'">CSV 내보내기</button></div>';
-}
-async function setSheetLink(field){
-  var pr=window._projectCtx.pr;
-  var v=await oriPrompt('함께 쓰는 시트 주소를 붙여넣어 주세요.\n(구글 시트·엑셀 온라인 등 · 비우면 연결을 끊어요)',pr[field]||'');
-  if(v===null)return;v=v.trim();
-  if(v&&!/^https?:\/\//.test(v)){oriAlert('https:// 로 시작하는 주소를 넣어 주세요.');return;}
-  var patch={};patch[field]=v||null;
-  var r=await sbClient.from('projects').update(patch).eq('id',pr.id||window._projectCtx.pid);
-  if(r.error){oriAlert('저장하지 못했어요: '+r.error.message);return;}
-  pr[field]=v||null;
-  renderProjectTabContent();
 }
 function downloadCsv(name,rows){
   var csv='﻿'+rows.map(function(r){return r.map(function(v){v=v==null?'':String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}).join(',');}).join('\r\n');
@@ -340,4 +326,22 @@ async function bgImportPaste(){
   if(r.error){oriAlert('넣지 못했어요: '+r.error.message);return;}
   $('bg-paste').classList.remove('open');
   loadProjectBudget();
+}
+
+/* ── 정산 화면: 같은 예산 데이터에 다른 질문 — "결국 얼마 남았나/모자라나, 아직 안 적은 실제 금액은?" ── */
+function bgSettleView(c,ed){
+  var st=bgSettle(c),missing=_bg.rows.filter(function(b){return bgNum(b.actual_amount)==null&&(bgNum(b.planned_amount)||0)>0;});
+  var net=c.balance;  // 아래 제안(bgSettle)과 같은 기준: 실제 금액이 있으면 실제, 없으면 예상
+  var h='<div class="stl-head"><div class="stl-net '+(net<0?'neg':net>0?'pos':'')+'"><span>'+(missing.length?'예상 정산':'정산 결과')+'</span><b>'+(net<0?'−':net>0?'+':'')+bgWon(Math.abs(net))+'</b></div>'
+    +'<div class="bg-kpis stl-kpis">'+bgKpi('실제 지출',c.ae,c.total&&c.ae>c.total?'over':'')+bgKpi('실제 수입',c.ai,'')+bgKpi('총 예산',c.total||0,'')+'</div></div>';
+  if(missing.length)h+='<section class="dv-sec">'+dvSection('실제 금액 적기',missing.length)+'<div class="stl-miss">'+missing.map(function(b){
+    return '<div class="stl-row"><span class="stl-k">'+(b.item_type==='income'?'수입':'지출')+'</span><span class="stl-n">'+escHtml([b.category,b.item_name].filter(Boolean).join(' · '))+'</span><span class="stl-p">예상 '+bgWon(b.planned_amount)+'</span>'
+      +(ed?'<input inputmode="numeric" placeholder="실제" onchange="bgSaveAmount(\''+b.id+'\',\'actual_amount\',this)">':'')+'</div>';
+  }).join('')+'</div></section>';
+  if(st&&st.tips.length)h+='<section class="dv-sec">'+dvSection(st.kind==='short'?'부족금 메우기':st.kind==='left'?'남는 돈 쓰기':'정산')
+    +'<div class="bg-settle '+st.kind+'"><div class="bg-settle-t">'+escHtml(st.title)+'</div>'
+    +(st.tips.length?'<ol class="bg-tips">'+st.tips.map(function(t){return '<li><b>'+escHtml(t[0])+'</b><span>'+escHtml(t[1])+'</span></li>';}).join('')+'</ol>':'')+'</div></section>';
+  if(!_bg.rows.length)h+='<div class="dv-empty"><button type="button" class="pf-btn pf-active" onclick="openProjectBox(\'budget\')">예산부터 적기</button></div>';
+  else h+='<div class="bg-actions"><button type="button" class="pf-btn" onclick="openProjectBox(\'budget\')">예산 전체 보기</button><button type="button" class="pf-btn" onclick="bgExportCsv()">CSV 내보내기</button></div>';
+  return h;
 }

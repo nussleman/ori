@@ -15,7 +15,7 @@ var PJB_ST_ICON={
   off:'<path d="M8.5 12h7"/>'
 };
 function pjbOrb(st){return '<span class="pjb-orb" title="'+PJB_ST_LABEL[st]+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+PJB_ST_ICON[st]+'</svg><span class="sr-only">'+PJB_ST_LABEL[st]+'</span></span>';}
-var _pjb={data:null};
+var _pjb={data:null,dealt:{}};
 
 function projectStageIndex(pr){
   if(pr.status==='completed'||pr.status==='cancelled')return 4;
@@ -27,13 +27,30 @@ function projectStageIndex(pr){
 function pjbFromLight(l){return {green:'done',yellow:'doing',red:'alert',gray:'todo',off:'off'}[l]||'todo';}
 function pjbLight(key,D){var a=dashArea(key);return a?dashLight(a,D):{light:'gray',text:''};}
 function pjbMd(d){return d?String(d).slice(5,10).replace('-','.'):'';}
+/* 첫 공연 날짜는 한 곳에서: '공연' 일정이 있으면 그 첫날~마지막 날이 프로젝트 날짜가 된다 (기회·내 프로젝트·예산·계기판이 같은 날을 본다) */
+function pjYmd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function pjPerfRange(evs){
+  var d=(evs||[]).filter(function(e){return e.kind==='performance'&&e.starts_at;}).map(function(e){return pjYmd(new Date(e.starts_at));}).sort();
+  return d.length?{start:d[0],end:d[d.length-1]}:null;
+}
+async function pjSyncDates(evs){
+  var ctx=window._projectCtx,r=pjPerfRange(evs);if(!ctx)return false;
+  ctx.perfRange=r;
+  if(!r||!ctx.isAdmin)return false;
+  var pr=ctx.pr,end=r.end!==r.start?r.end:null;
+  if(pr.target_start_date===r.start&&(pr.target_end_date||null)===end)return false;
+  var u={target_start_date:r.start,target_end_date:end};
+  var x=await sbClient.from('projects').update(u).eq('id',ctx.pid);
+  if(x.error)return false;
+  Object.assign(pr,u);loadMyProjectsCache();return true;
+}
 
 /* ── 상자 정의: 순서 = 보드에 놓이는 순서 ──
    view: 상자 안 화면(없으면 go만). go: 상자를 눌렀을 때 화면 대신 할 일(정하기 창 등). show: 보일 사람 */
 /* ── 상자 정의 (10/24 개정): 제작 단계(프리·프로덕션·포스트)로 나누고, 사람마다 골라 쓰고 순서를 바꾼다 ──
    phase: pre(프리 프로덕션) · prod(프로덕션) · post(포스트 프로덕션). off:true = 처음엔 숨김(상자 고르기에서 켬).
    모든 상자는 누르면 바로 그 화면(view)으로 간다. 예전 키(date·troupe·requests)는 합친 상자로 잇는다(PJB_ALIAS). */
-var PJB_PHASES=[['','전체'],['common','공통'],['pre','프리 프로덕션'],['prod','프로덕션'],['post','포스트 프로덕션']];
+var PJB_PHASES=[['','전체'],['common','공통'],['pre','프리 프로덕션','프리'],['prod','프로덕션'],['post','포스트 프로덕션','포스트']];  // 셋째 = 좁은 화면 이름
 /* 예전 키는 지금 상자로 잇는다 (주소·계기판 버튼 호환) */
 var PJB_ALIAS={date:'schedule',troupe:'team',requests:'team',props:'cues'};
 function projectBoxes(all){
@@ -51,7 +68,7 @@ function projectBoxes(all){
       var n=Object.keys(seen).length,me=ctx.myPosition&&ctx.myPosition.position_label,rq=D.requests.length;
       return{v:n+'명'+(rq?' · 요청 '+rq:''),d:rq?'참여 요청 '+rq+'건 대기':(me?'내 역할 '+me:''),st:rq?'alert':n>1?'done':'todo'};
     }},
-    {key:'files',phase:'common',title:'자료함',icon:'book',view:function(el){el.innerHTML='';},calc:function(D){
+    {key:'files',phase:'common',title:'자료함',icon:'book',view:function(el){renderProjectFiles(el);},calc:function(D){
       var n=((D.links||{}).files||[]).length;
       return{v:n?'연결 '+n+'개':'비어 있음',d:n?((D.links.files||[]).slice(0,3).map(function(l){return l.label;}).join(' · ')):'대본·악보·도면',st:n?'done':'todo'};
     }},
@@ -109,7 +126,7 @@ function projectBoxes(all){
       return{v:'체크 '+d+' / '+t.length,d:late?'마감 지남 '+late:'',st:late?'alert':d===t.length?'done':'doing'};
     }},
     {key:'promo',phase:'prod',title:'홍보·티켓',icon:'megaphone',view:function(el){renderProjectPromoTab(el);},calc:function(D){
-      var l=pjbLight('promo',D),n=(pr.promo_links||[]).length;
+      var l=pjbLight('promo',D),n=((D.links||{}).promo||[]).length;
       return{v:n?'링크 '+n+'개':(pr.promo_note?'문구 있음':'아직 없음'),d:pr.promo_note?String(pr.promo_note).replace(/\s+/g,' '):'',st:pjbFromLight(l.light)};
     }},
     {key:'settle',phase:'post',title:'정산',icon:'coin',show:budgetOk,view:function(el){renderProjectSettle(el);},calc:function(D){
@@ -168,11 +185,10 @@ async function loadBoardData(){
     q(sbClient.from('project_notices').select('body,pinned,created_at').eq('project_id',pid).order('created_at',{ascending:false})),
     ctx.isAdmin?q(sbClient.rpc('list_project_join_requests',{p_project_id:pid})):Promise.resolve([]),
     q(sbClient.from('project_tasks').select('id,box_key,done,due_date,assignee_member_id').eq('project_id',pid)),
-    opsLoadLinks(pid,true),
     q(sbClient.from('project_retro_items').select('id').eq('project_id',pid)),
     ctx.isAdmin?q(sbClient.from('audition_candidates').select('status').eq('project_id',pid)):Promise.resolve([])
   ]);
-  var D=res[0];D.notices=res[1];D.requests=res[2];D.tasks=res[3];D.links=res[4]||{};D.retro=res[5].length;D.aud=res[6];
+  var D=res[0];D.notices=res[1];D.requests=res[2];D.tasks=res[3];D.retro=res[4].length;D.aud=res[5];
   ctx.positions=D.positions;ctx.memberDetail=D.members;ctx.pendingRequests=D.requests.length;
   return D;
 }
@@ -192,7 +208,7 @@ async function renderProjectBoard(el){
   var ctx=window._projectCtx,pid=ctx.pid;
   await pjbLoadLayout(pid);
   if(window._projectCtx!==ctx||window._projectBox)return;
-  var tab=window._pjbTab||'',all=pjbVisible(pid);
+  var tab=pjbTabFor(ctx),all=pjbVisible(pid);
   var boxes=all.filter(function(b){return !tab||b.phase===tab;});
   var cols=all.length>15?6:all.length>12?5:4,rows=Math.max(1,Math.ceil(boxes.length/cols));
   var cached=_pjb.data&&_pjb.data.pid===pid?_pjb.data.D:null;  // 다시 그릴 땐 지난 값을 먼저 보여주고 새로 받아 바꾼다
@@ -200,11 +216,12 @@ async function renderProjectBoard(el){
     +'<h1 class="pjb-title">'+escHtml(ctx.pr.title||'새 프로젝트')+'</h1>'
     +'<div class="pjb-bar"><div class="pjb-tabs" role="tablist">'+PJB_PHASES.map(function(p){
       var n=p[0]?all.filter(function(b){return b.phase===p[0];}).length:all.length;
-      return '<button type="button" role="tab" aria-selected="'+(tab===p[0])+'" class="'+(tab===p[0]?'active':'')+'" onclick="pjbSetTab(\''+p[0]+'\')">'+p[1]+'<span class="pchips-n">'+n+'</span></button>';
+      return '<button type="button" role="tab" aria-selected="'+(tab===p[0])+'" class="'+(tab===p[0]?'active':'')+'" onclick="pjbSetTab(\''+p[0]+'\')">'+(p[2]?'<span class="pjb-tl">'+p[1]+'</span><span class="pjb-ts">'+p[2]+'</span>':p[1])+'<span class="pchips-n">'+n+'</span></button>';
     }).join('')+'</div>'
     +'<button type="button" class="pjb-pick-btn" onclick="pjbTogglePicker(event)" aria-haspopup="true">'+ico('settings')+'상자 고르기</button><div class="pjb-picker" id="pjb-picker" hidden></div></div>'
     +'<div class="pjb-board">'+(boxes.length?boxes.map(function(b){return pjbBoxHtml(b,cached);}).join(''):'<div class="pjb-none"><button type="button" class="pf-btn pf-active" onclick="pjbTogglePicker(event)">상자 고르기</button></div>')+'</div></div>';
-  pjbDeal(el);pjbDragSetup(el.querySelector('.pjb-board'),pid);
+  if(!_pjb.dealt[pid]){_pjb.dealt[pid]=1;pjbDeal(el);}  // 카드 돌리기는 그 프로젝트를 처음 열 때 한 번만
+  pjbDragSetup(el.querySelector('.pjb-board'),pid);
   loadBoardData().then(function(D){
     _pjb.data={pid:pid,D:D};
     if(window._projectCtx!==ctx||window._projectBox||!$('project-tab-content'))return;
@@ -213,9 +230,26 @@ async function renderProjectBoard(el){
       var btn=el.querySelector('.pjb[data-box="'+b.key+'"]');if(!btn)return;
       var x=pjbBoxInner(b,D);btn.className='pjb pjb-'+x.st;btn.innerHTML=x.html;
     });
+    pjbMarkNext(el,boxes,D);
   });
 }
-function pjbSetTab(t){window._pjbTab=t;var el=$('project-tab-content');if(el)renderProjectBoard(el);}
+/* 처음 여는 단계 탭 = 지금 상태의 단계 (기획 → 프리, 공연 예정·공연 중 → 프로덕션, 완료 → 포스트). 고른 탭은 프로젝트마다 기억 */
+var _pjbTabs={};
+function pjbTabFor(ctx){
+  if(_pjbTabs[ctx.pid]!=null)return _pjbTabs[ctx.pid];
+  return {planning:'pre',upcoming:'prod',running:'prod',completed:'post'}[ctx.pr.status]||'';
+}
+function pjbSetTab(t){_pjbTabs[window._projectCtx.pid]=t;var el=$('project-tab-content');if(el)renderProjectBoard(el);}
+/* 막 시작한 프로젝트: 먼저 할 상자 하나에 "여기부터" (해결된 상자가 셋이 되면 사라진다) */
+var PJB_FIRST=['work','schedule','actor','crew','venue','budget','team'];
+function pjbMarkNext(el,boxes,D){
+  var st={};boxes.forEach(function(b){st[b.key]=b.calc(D).st;});
+  var done=Object.keys(st).filter(function(k){return k!=='settings'&&st[k]==='done';}).length;
+  if(done>=3)return;
+  var k=PJB_FIRST.find(function(x){return st[x]&&st[x]!=='done'&&st[x]!=='off';});
+  var btn=k&&el.querySelector('.pjb[data-box="'+k+'"]');
+  if(btn)btn.insertAdjacentHTML('beforeend','<span class="pjb-next">여기부터</span>');
+}
 
 /* 상자 고르기: 단계별로 켜고 끄기 + 기본으로 */
 function pjbTogglePicker(e){
@@ -323,7 +357,7 @@ function pjbDeal(el){
 }
 
 /* ── 합친 상자들의 화면 ── */
-/* 작품·라이선스: 지금 작품과 라이선스, 바꾸기·라이선스 신청 */
+/* 작품·라이선스: 지금 작품과 라이선스, 바꾸기 · 내 라이선스 신청이 어디까지 왔는지 */
 function renderProjectWork(el){
   var ctx=window._projectCtx,pr=ctx.pr,pid=ctx.pid,admin=ctx.isAdmin,w=pr.work_id;
   var lic=pr.is_licensed==='완료'?'확보':pr.is_licensed||'미정';
@@ -333,32 +367,65 @@ function renderProjectWork(el){
     +'<div class="dv-fact"><dt>라이선스</dt><dd>'+escHtml(lic)+(admin?' <button type="button" class="ph-edit" onclick="openProjectWizard(\''+pid+'\',[\'license\'])">변경</button>':'')+'</dd></div>'
     +(roles?'<div class="dv-fact"><dt>등장인물</dt><dd>'+roles+'명</dd></div>':'')
     +'</dl></section>';
-  if(w&&lic!=='확보'&&lic!=='창작')h+='<section class="dv-sec"><div class="wd-cta"><b>〈'+escHtml(nm(w))+'〉 라이선스</b><button type="button" class="pf-btn pf-active" onclick="goLicense(\''+w+'\')">라이선스 신청</button></div></section>';
+  if(w&&lic!=='확보'&&lic!=='창작')h+='<section class="dv-sec" id="pw-lic"></section>';
   if(!w&&admin)h+='<section class="dv-sec" id="pw-recs"><div class="hf-loading">추천을 찾는 중…</div></section>';
   el.innerHTML=h;
+  if(w&&lic!=='확보'&&lic!=='창작')pwLicTrack(w);
   if(!w&&admin)loadProdDashData().then(function(D){return dashWorkRecs(D);}).then(function(x){var r=$('pw-recs');if(r)r.innerHTML=x||'';});
 }
-/* 일정: 첫 공연 날짜 띠 + 일정·공지 화면 */
-function renderProjectScheduleBox(el){
+/* 라이선스 신청 단계 (licenses.js LIC_STEPS와 같은 칸): 신청 전 ① · 신청하면 ② 오리 검토 중 */
+async function pwLicTrack(w){
+  var r=await sbClient.from('license_demands').select('id,period,performance_count').eq('work_id',w).eq('user_id',CURRENT_USER.id).maybeSingle();
+  var box=$('pw-lic');if(!box)return;
+  var cur=r.data?1:0;
+  box.innerHTML=dvSection('〈'+escHtml(nm(w))+'〉 라이선스')
+    +'<ol class="lic-track pw-track">'+LIC_STEPS.map(function(st,i){return '<li class="'+(i<cur?'done':i===cur?'now':'')+'"><span class="lic-dot">'+(i<cur?'✓':i+1)+'</span><span class="lic-tt"><b>'+st[0]+'</b></span></li>';}).join('')+'</ol>'
+    +'<button type="button" class="pf-btn'+(cur?'':' pf-active')+'" onclick="goLicense(\''+w+'\')">'+(cur?'신청 내용 보기':'라이선스 신청')+'</button>';
+}
+/* 일정: 첫 공연 날짜 띠 + 일정·공지 화면. '공연' 일정이 있으면 날짜는 그 일정이 정한다 */
+function pjDateBandHtml(){
   var ctx=window._projectCtx,pr=ctx.pr,pid=ctx.pid;
   var dd=projectDday(pr.target_start_date,pr.target_end_date,pr.status);
   var dates=pr.target_start_date?String(pr.target_start_date).replace(/-/g,'.')+(pr.target_end_date&&pr.target_end_date!==pr.target_start_date?' ~ '+String(pr.target_end_date).slice(5).replace('-','.'):''):'날짜 미정';
-  el.innerHTML='<div class="pj-dateband"><span class="pj-dateband-d">'+escHtml(dd.big)+'</span><span class="pj-dateband-s">첫 공연 '+escHtml(dates)+'</span>'
-    +(ctx.isAdmin?'<button type="button" class="ph-edit" onclick="openProjectWizard(\''+pid+'\',[\'date\'])">날짜 바꾸기</button>':'')
-    +'<button type="button" class="ph-edit pj-ics" onclick="opsExportIcs()">'+ico('calendar')+'캘린더로 내보내기</button></div><div id="pj-sched-body"></div>';
+  return '<span class="pj-dateband-d">'+escHtml(dd.big)+'</span><span class="pj-dateband-s">첫 공연 '+escHtml(dates)+'</span>'
+    +(ctx.isAdmin&&!ctx.perfRange?'<button type="button" class="ph-edit" onclick="openProjectWizard(\''+pid+'\',[\'date\'])">날짜 바꾸기</button>':'')
+    +'<button type="button" class="ph-edit pj-ics" onclick="opsExportIcs()">'+ico('calendar')+'캘린더로 내보내기</button>';
+}
+function renderProjectScheduleBox(el){
+  el.innerHTML='<div class="pj-dateband" id="pj-dateband">'+pjDateBandHtml()+'</div><div id="pj-sched-body"></div>';
   renderProjectSchedule($('pj-sched-body'));
 }
-/* 팀: 참여 요청(관리자) + 팀원 */
+function pjDateBandRefresh(){var b=$('pj-dateband');if(b)b.innerHTML=pjDateBandHtml();}
+/* 팀·연락망: 단체 · 참여 요청(관리자) · 팀원(역할·연락처) · 내 연락처 */
 function renderProjectTeamBox(el){
-  var ctx=window._projectCtx,pid=ctx.pid;
+  var ctx=window._projectCtx,pid=ctx.pid,pr=ctx.pr;
   window._teamSubTab='people';
-  var pr=ctx.pr;
   el.innerHTML='<section class="dv-sec"><dl class="dv-facts ph-facts"><div class="dv-fact"><dt>단체</dt><dd>'+(pr.troupe_id?dvLink('troupe',pr.troupe_id,nm(pr.troupe_id)):'<span class="ph-none">미정</span>')
       +(ctx.isAdmin?' <button type="button" class="ph-edit" onclick="openProjectWizard(\''+pid+'\',[\'troupe\'])">'+(pr.troupe_id?'변경':'정하기')+'</button>':'')+'</dd></div></dl></section>'
     +(ctx.isAdmin?'<section class="dv-sec">'+dvSection('참여 요청')+'<div id="join-requests-list"><div class="hf-loading">불러오는 중…</div></div></section>':'')
     +'<section class="dv-sec">'+dvSection('팀원')+'<div id="team-subtab-body"><div class="hf-loading">불러오는 중…</div></div></section>';
   if(ctx.isAdmin)loadJoinRequests(pid);
-  loadProjectPositionsData(pid,renderTeamSubTabBody);
+  Promise.all([teamLoadContacts(pid),new Promise(function(ok){loadProjectPositionsData(pid,ok);})]).then(renderTeamSubTabBody);
+}
+var _teamContacts={};
+async function teamLoadContacts(pid){
+  var r=await sbClient.from('project_member_contacts').select('member_id,phone,emergency').eq('project_id',pid);
+  _teamContacts={};(r.data||[]).forEach(function(c){_teamContacts[c.member_id]=c;});
+}
+function teamContactForm(){
+  var ctx=window._projectCtx,me=ctx.myMember&&ctx.myMember.id,c=_teamContacts[me]||{},f=$('team-contact-f');if(!f||!me)return;
+  if(f.innerHTML){f.innerHTML='';return;}
+  f.innerHTML='<div class="task-add"><input type="tel" id="tc-phone" maxlength="40" placeholder="연락처" value="'+escHtml(c.phone||'')+'">'
+    +'<input type="text" id="tc-em" maxlength="120" placeholder="비상 연락처 (이름·관계·번호)" value="'+escHtml(c.emergency||'')+'">'
+    +'<button type="button" class="pf-btn pf-active" onclick="teamContactSave()">저장</button></div>';
+  $('tc-phone').focus();
+}
+async function teamContactSave(){
+  var ctx=window._projectCtx,me=ctx.myMember.id;
+  var row={member_id:me,project_id:ctx.pid,phone:($('tc-phone').value||'').trim()||null,emergency:($('tc-em').value||'').trim()||null,updated_at:new Date().toISOString()};
+  var r=await sbClient.from('project_member_contacts').upsert(row);
+  if(r.error){oriAlert('저장하지 못했어요: '+r.error.message);return;}
+  _teamContacts[me]=row;renderTeamSubTabBody();
 }
 /* 예전 "사람" 탭 배지 자리 — 이제 보드의 참여 요청 상자가 말해 준다 */
 function updatePeopleTabBadge(){}
